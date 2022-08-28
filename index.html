@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" type="image/png" href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+    <title>Generate Condition Widgets and Sets in a Display Layout v2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
+        body {
+            background: #333;
+            color: #ccc;
+            font-family: "IBM Plex Sans", serif;
+            font-size: 0.8em;
+            margin: 10px;
+        }
+        body > * + * {
+            margin-top: 10px;
+        }
+
+        h1 {
+            font-size: 1.5em;
+        }
+
+        h2 {
+            text-transform: uppercase;
+            opacity: 0.5;
+        }
+
+        input, button {
+            appearance: none;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: inherit;
+            padding: 5px 10px;
+        }
+
+        button {
+            background: #ff8000;
+            color: #222;
+            font-weight: 600;
+            padding: 5px 30px;
+        }
+
+        .sm input {
+            width: 50px;
+        }
+
+        .c-config {
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            grid-column-gap: 5px;
+            grid-row-gap: 5px;
+        }
+        .c-config_label {
+            padding: 5px 0;
+        }
+
+        .output {
+            display: block;
+            line-height: 160%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body translate="no" >
+<h1>Generate Condition Widgets and Sets in a Display Layout</h1>
+<h2>Config</h2>
+<div class="c-config">
+    <div class="c-config_label">Display Layout Name</div>
+    <div class="c-config_value"><input type="text" id="layoutName" /></div>
+
+    <div class="c-config_label">Item Columns</div>
+    <div class="c-config_value sm"><input type="number" id="itemColumns" value="1" /></div>
+
+    <div class="c-config_label">Item Rows</div>
+    <div class="c-config_value sm"><input type="number" id="itemRows" /></div>
+
+    <div class="c-config_label">Item Width</div>
+    <div class="c-config_value sm"><input type="number" id="itemWidth" value="15" /></div>
+
+    <div class="c-config_label">Item Height</div>
+    <div class="c-config_value sm"><input type="number" id="itemHeight" value="4" /></div>
+</div>
+
+<button onclick="doit();">RUN</button>
+
+<h2>Output</h2>
+<div id="output" class="output" contenteditable="true"></div>
+
+<script src="main.js" >
+
+</script>
+</body>
+</html>
+
