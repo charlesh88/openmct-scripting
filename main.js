@@ -77,10 +77,20 @@ const Obj = function (name, type, composable) {
             this.composition.push(createIdentifier(child.identifier.key));
         }
 
+        this.addJson = function (child) {
+            this[child.identifier.key] = child;
+        }
+
+        this.setLocation = function (locationUUID) {
+            this.location = locationUUID;
+        }
+
         this.addObj = function (parent, child) {
-            parent[child.identifier.key] = child;
+            // parent.addJson(child);
+            parent[child.identifier.key] = child; // Adds the child's JSON to the JSON of the designated container
             this.addToComposition(child);
-            child.location = this.identifier.key;
+            // child.setLocation(this.identifier.key);
+            child.location = this.identifier.key; // Need to change this so that
         }
     }
     this.modified = datetime;
@@ -100,15 +110,15 @@ function createIdentifier(id, namespace) {
 // CONDITION SETS AND CONDITIONS
 const ConditionSet = function (name, dataSource) {
     Obj.call(this, name, 'conditionSet', true);
-    this.prototype = Object.create(Obj.prototype);
+    // this.prototype = Object.create(Obj.prototype);
     this.configuration = {};
     this.configuration.conditionTestData = [];
     this.configuration.conditionCollection = [];
     this.composition.push(createIdentifier(dataSource, 'taxonomy'));
 
     this.addConditions = function (output, operation, inputValue, isDefault) {
-        this.configuration.conditionCollection.push(createCondition('C1', output, operation, inputValue, false));
-        this.configuration.conditionCollection.push(createCondition('Default', output, operation, null, true));
+        this.configuration.conditionCollection.push(createCondition('Condition 1', output, operation, inputValue, false));
+        this.configuration.conditionCollection.push(createCondition('Default', 'Default', operation, null, true));
     }
 }
 
@@ -140,7 +150,7 @@ function createConditionCriteria(operation, inputValue) {
 // CONDITION WIDGETS
 const ConditionWidget = function (name, conditionSet) {
     Obj.call(this, name, 'conditionWidget', false);
-    this.prototype = Object.create(Obj.prototype);
+    // this.prototype = Object.create(Obj.prototype);
 
     this.configuration = {};
     let os = this.configuration.objectStyles = {};
@@ -178,12 +188,12 @@ function createStyleObj(cond) {
 // DISPLAY LAYOUT
 const DisplayLayout = function (name) {
     Obj.call(this, name, 'layout', true);
-    this.prototype = Object.create(Obj.prototype);
+    // this.prototype = Object.create(Obj.prototype);
 
     this.configuration = {};
     this.configuration.layoutGrid = [10, 10];
     this.configuration.objectStyles = {};
-    this.items = [];
+    this.configuration.items = [];
 
     this.addItem = function (
         index,
@@ -194,17 +204,19 @@ const DisplayLayout = function (name) {
     )
     {
         let i = {
-            'width': itemW,
-            'height': itemH,
+            'width': parseInt(itemW),
+            'height': parseInt(itemH),
             'hasFrame': hasFrame,
             'fontSize': 'default',
-            'font': 'default'
+            'font': 'default',
+            'type': 'subobject-view'
         };
         i.x = 0; // TEMP, replace with function
         i.y = 0; // TEMP, replace with function
+        i.id = createUUID();
         i.identifier = createIdentifier(id);
 
-        this.items.push(i);
+        this.configuration.items.push(i);
     }
 }
 
