@@ -11,7 +11,7 @@
         @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
         body {
             background: #333;
-            color: #ccc;
+            color: #999;
             font-family: "IBM Plex Sans", serif;
             font-size: 0.8em;
             margin: 10px;
@@ -21,10 +21,15 @@
         }
 
         h1 {
+            color: white;
             font-size: 1.5em;
         }
 
         h2 {
+            padding: 4px 8px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
             opacity: 0.5;
         }
@@ -55,6 +60,11 @@
             grid-column-gap: 5px;
             grid-row-gap: 5px;
         }
+
+        .c-config h2 {
+            grid-column: span 2;
+        }
+
         .c-config_label {
             padding: 5px 0;
         }
@@ -62,43 +72,53 @@
         .output {
             display: block;
             line-height: 160%;
-            min-height: 100px;
+            min-height: 1em;
             padding: 10px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 5px;
             background: rgba(255, 255, 255, 0.1);
         }
+
+        .output.lg {
+            min-height: 100px;
+            max-height: 800px;
+            overflow: auto;
+        }
     </style>
 </head>
 
 <body translate="no" >
-<h1>Generate Condition Widgets and Sets in a Display Layout</h1>
-<h2>Config</h2>
+<h1>Generate Open MCT Import JSON</h1>
+<p>
+    Creates an outer folder with the root name that contains Display Layouts for widgets and (eventually) alphanumerics.
+</p>
 <div class="c-config">
-    <div class="c-config_label">Display Layout Name</div>
-    <div class="c-config_value"><input type="text" id="layoutName" /></div>
+    <h2>Main Config</h2>
+    <div class="c-config_label">Root Name</div>
+    <div class="c-config_value"><input type="text" id="rootName" value="Scripted Open MCT" /></div>
 
+    <h2>Widget Layout Config</h2>
     <div class="c-config_label">Item Columns</div>
-    <div class="c-config_value sm"><input type="number" id="itemColumns" value="1" /></div>
+    <div class="c-config_value sm"><input type="number" id="widgetLayoutItemColumns" value="1" /></div>
 
     <div class="c-config_label">Item Rows</div>
-    <div class="c-config_value sm"><input type="number" id="itemRows" /></div>
+    <div class="c-config_value sm"><input type="number" id="widgetLayoutItemRows" /></div>
 
     <div class="c-config_label">Item Width</div>
-    <div class="c-config_value sm"><input type="number" id="itemWidth" value="15" /></div>
+    <div class="c-config_value sm"><input type="number" id="widgetLayoutItemWidth" value="15" /></div>
 
     <div class="c-config_label">Item Height</div>
-    <div class="c-config_value sm"><input type="number" id="itemHeight" value="4" /></div>
+    <div class="c-config_value sm"><input type="number" id="widgetLayoutItemHeight" value="4" /></div>
+
+    <div class="c-config_label"></div>
+    <div class="c-config_value"><button onclick="createOpenMCTJSON();">RUN</button></div>
 </div>
 
-<button onclick="doit();">RUN</button>
-
 <h2>Output</h2>
-<div id="output" class="output" contenteditable="true"></div>
+<div id="output-stats" class="output"></div>
+<div id="output" class="output lg" contenteditable="true"></div>
 
-<script src="main.js" >
-
-</script>
+<script src="main.js" ></script>
 </body>
 </html>
 
