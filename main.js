@@ -1,19 +1,29 @@
 const objJson = {};
+let config = {};
+let telemetryObjects = [];
 
 function createOpenMCTJSON() {
-    const telemetryObjects = [
+    telemetryObjects = [
         {
             name: 'RadIo enabledFlag',
             datasource: '~ViperRover~RadIo~enabledFlag',
-            watchValue: 3
+            watchValue: 1
         },{
-            name: 'RadIo commandCount',
+            name: 'RadIo commandCount 0',
             datasource: '~ViperRover~RadIo~commandCount',
             watchValue: 0
+        },{
+            name: 'RadIo commandCount 1',
+            datasource: '~ViperRover~RadIo~commandCount',
+            watchValue: 1
+        },{
+            name: 'RadIo commandCount 2',
+            datasource: '~ViperRover~RadIo~commandCount',
+            watchValue: 2
         }
     ];
 
-    const config = getConfigFromForm();
+    config = getConfigFromForm();
     let root = objJson.openmct = new Container();
 
     // Create the root folder
@@ -42,6 +52,8 @@ function createOpenMCTJSON() {
 
     let index = 0;
     for (const telemetryObject of telemetryObjects) {
+        const curIndex = telemetryObjects.indexOf(telemetryObject);
+
         // Create Condition Set
         let cs = new ConditionSet('CS ' + telemetryObject.name, telemetryObject.datasource);
         cs.addConditions('Enabled', 'greaterThan', telemetryObject.watchValue);
@@ -57,17 +69,21 @@ function createOpenMCTJSON() {
 
         // Add Widget to Widgets Display Layout
         dlWidgets.addToComposition(cw.identifier.key);
-        dlWidgets.addSubObjectView({
-            index: telemetryObjects.indexOf(telemetryObject),
+        let itemProps = {
+            index: curIndex,
             ident: cw.identifier.key,
             itemW: config.dlWidgets.itemW,
             itemH: config.dlWidgets.itemH,
-            hasFrame: false
-        });
+            hasFrame: false,
+            layoutStrategy: config.dlWidgets.layoutStrategy,
+            layoutStrategyNum: config.dlWidgets.layoutStrategyNum,
+        };
+
+        dlWidgets.addSubObjectView(itemProps);
 
         // Add text to Alphas Display Layout TODO: fix width/height properties
         dlAlphas.addTextView({
-            index: telemetryObjects.indexOf(telemetryObject),
+            index: curIndex,
             itemX: 0,
             itemY: 0,
             itemW: config.dlAlphas.labelW,
@@ -109,17 +125,19 @@ function getConfigFromForm () {
     config.itemMargin = getFormNumericVal('itemMargin');
 
     config.dlWidgets = {};
-    config.dlWidgets.columns = getFormNumericVal('widgetLayoutItemColumns');
-    config.dlWidgets.rows = getFormNumericVal('widgetLayoutItemRows');
+    config.dlWidgets.layoutStrategy = document.getElementById('widgetLayoutStrategy').value
+    config.dlWidgets.layoutStrategyNum = getFormNumericVal('widgetLayoutStrategyNum');
     config.dlWidgets.itemW = getFormNumericVal('widgetLayoutItemWidth');
     config.dlWidgets.itemH = getFormNumericVal('widgetLayoutItemHeight');
 
     config.dlAlphas = {};
-    config.dlAlphas.columns = getFormNumericVal('alphaLayoutItemColumns');
-    config.dlAlphas.rows = getFormNumericVal('alphaLayoutItemRows');
+    config.dlAlphas.layoutStrategy = document.getElementById('alphaLayoutStrategy').value
+    config.dlAlphas.layoutStrategyNum = getFormNumericVal('alphaLayoutStrategyNum');
     config.dlAlphas.labelW = getFormNumericVal('alphaLayoutLabelWidth');
     config.dlAlphas.itemW = getFormNumericVal('alphaLayoutItemWidth');
     config.dlAlphas.itemH = getFormNumericVal('alphaLayoutItemHeight');
+
+    console.log(config);
 
     return config;
 }
@@ -251,6 +269,9 @@ const DisplayLayout = function (args) {
     this.configuration.objectStyles = {};
     this.configuration.items = [];
 
+    this.itemPlaceIndex = 0; // Tracks where an item is within a row or column
+    this.itemShiftIndex = 0; // Tracks the row or column that an item is in
+
     this.createBaseItem = function (args) {
         // console.log(args);
         return {
@@ -273,7 +294,19 @@ const DisplayLayout = function (args) {
         so.identifier = createIdentifier(args.ident);
         so.hasFrame = args.hasFrame;
 
+        // Calc position. This is a widget, so X or Y is purely based on a mod against the layout strategy
+        // itemPos should be [x, y]
+        const itemPos = this.calcItemPosition(args);
+        so.x = itemPos.x;
+        so.y = itemPos.y;
+
+        console.log('addSubObjectView', so);
+
         this.configuration.items.push(so);
+    }
+
+    this.addTextAndAlphaPair = function (args) {
+        // TODO: make this calc the position for a pair of text and alpha elements
     }
 
     this.addTextView = function (args) {
@@ -293,6 +326,33 @@ const DisplayLayout = function (args) {
         so.format = '%9.4f';
 
         this.configuration.items.push(so);
+    }
+
+    this.calcItemPosition = function (args) {
+        let itemPos = {};
+        const itemPlaceMargin = this.itemPlaceIndex * config.itemMargin;
+        const itemShiftMargin = this.itemShiftIndex * config.itemMargin;
+
+        if (args.layoutStrategy === 'columns') {
+            // Build down first until itemPlaceMargin is reached, then go across
+            itemPos.x = (this.itemPlaceIndex * args.itemW) + itemPlaceMargin;
+            itemPos.y = (this.itemShiftIndex * args.itemH) + itemShiftMargin;
+         } else {
+            // Build across first until itemPlaceMargin is reached, then go down
+            itemPos.x = (this.itemShiftIndex * args.itemW) + itemShiftMargin;
+            itemPos.y = (this.itemPlaceIndex * args.itemH) + itemPlaceMargin;
+        }
+
+        // console.log('calcd pos:', this.itemPlaceIndex, this.itemShiftIndex);
+
+        if ((this.itemPlaceIndex + 1) % args.layoutStrategyNum === 0) {
+            this.itemPlaceIndex = 0;
+            this.itemShiftIndex += 1;
+        } else {
+            this.itemPlaceIndex += 1;
+        }
+
+        return itemPos;
     }
 }
 

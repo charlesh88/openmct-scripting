@@ -34,14 +34,22 @@
             opacity: 0.5;
         }
 
-        input, button, textarea {
-            appearance: none;
-            background: #222;
-            border: 1px solid #444;
+        input, button, textarea, select {
+            border: 1px solid #333;
             border-radius: 5px;
             color: inherit;
+        }
+
+        input, button, textarea {
+            background: #222;
+            appearance: none;
             padding: 5px 10px;
             width: 200px;
+        }
+
+        select {
+            background: #444;
+            padding: 4px;
         }
 
         textarea {
@@ -121,11 +129,13 @@
     </div>
     <div class="c-config">
         <h2>Widget Layout</h2>
-        <div class="c-config_label">Item Columns</div>
-        <div class="c-config_value sm"><input type="number" id="widgetLayoutItemColumns" value="1" /></div>
-
-        <div class="c-config_label">Item Rows</div>
-        <div class="c-config_value sm"><input type="number" id="widgetLayoutItemRows" /></div>
+        <div class="c-config_value">
+            <select id="widgetLayoutStrategy">
+                <option value="columns">Columns</option>
+                <option value="rows">Rows</option>
+            </select>
+        </div>
+        <div class="c-config_value sm"><input type="number" id="widgetLayoutStrategyNum" value="1" /></div>
 
         <div class="c-config_label">Item Width</div>
         <div class="c-config_value sm"><input type="number" id="widgetLayoutItemWidth" value="15" /></div>
@@ -135,11 +145,13 @@
     </div>
     <div class="c-config">
         <h2>Alpha Layout</h2>
-        <div class="c-config_label">Item Columns</div>
-        <div class="c-config_value sm"><input type="number" id="alphaLayoutItemColumns" value="1" /></div>
-
-        <div class="c-config_label">Item Rows</div>
-        <div class="c-config_value sm"><input type="number" id="alphaLayoutItemRows" /></div>
+        <div class="c-config_value">
+            <select id="alphaLayoutStrategy">
+                <option value="columns">Columns</option>
+                <option value="rows">Rows</option>
+            </select>
+        </div>
+        <div class="c-config_value sm"><input type="number" id="alphaLayoutStrategyNum" value="1" /></div>
 
         <div class="c-config_label">Label Width</div>
         <div class="c-config_value sm"><input type="number" id="alphaLayoutLabelWidth" value="15" /></div>
