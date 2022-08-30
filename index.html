@@ -6,105 +6,7 @@
     <title>Generate Condition Widgets and Sets in a Display Layout v2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
-
-    <style>
-        @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
-        body {
-            background: #333;
-            color: #999;
-            font-family: "IBM Plex Sans", serif;
-            font-size: 0.8em;
-            margin: 10px;
-        }
-        body > * + * {
-            margin-top: 10px;
-        }
-
-        h1 {
-            color: white;
-            font-size: 1.5em;
-        }
-
-        h2 {
-            padding: 4px 8px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-            text-transform: uppercase;
-            opacity: 0.5;
-        }
-
-        input, button, textarea, select {
-            border: 1px solid #333;
-            border-radius: 5px;
-            color: inherit;
-        }
-
-        input, button, textarea {
-            background: #222;
-            appearance: none;
-            padding: 5px 10px;
-            width: 200px;
-        }
-
-        select {
-            background: #444;
-            padding: 4px;
-        }
-
-        textarea {
-            height: 100px;
-        }
-
-        button {
-            background: #ff8000;
-            color: #222;
-            font-weight: 600;
-            padding: 5px 30px;
-        }
-
-        .sm input {
-            width: 50px;
-        }
-
-        .c-config-holder {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-column-gap: 10px;
-            align-items: start;
-        }
-
-        .c-config {
-            display: grid;
-            grid-template-columns: max-content 1fr;
-            grid-column-gap: 5px;
-            grid-row-gap: 5px;
-        }
-
-        .c-config h2 {
-            grid-column: span 2;
-        }
-
-        .c-config_label {
-            padding: 5px 0;
-        }
-
-        .output {
-            display: block;
-            line-height: 160%;
-            min-height: 1em;
-            padding: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .output.lg {
-            min-height: 100px;
-            max-height: 300px;
-            overflow: auto;
-        }
-    </style>
+    <link rel="stylesheet" href="openmct-scripting.css">
 </head>
 
 <body translate="no" >
@@ -112,7 +14,7 @@
 <p>
     Creates an outer folder using the root name that contains Display Layouts for widgets with Condition Sets and alphanumerics.
 </p>
-<div class="c-config-holder">
+<form class="c-config-holder">
     <div class="c-config">
         <h2>Global</h2>
         <div class="c-config_label">Root Name</div>
@@ -162,18 +64,20 @@
         <div class="c-config_label">Item Height</div>
         <div class="c-config_value sm"><input type="number" id="alphaLayoutItemHeight" value="4" /></div>
     </div>
-</div>
-<div style="text-align: center;"><button onclick="createOpenMCTJSON();">RUN</button></div>
+</form>
+<div style="text-align: center;"><button class="c-btn-run" onclick="createOpenMCTJSON();">RUN</button></div>
 
 <h2>Output</h2>
 <div id="output-stats"></div>
 <div id="output" class="output lg" contenteditable="true"></div>
+<div style="text-align: center;"><button onclick="downloadJson();">Download</button></div>
 
 <script src="Forms.js" ></script>
 <script src="ConditionSetsAndWidgets.js" ></script>
 <script src="DisplayLayouts.js" ></script>
 <script src="DomainObjects.js" ></script>
 <script src="main.js" ></script>
+<script src="files.js" ></script>
 <script src="utilities.js" ></script>
 </body>
 </html>

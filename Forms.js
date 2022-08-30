@@ -7,13 +7,13 @@ function getConfigFromForm() {
     config.itemMargin = getFormNumericVal('itemMargin');
 
     config.dlWidgets = {};
-    config.dlWidgets.layoutStrategy = document.getElementById('widgetLayoutStrategy').value
+    config.dlWidgets.layoutStrategy = document.getElementById('widgetLayoutStrategy').value;
     config.dlWidgets.layoutStrategyNum = getFormNumericVal('widgetLayoutStrategyNum');
     config.dlWidgets.itemW = getFormNumericVal('widgetLayoutItemWidth');
     config.dlWidgets.itemH = getFormNumericVal('widgetLayoutItemHeight');
 
     config.dlAlphas = {};
-    config.dlAlphas.layoutStrategy = document.getElementById('alphaLayoutStrategy').value
+    config.dlAlphas.layoutStrategy = document.getElementById('alphaLayoutStrategy').value;
     config.dlAlphas.layoutStrategyNum = getFormNumericVal('alphaLayoutStrategyNum');
     config.dlAlphas.labelW = getFormNumericVal('alphaLayoutLabelWidth');
     config.dlAlphas.itemW = getFormNumericVal('alphaLayoutItemWidth');

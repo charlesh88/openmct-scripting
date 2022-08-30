@@ -33,7 +33,19 @@ function createOpenMCTJSON() {
     root.addJson(folder);
     objJson.rootId = folder.identifier.key;
 
-    // Create a Display Layout for widgets
+    // Create a folder to hold Condition Sets and add it to the root folder
+    let folderConditionSets = new Obj('Condition Sets', 'folder', true);
+    root.addJson(folderConditionSets);
+    folder.addToComposition(folderConditionSets.identifier.key);
+    folderConditionSets.setLocation(folder);
+
+    // Create a folder to hold Condition Widgets and add it to the root folder
+    let folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
+    root.addJson(folderConditionWidgets);
+    folder.addToComposition(folderConditionWidgets.identifier.key);
+    folderConditionWidgets.setLocation(folder);
+
+    // Create a Display Layout for widgets and add it to the root folder
     let dlWidgets = new DisplayLayout({
         'name': 'DL Widgets',
         'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
@@ -43,7 +55,7 @@ function createOpenMCTJSON() {
     folder.addToComposition(dlWidgets.identifier.key);
     dlWidgets.setLocation(folder);
 
-    //Create a Display Layout for alphas
+    //Create a Display Layout for alphas and add it to the root folder
     let dlAlphas = new DisplayLayout({
         'name': 'DL Alphas',
         'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
@@ -61,14 +73,14 @@ function createOpenMCTJSON() {
         let cs = new ConditionSet('CS ' + telemetryObject.name, telemetryObject.datasource);
         cs.addConditions('Enabled', 'greaterThan', telemetryObject.watchValue);
         root.addJson(cs);
-        folder.addToComposition(cs.identifier.key);
-        cs.setLocation(folder);
+        folderConditionSets.addToComposition(cs.identifier.key);
+        cs.setLocation(folderConditionSets);
 
         // Create Condition Widget
         let cw = new ConditionWidget('CW ' + telemetryObject.name, cs);
         root.addJson(cw);
-        folder.addToComposition(cw.identifier.key);
-        cw.setLocation(folder);
+        folderConditionWidgets.addToComposition(cw.identifier.key);
+        cw.setLocation(folderConditionWidgets);
 
         // Add Widget to Widgets Display Layout
         dlWidgets.addToComposition(cw.identifier.key);
