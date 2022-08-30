@@ -337,8 +337,13 @@ const DisplayLayout = function (args) {
         so.displayMode = 'value';
         so.value = 'value';
         so.format = '%9.4f'; // This may not be right
+
+        let styleObj = createStyleObj();
+        styleObj.style.border = '1px solid #666666';
+        this.configuration.objectStyles[so.id] = {
+            staticStyle: styleObj
+        };
         this.configuration.items.push(so);
-        // console.log('tlmv', so);
     }
 
     this.calcItemPosition = function (itemW, itemH, layoutStrategy, layoutStrategyNum) {
