@@ -1,102 +1,144 @@
-let objJson = {};
-const config = {};
+const objJson = {};
 
 function createOpenMCTJSON() {
     const CHILDREN = [
         {
-            name: 'Test 1',
+            name: 'RadIo enabledFlag',
             datasource: '~ViperRover~RadIo~enabledFlag',
             watchValue: 3
         }
     ];
 
-    objJson.openmct = {};
-
-    // Get form values
-    config.rootName = document.getElementById('rootName').value;
-    config.dlWidgets = {};
-    config.dlWidgets.columns = document.getElementById('widgetLayoutItemColumns').value;
-    config.dlWidgets.rows = document.getElementById('widgetLayoutItemRows').value;
-    config.dlWidgets.itemW = document.getElementById('widgetLayoutItemWidth').value;
-    config.dlWidgets.itemH = document.getElementById('widgetLayoutItemHeight').value;
-
-    config.dlAlphas = {};
+    const config = getConfigFromForm();
+    let root = objJson.openmct = new Container();
 
     // Create the root folder
     let folder = new Obj(config.rootName, 'folder', true);
-    let rootFolder = objJson.openmct[folder.identifier.key] = folder;
+    root.addJson(folder);
     objJson.rootId = folder.identifier.key;
 
     // Create a Display Layout for widgets
     let dlWidgets = new DisplayLayout('DL Widgets');
-    rootFolder.addObj(objJson.openmct, dlWidgets);
+    root.addJson(dlWidgets);
+    folder.addToComposition(dlWidgets.identifier.key);
+    dlWidgets.setLocation(folder);
+
+    //Create a Display Layout for alphas
+    let dlAlphas = new DisplayLayout('DL Alphas');
+    root.addJson(dlAlphas);
+    folder.addToComposition(dlAlphas.identifier.key);
+    dlAlphas.setLocation(folder);
 
     let index = 0;
-
     for (const child of CHILDREN) {
         // Create Condition Set
         let cs = new ConditionSet('CS ' + child.name, child.datasource);
         cs.addConditions('Enabled', 'greaterThan', child.watchValue);
-        rootFolder.addObj(objJson.openmct, cs);
+        root.addJson(cs);
+        folder.addToComposition(cs.identifier.key);
+        cs.setLocation(folder);
 
         // Create Condition Widget
         let cw = new ConditionWidget('CW ' + child.name, cs);
-        rootFolder.addObj(objJson.openmct, cw);
+        root.addJson(cw);
+        folder.addToComposition(cw.identifier.key);
+        cw.setLocation(folder);
 
-        // Add Widget to Display Layout
-        dlWidgets.addObj(objJson.openmct, cw);
-        // console.log(cw);
-        dlWidgets.addItem(
-            CHILDREN.indexOf(child),
-            cw.identifier.key,
-            config.dlWidgets.itemW,
-            config.dlWidgets.itemH
-        );
+        // Add Widget to Widgets Display Layout
+        dlWidgets.addToComposition(cw.identifier.key);
+        dlWidgets.addSubObjectView({
+            index: CHILDREN.indexOf(child),
+            ident: cw.identifier.key,
+            itemW: config.dlWidgets.itemW,
+            itemH: config.dlWidgets.itemH,
+            hasFrame: false
+        });
 
+        // Add text to Alphas Display Layout TODO: fix width/height properties
+        dlAlphas.addTextView({
+            index: CHILDREN.indexOf(child),
+            itemX: 0,
+            itemY: 0,
+            itemW: config.dlAlphas.labelW,
+            itemH: config.dlAlphas.itemH,
+            text: 'Text view text!'
+        });
+
+        // Add alpha to Alphas Display Layout TODO: fix width/height properties
+        dlAlphas.addToComposition(child.datasource, 'taxonomy');
+        dlAlphas.addTelemetryView({
+            index: CHILDREN.indexOf(child),
+            ident: child.datasource,
+            itemX: config.dlAlphas.labelW,
+            itemY: 0,
+            itemW: config.dlAlphas.itemW,
+            itemH: config.dlWidgets.itemH
+        });
     }
 
     // Output JSON
     const outputDisplay = document.getElementById('output');
     const outputStats = document.getElementById('output-stats');
     let outputJSON = JSON.stringify(objJson, null, 4);
-    outputStats.innerHTML = outputJSON.length + ' chars';
+    outputStats.innerHTML = CHILDREN.length + ' objects; ' + outputJSON.length + ' chars';
     outputDisplay.innerHTML = outputJSON;
 }
 
+function getFormNumericVal (id) {
+    const v = document.getElementById(id).value;
+    return (v) ? parseInt(v) : null;
+}
+
+function getConfigFromForm () {
+    // Get form values
+    const config = {};
+    config.rootName = document.getElementById('rootName').value;
+    config.dlWidgets = {};
+    config.dlWidgets.columns = getFormNumericVal('widgetLayoutItemColumns');
+    config.dlWidgets.rows = getFormNumericVal('widgetLayoutItemRows');
+    config.dlWidgets.itemW = getFormNumericVal('widgetLayoutItemWidth');
+    config.dlWidgets.itemH = getFormNumericVal('widgetLayoutItemHeight');
+
+    config.dlAlphas = {};
+    config.dlAlphas.columns = getFormNumericVal('alphaLayoutItemColumns');
+    config.dlAlphas.rows = getFormNumericVal('alphaLayoutItemRows');
+    config.dlAlphas.labelW = getFormNumericVal('alphaLayoutLabelWidth');
+    config.dlAlphas.itemW = getFormNumericVal('alphaLayoutItemWidth');
+    config.dlAlphas.itemH = getFormNumericVal('alphaLayoutItemHeight');
+
+    return config;
+}
+
 /********************************** DOMAIN OBJS */
-const Obj = function (name, type, composable) {
-    const datetime = 1661559456808;
+const Container = function () {
+    this.addJson = function (child) {
+        this[child.identifier.key] = child;
+    }
+}
+
+const Obj = function (name, type, hasComposition) {
     const id = createUUID();
+    const datetime = 1661559456808;
 
     this.name = name;
     this.type = type;
-    if (composable) {
-        this.composition = [];
-
-        this.addToComposition = function (child) {
-            this.composition.push(createIdentifier(child.identifier.key));
-        }
-
-        this.addJson = function (child) {
-            this[child.identifier.key] = child;
-        }
-
-        this.setLocation = function (locationUUID) {
-            this.location = locationUUID;
-        }
-
-        this.addObj = function (parent, child) {
-            // parent.addJson(child);
-            parent[child.identifier.key] = child; // Adds the child's JSON to the JSON of the designated container
-            this.addToComposition(child);
-            // child.setLocation(this.identifier.key);
-            child.location = this.identifier.key; // Need to change this so that
-        }
-    }
     this.modified = datetime;
     this.location = null;
     this.persisted = datetime;
     this.identifier = createIdentifier(id);
+
+    if (hasComposition) {
+        this.composition = [];
+
+        this.addToComposition = function (childIdentifierKey, namespace) {
+            this.composition.push(createIdentifier(childIdentifierKey, namespace));
+            // this.composition.push(createIdentifier(child.identifier.key));
+        }
+    }
+
+    this.setLocation = function (location) {
+        this.location = location.identifier.key;
+    }
 }
 
 function createIdentifier(id, namespace) {
@@ -188,35 +230,54 @@ function createStyleObj(cond) {
 // DISPLAY LAYOUT
 const DisplayLayout = function (name) {
     Obj.call(this, name, 'layout', true);
-    // this.prototype = Object.create(Obj.prototype);
 
     this.configuration = {};
     this.configuration.layoutGrid = [10, 10];
     this.configuration.objectStyles = {};
     this.configuration.items = [];
 
-    this.addItem = function (
-        index,
-        id,
-        itemW = config.dlWidgets.itemW,
-        itemH = config.dlWidgets.itemH,
-        hasFrame = false
-    )
-    {
-        let i = {
-            'width': parseInt(itemW),
-            'height': parseInt(itemH),
-            'hasFrame': hasFrame,
+    this.createBaseItem = function (args) {
+        // console.log(args);
+        return {
+            'id': createUUID(),
+            'x': 0,
+            'y': 0,
+            'width': parseInt(args.itemW),
+            'height': parseInt(args.itemH),
+            "stroke": '',
+            "fill": '',
+            "color": '',
             'fontSize': 'default',
-            'font': 'default',
-            'type': 'subobject-view'
+            'font': 'default'
         };
-        i.x = 0; // TEMP, replace with function
-        i.y = 0; // TEMP, replace with function
-        i.id = createUUID();
-        i.identifier = createIdentifier(id);
+    }
 
-        this.configuration.items.push(i);
+    this.addSubObjectView = function (args) {
+        const so = this.createBaseItem(args);
+        so.type = 'subobject-view';
+        so.identifier = createIdentifier(args.ident);
+        so.hasFrame = args.hasFrame;
+
+        this.configuration.items.push(so);
+    }
+
+    this.addTextView = function (args) {
+        const so = this.createBaseItem(args);
+        so.type = 'text-view';
+        so.text = args.text;
+
+        this.configuration.items.push(so);
+    }
+
+    this.addTelemetryView = function (args) {
+        const so = this.createBaseItem(args);
+        so.type = 'telemetry-view';
+        so.identifier = createIdentifier(args.ident, 'taxonomy');
+        so.displayMode = 'value';
+        so.value = 'value';
+        so.format = '%9.4f';
+
+        this.configuration.items.push(so);
     }
 }
 
