@@ -1,6 +1,8 @@
 const objJson = {};
 let config = {};
 let telemetryObjects = [];
+let itemPlaceIndex = 0; // Tracks where an item is within a row or column
+let itemShiftIndex = 0; // Tracks the row or column that an item is in
 
 function createOpenMCTJSON() {
     telemetryObjects = [
@@ -8,15 +10,15 @@ function createOpenMCTJSON() {
             name: 'RadIo enabledFlag',
             datasource: '~ViperRover~RadIo~enabledFlag',
             watchValue: 1
-        },{
+        }, {
             name: 'RadIo commandCount 0',
             datasource: '~ViperRover~RadIo~commandCount',
             watchValue: 0
-        },{
+        }, {
             name: 'RadIo commandCount 1',
             datasource: '~ViperRover~RadIo~commandCount',
             watchValue: 1
-        },{
+        }, {
             name: 'RadIo commandCount 2',
             datasource: '~ViperRover~RadIo~commandCount',
             watchValue: 2
@@ -45,13 +47,14 @@ function createOpenMCTJSON() {
     let dlAlphas = new DisplayLayout({
         'name': 'DL Alphas',
         'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
-        'itemMargin': config.itemMargin });
+        'itemMargin': config.itemMargin
+    });
     root.addJson(dlAlphas);
     folder.addToComposition(dlAlphas.identifier.key);
     dlAlphas.setLocation(folder);
 
-    let index = 0;
     for (const telemetryObject of telemetryObjects) {
+        // Build Condition Sets and Widgets, add to Widgets Layout
         const curIndex = telemetryObjects.indexOf(telemetryObject);
 
         // Create Condition Set
@@ -69,7 +72,8 @@ function createOpenMCTJSON() {
 
         // Add Widget to Widgets Display Layout
         dlWidgets.addToComposition(cw.identifier.key);
-        let itemProps = {
+
+        dlWidgets.addSubObjectView({
             index: curIndex,
             ident: cw.identifier.key,
             itemW: config.dlWidgets.itemW,
@@ -77,30 +81,29 @@ function createOpenMCTJSON() {
             hasFrame: false,
             layoutStrategy: config.dlWidgets.layoutStrategy,
             layoutStrategyNum: config.dlWidgets.layoutStrategyNum,
-        };
+        });
+    }
 
-        dlWidgets.addSubObjectView(itemProps);
+    // Reset indexers for Alphas
+    itemPlaceIndex = 0; // Tracks where an item is within a row or column
+    itemShiftIndex = 0; // Tracks the row or column that an item is in
 
-        // Add text to Alphas Display Layout TODO: fix width/height properties
-        dlAlphas.addTextView({
+    for (const telemetryObject of telemetryObjects) {
+        const curIndex = telemetryObjects.indexOf(telemetryObject);
+
+        // Build Alphas Layout
+        dlAlphas.addTextAndAlphaViewPair({
             index: curIndex,
-            itemX: 0,
-            itemY: 0,
-            itemW: config.dlAlphas.labelW,
-            itemH: config.dlAlphas.itemH,
-            text: telemetryObject.name
-        });
-
-        // Add alpha to Alphas Display Layout TODO: fix width/height properties
-        dlAlphas.addToComposition(telemetryObject.datasource, 'taxonomy');
-        dlAlphas.addTelemetryView({
-            index: telemetryObjects.indexOf(telemetryObject),
-            ident: telemetryObject.datasource,
-            itemX: config.dlAlphas.labelW,
-            itemY: 0,
+            labelW: config.dlAlphas.labelW,
             itemW: config.dlAlphas.itemW,
-            itemH: config.dlAlphas.itemH
+            itemH: config.dlAlphas.itemH,
+            ident: telemetryObject.datasource,
+            text: telemetryObject.name,
+            layoutStrategy: config.dlAlphas.layoutStrategy,
+            layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
         });
+        dlAlphas.addToComposition(telemetryObject.datasource, 'taxonomy');
+
     }
 
     // Output JSON
@@ -111,12 +114,12 @@ function createOpenMCTJSON() {
     outputDisplay.innerHTML = outputJSON;
 }
 
-function getFormNumericVal (id) {
+function getFormNumericVal(id) {
     const v = document.getElementById(id).value;
     return (v) ? parseInt(v) : null;
 }
 
-function getConfigFromForm () {
+function getConfigFromForm() {
     // Get form values
     const config = {};
 
@@ -269,11 +272,7 @@ const DisplayLayout = function (args) {
     this.configuration.objectStyles = {};
     this.configuration.items = [];
 
-    this.itemPlaceIndex = 0; // Tracks where an item is within a row or column
-    this.itemShiftIndex = 0; // Tracks the row or column that an item is in
-
     this.createBaseItem = function (args) {
-        // console.log(args);
         return {
             'id': createUUID(),
             'x': 0,
@@ -296,60 +295,74 @@ const DisplayLayout = function (args) {
 
         // Calc position. This is a widget, so X or Y is purely based on a mod against the layout strategy
         // itemPos should be [x, y]
-        const itemPos = this.calcItemPosition(args);
+        const itemPos = this.calcItemPosition(args.itemW, args.itemH, args.layoutStrategy, args.layoutStrategyNum);
         so.x = itemPos.x;
         so.y = itemPos.y;
-
-        console.log('addSubObjectView', so);
-
         this.configuration.items.push(so);
     }
 
-    this.addTextAndAlphaPair = function (args) {
-        // TODO: make this calc the position for a pair of text and alpha elements
+    this.addTextAndAlphaViewPair = function (args) {
+        let combinedW = args.labelW + config.itemMargin + args.itemW;
+
+        const itemPos = this.calcItemPosition(combinedW, args.itemH, args.layoutStrategy, args.layoutStrategyNum);
+
+        let textArgs = copyObj(args);
+        textArgs.x = itemPos.x;
+        textArgs.y = itemPos.y;
+        textArgs.itemW = args.labelW;
+        this.addTextView(textArgs);
+
+        let telemArgs = copyObj(args);
+        telemArgs.x = itemPos.x + args.labelW + config.itemMargin;
+        telemArgs.y = itemPos.y;
+        this.addTelemetryView(telemArgs);
     }
 
     this.addTextView = function (args) {
         const so = this.createBaseItem(args);
+        so.x = args.x;
+        so.y = args.y;
         so.type = 'text-view';
         so.text = args.text;
-
         this.configuration.items.push(so);
+        // console.log('txtv', so);
     }
 
     this.addTelemetryView = function (args) {
         const so = this.createBaseItem(args);
+        so.x = args.x;
+        so.y = args.y;
         so.type = 'telemetry-view';
         so.identifier = createIdentifier(args.ident, 'taxonomy');
         so.displayMode = 'value';
         so.value = 'value';
-        so.format = '%9.4f';
-
+        so.format = '%9.4f'; // This may not be right
         this.configuration.items.push(so);
+        // console.log('tlmv', so);
     }
 
-    this.calcItemPosition = function (args) {
+    this.calcItemPosition = function (itemW, itemH, layoutStrategy, layoutStrategyNum) {
         let itemPos = {};
-        const itemPlaceMargin = this.itemPlaceIndex * config.itemMargin;
-        const itemShiftMargin = this.itemShiftIndex * config.itemMargin;
+        const itemPlaceMargin = itemPlaceIndex * config.itemMargin;
+        const itemShiftMargin = itemShiftIndex * config.itemMargin;
 
-        if (args.layoutStrategy === 'columns') {
+        if (layoutStrategy === 'columns') {
             // Build down first until itemPlaceMargin is reached, then go across
-            itemPos.x = (this.itemPlaceIndex * args.itemW) + itemPlaceMargin;
-            itemPos.y = (this.itemShiftIndex * args.itemH) + itemShiftMargin;
-         } else {
+            itemPos.x = (itemPlaceIndex * itemW) + itemPlaceMargin;
+            itemPos.y = (itemShiftIndex * itemH) + itemShiftMargin;
+        } else {
             // Build across first until itemPlaceMargin is reached, then go down
-            itemPos.x = (this.itemShiftIndex * args.itemW) + itemShiftMargin;
-            itemPos.y = (this.itemPlaceIndex * args.itemH) + itemPlaceMargin;
+            itemPos.x = (itemShiftIndex * itemW) + itemShiftMargin;
+            itemPos.y = (itemPlaceIndex * itemH) + itemPlaceMargin;
         }
 
-        // console.log('calcd pos:', this.itemPlaceIndex, this.itemShiftIndex);
+        // console.log('calcd pos:', itemPlaceIndex, itemShiftIndex);
 
-        if ((this.itemPlaceIndex + 1) % args.layoutStrategyNum === 0) {
-            this.itemPlaceIndex = 0;
-            this.itemShiftIndex += 1;
+        if ((itemPlaceIndex + 1) % layoutStrategyNum === 0) {
+            itemPlaceIndex = 0;
+            itemShiftIndex += 1;
         } else {
-            this.itemPlaceIndex += 1;
+            itemPlaceIndex += 1;
         }
 
         return itemPos;
@@ -365,4 +378,8 @@ function createUUID() {
         return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
     return uuid;
+}
+
+function copyObj(obj) {
+    return JSON.parse(JSON.stringify(obj));
 }
