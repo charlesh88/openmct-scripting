@@ -93,7 +93,7 @@
 
         .output.lg {
             min-height: 100px;
-            max-height: 800px;
+            max-height: 300px;
             overflow: auto;
         }
     </style>
@@ -106,16 +106,21 @@
 </p>
 <div class="c-config-holder">
     <div class="c-config">
-        <h2>Main Config</h2>
+        <h2>Global</h2>
         <div class="c-config_label">Root Name</div>
         <div class="c-config_value"><input type="text" id="rootName" value="Scripted Open MCT" /></div>
         <div class="c-config_label">Telemetry Objects</div>
         <div class="c-config_value">
-            <textarea id="telemetryObjects">{name: 'RadIo enabledFlag', datasource: '~ViperRover~RadIo~enabledFlag', watchValue: 3}</textarea>
+            <input type="file" id="csvFile" accept=".csv" />
         </div>
+        <div class="c-config_label">Layout Grid [X,Y]</div>
+        <div class="c-config_value sm"><input id="layoutGrid" value="10,10" /></div>
+
+        <div class="c-config_label">Item Margin</div>
+        <div class="c-config_value sm"><input id="itemMargin" value="1" /></div>
     </div>
     <div class="c-config">
-        <h2>Widget Layout Config</h2>
+        <h2>Widget Layout</h2>
         <div class="c-config_label">Item Columns</div>
         <div class="c-config_value sm"><input type="number" id="widgetLayoutItemColumns" value="1" /></div>
 
@@ -129,7 +134,7 @@
         <div class="c-config_value sm"><input type="number" id="widgetLayoutItemHeight" value="4" /></div>
     </div>
     <div class="c-config">
-        <h2>Alpha Layout Config</h2>
+        <h2>Alpha Layout</h2>
         <div class="c-config_label">Item Columns</div>
         <div class="c-config_value sm"><input type="number" id="alphaLayoutItemColumns" value="1" /></div>
 

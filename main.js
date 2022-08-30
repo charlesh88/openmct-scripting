@@ -1,11 +1,15 @@
 const objJson = {};
 
 function createOpenMCTJSON() {
-    const CHILDREN = [
+    const telemetryObjects = [
         {
             name: 'RadIo enabledFlag',
             datasource: '~ViperRover~RadIo~enabledFlag',
             watchValue: 3
+        },{
+            name: 'RadIo commandCount',
+            datasource: '~ViperRover~RadIo~commandCount',
+            watchValue: 0
         }
     ];
 
@@ -18,28 +22,35 @@ function createOpenMCTJSON() {
     objJson.rootId = folder.identifier.key;
 
     // Create a Display Layout for widgets
-    let dlWidgets = new DisplayLayout('DL Widgets');
+    let dlWidgets = new DisplayLayout({
+        'name': 'DL Widgets',
+        'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
+        'itemMargin': config.itemMargin
+    });
     root.addJson(dlWidgets);
     folder.addToComposition(dlWidgets.identifier.key);
     dlWidgets.setLocation(folder);
 
     //Create a Display Layout for alphas
-    let dlAlphas = new DisplayLayout('DL Alphas');
+    let dlAlphas = new DisplayLayout({
+        'name': 'DL Alphas',
+        'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
+        'itemMargin': config.itemMargin });
     root.addJson(dlAlphas);
     folder.addToComposition(dlAlphas.identifier.key);
     dlAlphas.setLocation(folder);
 
     let index = 0;
-    for (const child of CHILDREN) {
+    for (const telemetryObject of telemetryObjects) {
         // Create Condition Set
-        let cs = new ConditionSet('CS ' + child.name, child.datasource);
-        cs.addConditions('Enabled', 'greaterThan', child.watchValue);
+        let cs = new ConditionSet('CS ' + telemetryObject.name, telemetryObject.datasource);
+        cs.addConditions('Enabled', 'greaterThan', telemetryObject.watchValue);
         root.addJson(cs);
         folder.addToComposition(cs.identifier.key);
         cs.setLocation(folder);
 
         // Create Condition Widget
-        let cw = new ConditionWidget('CW ' + child.name, cs);
+        let cw = new ConditionWidget('CW ' + telemetryObject.name, cs);
         root.addJson(cw);
         folder.addToComposition(cw.identifier.key);
         cw.setLocation(folder);
@@ -47,7 +58,7 @@ function createOpenMCTJSON() {
         // Add Widget to Widgets Display Layout
         dlWidgets.addToComposition(cw.identifier.key);
         dlWidgets.addSubObjectView({
-            index: CHILDREN.indexOf(child),
+            index: telemetryObjects.indexOf(telemetryObject),
             ident: cw.identifier.key,
             itemW: config.dlWidgets.itemW,
             itemH: config.dlWidgets.itemH,
@@ -56,23 +67,23 @@ function createOpenMCTJSON() {
 
         // Add text to Alphas Display Layout TODO: fix width/height properties
         dlAlphas.addTextView({
-            index: CHILDREN.indexOf(child),
+            index: telemetryObjects.indexOf(telemetryObject),
             itemX: 0,
             itemY: 0,
             itemW: config.dlAlphas.labelW,
             itemH: config.dlAlphas.itemH,
-            text: 'Text view text!'
+            text: telemetryObject.name
         });
 
         // Add alpha to Alphas Display Layout TODO: fix width/height properties
-        dlAlphas.addToComposition(child.datasource, 'taxonomy');
+        dlAlphas.addToComposition(telemetryObject.datasource, 'taxonomy');
         dlAlphas.addTelemetryView({
-            index: CHILDREN.indexOf(child),
-            ident: child.datasource,
+            index: telemetryObjects.indexOf(telemetryObject),
+            ident: telemetryObject.datasource,
             itemX: config.dlAlphas.labelW,
             itemY: 0,
             itemW: config.dlAlphas.itemW,
-            itemH: config.dlWidgets.itemH
+            itemH: config.dlAlphas.itemH
         });
     }
 
@@ -80,7 +91,7 @@ function createOpenMCTJSON() {
     const outputDisplay = document.getElementById('output');
     const outputStats = document.getElementById('output-stats');
     let outputJSON = JSON.stringify(objJson, null, 4);
-    outputStats.innerHTML = CHILDREN.length + ' objects; ' + outputJSON.length + ' chars';
+    outputStats.innerHTML = telemetryObjects.length + ' objects; ' + outputJSON.length + ' chars';
     outputDisplay.innerHTML = outputJSON;
 }
 
@@ -92,7 +103,11 @@ function getFormNumericVal (id) {
 function getConfigFromForm () {
     // Get form values
     const config = {};
+
     config.rootName = document.getElementById('rootName').value;
+    config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
+    config.itemMargin = getFormNumericVal('itemMargin');
+
     config.dlWidgets = {};
     config.dlWidgets.columns = getFormNumericVal('widgetLayoutItemColumns');
     config.dlWidgets.rows = getFormNumericVal('widgetLayoutItemRows');
@@ -228,11 +243,11 @@ function createStyleObj(cond) {
 }
 
 // DISPLAY LAYOUT
-const DisplayLayout = function (name) {
-    Obj.call(this, name, 'layout', true);
+const DisplayLayout = function (args) {
+    Obj.call(this, args.name, 'layout', true);
 
     this.configuration = {};
-    this.configuration.layoutGrid = [10, 10];
+    this.configuration.layoutGrid = args.layoutGrid;
     this.configuration.objectStyles = {};
     this.configuration.items = [];
 
