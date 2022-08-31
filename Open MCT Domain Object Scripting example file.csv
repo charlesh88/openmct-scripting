@@ -1,4 +1,4 @@
-name,datasource,conditionCriteria,watchValue,bgColor,fgColor
+name,datasource,conditionCriteria,watchValue,condMatchBgColor,condMatchFgColor
 WheelOdometry commandCount,~ViperRover~WheelOdometry~commandCount,greaterThan,0,#006600,#00ff00
 WheelOdometry deltaTime,~ViperRover~WheelOdometry~deltaTime,greaterThan,0,#006600,#00ff00
 WheelOdometry enabledFlag,~ViperRover~WheelOdometry~enabledFlag,greaterThan,1,#006600,#00ff00

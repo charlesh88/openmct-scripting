@@ -5,25 +5,17 @@ let itemPlaceIndex = 0; // Tracks where an item is within a row or column
 let itemShiftIndex = 0; // Tracks the row or column that an item is in
 
 function createOpenMCTJSON(telemetryObjects) {
-/*    telemetryObjects = [
-        {
-            name: 'RadIo enabledFlag',
-            datasource: '~ViperRover~RadIo~enabledFlag',
-            watchValue: 1
-        }, {
-            name: 'RadIo commandCount 0',
-            datasource: '~ViperRover~RadIo~commandCount',
-            watchValue: 0
-        }, {
-            name: 'RadIo commandCount 1',
-            datasource: '~ViperRover~RadIo~commandCount',
-            watchValue: 1
-        }, {
-            name: 'RadIo commandCount 2',
-            datasource: '~ViperRover~RadIo~commandCount',
-            watchValue: 2
-        }
-    ];*/
+    /*
+    telemetryObjects: array of objects like this:
+    [{
+        name, (Used for alpha labels and domain object naming)
+        datasource, (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
+        conditionCriteria, (greaterThan, equals, etc.)
+        watchValue,  (0, 1, etc.)
+        condMatchBgColor,  (hex color, #00cc00, etc.)
+        condMatchFgColor (hex color, #00cc00, etc.)
+    }]
+     */
 
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
@@ -71,7 +63,7 @@ function createOpenMCTJSON(telemetryObjects) {
 
         // Create Condition Set
         let cs = new ConditionSet('CS ' + telemetryObject.name, telemetryObject.datasource);
-        cs.addConditions('Enabled', 'greaterThan', telemetryObject.watchValue);
+        cs.addConditions('Enabled', telemetryObject.operation, telemetryObject.watchValue);
         root.addJson(cs);
         folderConditionSets.addToComposition(cs.identifier.key);
         cs.setLocation(folderConditionSets);
