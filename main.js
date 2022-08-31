@@ -4,8 +4,8 @@ let telemetryObjects = [];
 let itemPlaceIndex = 0; // Tracks where an item is within a row or column
 let itemShiftIndex = 0; // Tracks the row or column that an item is in
 
-function createOpenMCTJSON() {
-    telemetryObjects = [
+function createOpenMCTJSON(telemetryObjects) {
+/*    telemetryObjects = [
         {
             name: 'RadIo enabledFlag',
             datasource: '~ViperRover~RadIo~enabledFlag',
@@ -23,7 +23,7 @@ function createOpenMCTJSON() {
             datasource: '~ViperRover~RadIo~commandCount',
             watchValue: 2
         }
-    ];
+    ];*/
 
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
@@ -119,9 +119,8 @@ function createOpenMCTJSON() {
     }
 
     // Output JSON
-    const outputDisplay = document.getElementById('output');
-    const outputStats = document.getElementById('output-stats');
+    const outputDisplay = document.getElementById('outputGeneratedJson');
     let outputJSON = JSON.stringify(objJson, null, 4);
-    outputStats.innerHTML = telemetryObjects.length + ' objects; ' + outputJSON.length + ' chars';
+    outputStatsDisplay.innerHTML = telemetryObjects.length + ' objects; ' + outputJSON.length + ' chars';
     outputDisplay.innerHTML = outputJSON;
 }

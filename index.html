@@ -2,83 +2,93 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="apple-touch-icon" type="image/png" href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
+    <link rel="apple-touch-icon" type="image/png"
+          href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png"/>
     <title>Generate Condition Widgets and Sets in a Display Layout v2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
     <link rel="stylesheet" href="openmct-scripting.css">
 </head>
 
-<body translate="no" >
+<body translate="no">
 <h1>Generate Open MCT Import JSON</h1>
 <p>
-    Creates an outer folder using the root name that contains Display Layouts for widgets with Condition Sets and alphanumerics.
+    Creates an outer folder using the root name that contains Display Layouts for widgets with Condition Sets and
+    alphanumerics.
 </p>
-<form class="c-config-holder">
-    <div class="c-config">
-        <h2>Global</h2>
-        <div class="c-config_label">Root Name</div>
-        <div class="c-config_value"><input type="text" id="rootName" value="Scripted Open MCT" /></div>
-        <div class="c-config_label">Telemetry Objects</div>
-        <div class="c-config_value">
-            <input type="file" id="csvFile" accept=".csv" />
-        </div>
-        <div class="c-config_label">Layout Grid [X,Y]</div>
-        <div class="c-config_value sm"><input id="layoutGrid" value="5,5" /></div>
-
-        <div class="c-config_label">Item Margin</div>
-        <div class="c-config_value sm"><input id="itemMargin" value="1" /></div>
+<form id="inputForm">
+    <div class="page-section">
+        <h2>Input File</h2>
+        <input class="upload-file-btn" type="file" id="csvFile" accept=".csv"/>
+        <div id="input-stats" class="message"></div>
+        <div id="display-csv" class="output" contenteditable="true"></div>
     </div>
-    <div class="c-config">
-        <h2>Widget Layout</h2>
-        <div class="c-config_value">
-            <select id="widgetLayoutStrategy">
-                <option value="columns">Columns</option>
-                <option value="rows">Rows</option>
-            </select>
+    <div class="page-section c-config-holder">
+        <div class="c-config">
+            <h2>Global</h2>
+            <div class="c-config__label">Root Name</div>
+            <div class="c-config__value"><input type="text" id="rootName" value="Scripted Open MCT"/></div>
+            <div class="c-config__label">Layout Grid [X,Y]</div>
+            <div class="c-config__value sm"><input id="layoutGrid" value="5,5"/></div>
+
+            <div class="c-config__label">Item Margin</div>
+            <div class="c-config__value sm"><input id="itemMargin" value="1"/></div>
         </div>
-        <div class="c-config_value sm"><input type="number" id="widgetLayoutStrategyNum" value="3" /></div>
+        <div class="c-config">
+            <h2>Widget Layout</h2>
+            <div class="c-config__value">
+                <select id="widgetLayoutStrategy">
+                    <option value="columns">Columns</option>
+                    <option value="rows">Rows</option>
+                </select>
+            </div>
+            <div class="c-config__value sm"><input type="number" id="widgetLayoutStrategyNum" value="3"/></div>
 
-        <div class="c-config_label">Item Width</div>
-        <div class="c-config_value sm"><input type="number" id="widgetLayoutItemWidth" value="40" /></div>
+            <div class="c-config__label">Item Width</div>
+            <div class="c-config__value sm"><input type="number" id="widgetLayoutItemWidth" value="40"/></div>
 
-        <div class="c-config_label">Item Height</div>
-        <div class="c-config_value sm"><input type="number" id="widgetLayoutItemHeight" value="6" /></div>
+            <div class="c-config__label">Item Height</div>
+            <div class="c-config__value sm"><input type="number" id="widgetLayoutItemHeight" value="6"/></div>
+        </div>
+        <div class="c-config">
+            <h2>Alpha Layout</h2>
+            <div class="c-config__value">
+                <select id="alphaLayoutStrategy">
+                    <option value="columns">Columns</option>
+                    <option value="rows">Rows</option>
+                </select>
+            </div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="1"/></div>
+
+            <div class="c-config__label">Label Width</div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutLabelWidth" value="32"/></div>
+
+            <div class="c-config__label">Item Width</div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="20"/></div>
+
+            <div class="c-config__label">Item Height</div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="4"/></div>
+        </div>
     </div>
-    <div class="c-config">
-        <h2>Alpha Layout</h2>
-        <div class="c-config_value">
-            <select id="alphaLayoutStrategy">
-                <option value="columns">Columns</option>
-                <option value="rows">Rows</option>
-            </select>
-        </div>
-        <div class="c-config_value sm"><input type="number" id="alphaLayoutStrategyNum" value="1" /></div>
-
-        <div class="c-config_label">Label Width</div>
-        <div class="c-config_value sm"><input type="number" id="alphaLayoutLabelWidth" value="32" /></div>
-
-        <div class="c-config_label">Item Width</div>
-        <div class="c-config_value sm"><input type="number" id="alphaLayoutItemWidth" value="20" /></div>
-
-        <div class="c-config_label">Item Height</div>
-        <div class="c-config_value sm"><input type="number" id="alphaLayoutItemHeight" value="4" /></div>
+    <div class="page-section page-section--centered">
+        <input class="c-btn-run" type="submit" value="RUN"/>
     </div>
 </form>
-<div style="text-align: center;"><button class="c-btn-run" onclick="createOpenMCTJSON();">RUN</button></div>
+<div class="page-section">
+    <h2>Output</h2>
+    <div id="output-stats" class="message"></div>
+    <div id="outputGeneratedJson" class="output" contenteditable="true"></div>
+</div>
+<div class="page-section page-section--centered">
+    <button onclick="downloadJson();">Download</button>
+</div>
 
-<h2>Output</h2>
-<div id="output-stats"></div>
-<div id="output" class="output lg" contenteditable="true"></div>
-<div style="text-align: center;"><button onclick="downloadJson();">Download</button></div>
-
-<script src="Forms.js" ></script>
-<script src="ConditionSetsAndWidgets.js" ></script>
-<script src="DisplayLayouts.js" ></script>
-<script src="DomainObjects.js" ></script>
-<script src="main.js" ></script>
-<script src="files.js" ></script>
-<script src="utilities.js" ></script>
+<script src="InputOutput.js"></script>
+<script src="ConditionSetsAndWidgets.js"></script>
+<script src="DisplayLayouts.js"></script>
+<script src="DomainObjects.js"></script>
+<script src="main.js"></script>
+<script src="utilities.js"></script>
 </body>
 </html>
 
