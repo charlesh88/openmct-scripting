@@ -10,10 +10,12 @@ function createOpenMCTJSON(telemetryObjects) {
     [{
         name, (Used for alpha labels and domain object naming)
         datasource, (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
-        conditionCriteria, (greaterThan, equals, etc.)
+        condCriteria, (greaterThan, equals, etc.)
         watchValue,  (0, 1, etc.)
         condMatchBgColor,  (hex color, #00cc00, etc.)
         condMatchFgColor (hex color, #00cc00, etc.)
+        condMatchOutput (optional string for Condition Set matching condition output)
+        condDefOutput (optional string for Condition Set default condition output)
     }]
      */
 
@@ -60,16 +62,16 @@ function createOpenMCTJSON(telemetryObjects) {
     for (const telemetryObject of telemetryObjects) {
         // Build Condition Sets and Widgets, add to Widgets Layout
         const curIndex = telemetryObjects.indexOf(telemetryObject);
+        console.log(telemetryObject);
 
         // Create Condition Set
-        let cs = new ConditionSet('CS ' + telemetryObject.name, telemetryObject.datasource);
-        cs.addConditions('Enabled', telemetryObject.operation, telemetryObject.watchValue);
+        let cs = new ConditionSet(telemetryObject);
         root.addJson(cs);
         folderConditionSets.addToComposition(cs.identifier.key);
         cs.setLocation(folderConditionSets);
 
         // Create Condition Widget
-        let cw = new ConditionWidget('CW ' + telemetryObject.name, cs);
+        let cw = new ConditionWidget(cs, telemetryObject);
         root.addJson(cw);
         folderConditionWidgets.addToComposition(cw.identifier.key);
         cw.setLocation(folderConditionWidgets);

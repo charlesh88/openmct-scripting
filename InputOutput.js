@@ -27,6 +27,7 @@ myForm.addEventListener("submit", function (e) {
 
 function csvToArray(str, delimiter = ",") {
     // https://sebhastian.com/javascript-csv-to-array/
+    str = str.replaceAll('\r','');
     // slice from start of text to the first \n index
     // use split to create an array from string by delimiter
     const headers = str.slice(0, str.indexOf("\n")).split(delimiter);

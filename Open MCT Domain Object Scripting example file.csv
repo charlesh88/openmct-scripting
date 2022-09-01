@@ -1,17 +1,17 @@
-name,datasource,conditionCriteria,watchValue,condMatchBgColor,condMatchFgColor
-WheelOdometry commandCount,~ViperRover~WheelOdometry~commandCount,greaterThan,0,#006600,#00ff00
-WheelOdometry deltaTime,~ViperRover~WheelOdometry~deltaTime,greaterThan,0,#006600,#00ff00
-WheelOdometry enabledFlag,~ViperRover~WheelOdometry~enabledFlag,greaterThan,1,#006600,#00ff00
-WheelOdometry errorCount,~ViperRover~WheelOdometry~errorCount,greaterThan,0,#660000,#ff0000
-WheelOdometry houseKeepingCount,~ViperRover~WheelOdometry~houseKeepingCount,greaterThan,0,#006600,#00ff00
-WheelOdometry inhibitedFlag,~ViperRover~WheelOdometry~inhibitedFlag,equals,1,#660000,#ff0000
-WheelOdometry messageCount,~ViperRover~WheelOdometry~messageCount,greaterThan,0,#006600,#00ff00
-WheelOdometry padding1,~ViperRover~WheelOdometry~padding1,greaterThan,1,#006600,#00ff00
-WheelOdometry suspElev,~ViperRover~WheelOdometry~suspElev,greaterThan,0,#006600,#00ff00
-WheelOdometry suspPitch,~ViperRover~WheelOdometry~suspPitch,greaterThan,0,#006600,#00ff00
-WheelOdometry suspRoll,~ViperRover~WheelOdometry~suspRoll,greaterThan,0,#006600,#00ff00
-WheelOdometry timeConstraintErrorCount,~ViperRover~WheelOdometry~timeConstraintErrorCount,greaterThan,0,#660000,#ff0000
-WheelOdometry wheelIoInputErrorCount,~ViperRover~WheelOdometry~wheelIoInputErrorCount,greaterThan,1,#006600,#00ff00
-WheelOdometry wVelocity,~ViperRover~WheelOdometry~wVelocity,greaterThan,0,#006600,#00ff00
-WheelOdometry xVelocity,~ViperRover~WheelOdometry~xVelocity,greaterThan,0,#006600,#00ff00
-WheelOdometry yVelocity,~ViperRover~WheelOdometry~yVelocity,greaterThan,0,#006600,#00ff00
+name,datasource,conditionCriteria,watchValue,condMatchBgColor,condMatchFgColor,condMatchOutput,condDefOutput
+WheelOdometry commandCount,~ViperRover~WheelOdometry~commandCount,greaterThan,0,#006600,#00ff00,Commanding,Cmd Disabled
+WheelOdometry deltaTime,~ViperRover~WheelOdometry~deltaTime,equalTo,200,#006600,#00ff00,,
+WheelOdometry enabledFlag,~ViperRover~WheelOdometry~enabledFlag,equalTo,1,#006600,#00ff00,,
+WheelOdometry errorCount,~ViperRover~WheelOdometry~errorCount,greaterThan,0,#660000,#ff0000,,
+WheelOdometry houseKeepingCount,~ViperRover~WheelOdometry~houseKeepingCount,greaterThan,0,#006600,#00ff00,,
+WheelOdometry inhibitedFlag,~ViperRover~WheelOdometry~inhibitedFlag,equalTo,1,#660000,#ff0000,,
+WheelOdometry messageCount,~ViperRover~WheelOdometry~messageCount,greaterThan,0,#006600,#00ff00,Messaging,No Messages
+WheelOdometry padding1,~ViperRover~WheelOdometry~padding1,greaterThan,1,#006600,#00ff00,,
+WheelOdometry suspElev,~ViperRover~WheelOdometry~suspElev,greaterThan,0,#006600,#00ff00,,
+WheelOdometry suspPitch,~ViperRover~WheelOdometry~suspPitch,greaterThan,0,#006600,#00ff00,,
+WheelOdometry suspRoll,~ViperRover~WheelOdometry~suspRoll,greaterThan,0,#006600,#00ff00,,
+WheelOdometry timeConstraintErrorCount,~ViperRover~WheelOdometry~timeConstraintErrorCount,greaterThan,0,#660000,#ff0000,,
+WheelOdometry wheelIoInputErrorCount,~ViperRover~WheelOdometry~wheelIoInputErrorCount,greaterThan,1,#006600,#00ff00,,
+WheelOdometry wVelocity,~ViperRover~WheelOdometry~wVelocity,greaterThan,0,#006600,#00ff00,,
+WheelOdometry xVelocity,~ViperRover~WheelOdometry~xVelocity,greaterThan,0,#006600,#00ff00,,
+WheelOdometry yVelocity,~ViperRover~WheelOdometry~yVelocity,greaterThan,0,#006600,#00ff00,,

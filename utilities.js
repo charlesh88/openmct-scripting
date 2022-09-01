@@ -7,17 +7,19 @@ function createIdentifier(id, namespace) {
     return o;
 }
 
-function createStyleObj(cond) {
+function createStyleObj(cond, telemetryObject) {
     let s = {};
     s.style = {};
     s.style.border = '';
     s.style.isStyleInvisible = '';
-    s.style.backgroundColor = (cond && !cond.isDefault) ? '#38761d' : '';
-    s.style.color = (cond && !cond.isDefault) ? '#00ff00' : '';
+    s.style.backgroundColor = (cond && !cond.isDefault) ? telemetryObject.condMatchBgColor : '';
+    s.style.color = (cond && !cond.isDefault) ? telemetryObject.condMatchFgColor : '';
 
     if (cond) {
         s.conditionId = cond.id;
         s.style.output = '* ' + cond.id.substr(0, 4) + ' style output *';
+
+        // console.log(s);
     }
 
     return s;
