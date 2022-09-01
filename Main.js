@@ -59,10 +59,13 @@ function createOpenMCTJSON(telemetryObjects) {
     folder.addToComposition(dlAlphas.identifier.key);
     dlAlphas.setLocation(folder);
 
+    itemPlaceIndex = 0; // Tracks where an item is within a row or column
+    itemShiftIndex = 0; // Tracks the row or column that an item is in
+
     for (const telemetryObject of telemetryObjects) {
         // Build Condition Sets and Widgets, add to Widgets Layout
         const curIndex = telemetryObjects.indexOf(telemetryObject);
-        console.log(telemetryObject);
+        // console.log(telemetryObject);
 
         // Create Condition Set
         let cs = new ConditionSet(telemetryObject);

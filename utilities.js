@@ -18,8 +18,6 @@ function createStyleObj(cond, telemetryObject) {
     if (cond) {
         s.conditionId = cond.id;
         s.style.output = '* ' + cond.id.substr(0, 4) + ' style output *';
-
-        // console.log(s);
     }
 
     return s;
