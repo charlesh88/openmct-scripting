@@ -39,6 +39,12 @@ function createOpenMCTJSON(telemetryObjects) {
     folder.addToComposition(folderConditionWidgets.identifier.key);
     folderConditionWidgets.setLocation(folder);
 
+    //Create a LAD Table
+    let LadTable = new Obj('LAD Table', 'LadTable', true);
+    root.addJson(LadTable);
+    folder.addToComposition(LadTable.identifier.key);
+    LadTable.setLocation(folder);
+
     // Create a Display Layout for widgets and add it to the root folder
     let dlWidgets = new DisplayLayout({
         'name': 'DL Widgets',
@@ -66,6 +72,9 @@ function createOpenMCTJSON(telemetryObjects) {
         // Build Condition Sets and Widgets, add to Widgets Layout
         const curIndex = telemetryObjects.indexOf(telemetryObject);
         // console.log(telemetryObject);
+
+        // Add telem object to LadTable
+        LadTable.addToComposition(telemetryObject.datasource, 'taxonomy');
 
         // Create Condition Set
         let cs = new ConditionSet(telemetryObject);
