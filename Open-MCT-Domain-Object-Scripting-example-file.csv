@@ -1,17 +1,17 @@
 name,datasource,conditionCriteria,watchValue,condMatchBgColor,condMatchFgColor,condMatchOutput,condDefOutput
-WO commandCount,~ViperRover~WheelOdometry~commandCount,greaterThan,0,#006600,#00ff00,Commanding,Cmd Disabled
-WO deltaTime,~ViperRover~WheelOdometry~deltaTime,equalTo,200,#006600,#00ff00,,
-WO enabledFlag,~ViperRover~WheelOdometry~enabledFlag,equalTo,1,#006600,#00ff00,,
-WO errorCount,~ViperRover~WheelOdometry~errorCount,greaterThan,0,#660000,#ff0000,,
-WO houseKeepingCount,~ViperRover~WheelOdometry~houseKeepingCount,greaterThan,0,#006600,#00ff00,,
-WO inhibitedFlag,~ViperRover~WheelOdometry~inhibitedFlag,equalTo,1,#660000,#ff0000,,
-WO messageCount,~ViperRover~WheelOdometry~messageCount,greaterThan,0,#006600,#00ff00,Messaging,No Messages
-WO padding1,~ViperRover~WheelOdometry~padding1,greaterThan,1,#006600,#00ff00,,
-WO suspElev,~ViperRover~WheelOdometry~suspElev,greaterThan,0,#006600,#00ff00,,
-WO suspPitch,~ViperRover~WheelOdometry~suspPitch,greaterThan,0,#006600,#00ff00,,
-WO suspRoll,~ViperRover~WheelOdometry~suspRoll,greaterThan,0,#006600,#00ff00,,
-WO timeConstraintErrorCount,~ViperRover~WheelOdometry~timeConstraintErrorCount,greaterThan,0,#660000,#ff0000,,
-WO wheelIoInputErrorCount,~ViperRover~WheelOdometry~wheelIoInputErrorCount,greaterThan,1,#006600,#00ff00,,
-WO wVelocity,~ViperRover~WheelOdometry~wVelocity,greaterThan,0,#006600,#00ff00,,
-WO xVelocity,~ViperRover~WheelOdometry~xVelocity,greaterThan,0,#006600,#00ff00,,
-WO yVelocity,~ViperRover~WheelOdometry~yVelocity,greaterThan,0,#006600,#00ff00,,
+WO commandCnt,~Spacecraft~SpacecraftSubSystem~commCnt,greaterThan,0,#006600,#00ff00,Commanding,Cmd Disabled
+WO deltaTime,~Spacecraft~SpacecraftSubSystem~gammaTime,equalTo,200,#006600,#00ff00,,
+WO enabledFlag,~Spacecraft~SpacecraftSubSystem~enabledFlag,equalTo,1,#006600,#00ff00,,
+WO errorCnt,~Spacecraft~SpacecraftSubSystem~errorCnt,greaterThan,0,#660000,#ff0000,,
+WO houseKeepingCnt,~Spacecraft~SpacecraftSubSystem~houseKeepingCnt,greaterThan,0,#006600,#00ff00,,
+WO inhibitedFlag,~Spacecraft~SpacecraftSubSystem~inhibitedFlag,equalTo,1,#660000,#ff0000,,
+WO messageCnt,~Spacecraft~SpacecraftSubSystem~messageCnt,greaterThan,0,#006600,#00ff00,Messaging,No Messages
+WO padding1,~Spacecraft~SpacecraftSubSystem~pad9,greaterThan,1,#006600,#00ff00,,
+WO sysElev,~Spacecraft~SpacecraftSubSystem~sysElev,greaterThan,0,#006600,#00ff00,,
+WO sysPitch,~Spacecraft~SpacecraftSubSystem~sysPitch,greaterThan,0,#006600,#00ff00,,
+WO sysRoll,~Spacecraft~SpacecraftSubSystem~sysRoll,greaterThan,0,#006600,#00ff00,,
+WO timeLoremErrorCnt,~Spacecraft~SpacecraftSubSystem~timeLoremErrorCnt,greaterThan,0,#660000,#ff0000,,
+WO spinIoInputErrorCnt,~Spacecraft~SpacecraftSubSystem~spinIoInputErrorCnt,greaterThan,1,#006600,#00ff00,,
+WO wVlt,~Spacecraft~SpacecraftSubSystem~wVlt,greaterThan,0,#006600,#00ff00,,
+WO xVlt,~Spacecraft~SpacecraftSubSystem~xVlt,greaterThan,0,#006600,#00ff00,,
+WO yVlt,~Spacecraft~SpacecraftSubSystem~yVlt,greaterThan,0,#006600,#00ff00,,
