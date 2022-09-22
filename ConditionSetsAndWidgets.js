@@ -5,12 +5,9 @@ const ConditionSet = function (telemetryObject) {
     this.configuration.conditionTestData = [];
     this.configuration.conditionCollection = [];
     this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condMatchOutput.length > 0);
+
     this.composition.push(createIdentifier(telemetryObject.dataSource, 'taxonomy'));
 
-/*    this.addConditions = function (output, operation, inputValue, isDefault, condMatchBgColor, condMatchFgColor) {
-        this.configuration.conditionCollection.push(createCondition('Condition 1', output, operation, inputValue, false));
-        this.configuration.conditionCollection.push(createCondition('Default', 'Default', operation, null, true));
-    }*/
     this.addConditions = function (telemetryObject) {
         this.configuration.conditionCollection.push(createCondition(
             'Condition 1',
@@ -32,6 +29,7 @@ const ConditionSet = function (telemetryObject) {
 
 function createCondition(name, output, operation, input, isDefault) {
     let o = {};
+    console.log(name, operation, input);
     o.isDefault = isDefault;
     o.id = createUUID();
     let c = o.configuration = {};

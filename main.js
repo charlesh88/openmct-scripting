@@ -74,10 +74,11 @@ function createOpenMCTJSON(telemetryObjects) {
         // console.log(telemetryObject);
 
         // Add telem object to LadTable
-        LadTable.addToComposition(telemetryObject.datasource, 'taxonomy');
+        LadTable.addToComposition(telemetryObject.dataSource, 'taxonomy');
 
         // Create Condition Set
         let cs = new ConditionSet(telemetryObject);
+        cs.addConditions(telemetryObject);
         root.addJson(cs);
         folderConditionSets.addToComposition(cs.identifier.key);
         cs.setLocation(folderConditionSets);
@@ -115,12 +116,12 @@ function createOpenMCTJSON(telemetryObjects) {
             labelW: config.dlAlphas.labelW,
             itemW: config.dlAlphas.itemW,
             itemH: config.dlAlphas.itemH,
-            ident: telemetryObject.datasource,
+            ident: telemetryObject.dataSource,
             text: telemetryObject.name,
             layoutStrategy: config.dlAlphas.layoutStrategy,
             layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
         });
-        dlAlphas.addToComposition(telemetryObject.datasource, 'taxonomy');
+        dlAlphas.addToComposition(telemetryObject.dataSource, 'taxonomy');
 
     }
 

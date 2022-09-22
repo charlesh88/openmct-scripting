@@ -68,7 +68,7 @@ const DisplayLayout = function (args) {
         so.identifier = createIdentifier(args.ident, 'taxonomy');
         so.displayMode = 'value';
         so.value = 'value';
-        so.format = '%9.4f'; // This may not be right
+        // so.format = '%9.4f'; // Apply printf formatting; pass this in via the CSV instead.
 
         let styleObj = createStyleObj();
         styleObj.style.border = '1px solid #666666';
