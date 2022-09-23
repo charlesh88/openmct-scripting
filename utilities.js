@@ -7,13 +7,13 @@ function createIdentifier(id, namespace) {
     return o;
 }
 
-function createStyleObj(cond, telemetryObject) {
+function createStyleObj(cond) {
     let s = {};
     s.style = {};
     s.style.border = '';
     s.style.isStyleInvisible = '';
-    s.style.backgroundColor = (cond && !cond.isDefault) ? telemetryObject.cond1BgColor : '';
-    s.style.color = (cond && !cond.isDefault) ? telemetryObject.cond1FgColor : '';
+    s.style.backgroundColor = (cond && cond.bgColor.length > 0) ? cond.bgColor : '';
+    s.style.color = (cond && cond.fgColor.length > 0) ? cond.fgColor : '';
 
     if (cond) {
         s.conditionId = cond.id;

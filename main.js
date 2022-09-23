@@ -1,6 +1,5 @@
 const objJson = {};
 let config = {};
-let telemetryObjects = [];
 let itemPlaceIndex = 0; // Tracks where an item is within a row or column
 let itemShiftIndex = 0; // Tracks the row or column that an item is in
 
@@ -10,7 +9,7 @@ function createOpenMCTJSON(telemetryObjects) {
     [{
         name, (Used for alpha labels and domain object naming)
         dataSource (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
-        condWidgetUsesOutputAsLabel (either TRUE of FALSE if Condition Widgets should use the output string from Condition Sets) TODO: wire this up!
+        condWidgetUsesOutputAsLabel (use TRUE if Condition Widgets should use the output string from Condition Sets) TODO: wire this up!
         condDefOutput (optional string for Condition Set default condition output)
         cond1Criteria, (greaterThan, equals, etc.)
         cond1Value  (0, 1, etc.)
@@ -72,36 +71,40 @@ function createOpenMCTJSON(telemetryObjects) {
     for (const telemetryObject of telemetryObjects) {
         // Build Condition Sets and Widgets, add to Widgets Layout
         const curIndex = telemetryObjects.indexOf(telemetryObject);
-        // console.log(telemetryObject);
 
         // Add telem object to LadTable
         LadTable.addToComposition(telemetryObject.dataSource, 'taxonomy');
 
         // Create Condition Set
-        let cs = new ConditionSet(telemetryObject);
-        cs.addConditions(telemetryObject);
-        root.addJson(cs);
-        folderConditionSets.addToComposition(cs.identifier.key);
-        cs.setLocation(folderConditionSets);
+        if (telemetryObject.cond1.length > 0) {
+            let cs = new ConditionSet(telemetryObject);
 
-        // Create Condition Widget
-        let cw = new ConditionWidget(cs, telemetryObject);
-        root.addJson(cw);
-        folderConditionWidgets.addToComposition(cw.identifier.key);
-        cw.setLocation(folderConditionWidgets);
+            const conditionsArr = cs.conditionsToArr(telemetryObject);
+            cs.addConditions(telemetryObject, conditionsArr);
 
-        // Add Widget to Widgets Display Layout
-        dlWidgets.addToComposition(cw.identifier.key);
+            root.addJson(cs);
+            folderConditionSets.addToComposition(cs.identifier.key);
+            cs.setLocation(folderConditionSets);
 
-        dlWidgets.addSubObjectView({
-            index: curIndex,
-            ident: cw.identifier.key,
-            itemW: config.dlWidgets.itemW,
-            itemH: config.dlWidgets.itemH,
-            hasFrame: false,
-            layoutStrategy: config.dlWidgets.layoutStrategy,
-            layoutStrategyNum: config.dlWidgets.layoutStrategyNum,
-        });
+            // Create Condition Widget
+            let cw = new ConditionWidget(cs, telemetryObject, conditionsArr);
+            root.addJson(cw);
+            folderConditionWidgets.addToComposition(cw.identifier.key);
+            cw.setLocation(folderConditionWidgets);
+
+            // Add Widget to Widgets Display Layout
+            dlWidgets.addToComposition(cw.identifier.key);
+
+            dlWidgets.addSubObjectView({
+                index: curIndex,
+                ident: cw.identifier.key,
+                itemW: config.dlWidgets.itemW,
+                itemH: config.dlWidgets.itemH,
+                hasFrame: false,
+                layoutStrategy: config.dlWidgets.layoutStrategy,
+                layoutStrategyNum: config.dlWidgets.layoutStrategyNum,
+            });
+        }
     }
 
     // Reset indexers for Alphas
@@ -121,6 +124,7 @@ function createOpenMCTJSON(telemetryObjects) {
             text: telemetryObject.name,
             layoutStrategy: config.dlAlphas.layoutStrategy,
             layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
+            format: telemetryObject.format
         });
         dlAlphas.addToComposition(telemetryObject.dataSource, 'taxonomy');
 

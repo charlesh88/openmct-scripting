@@ -1,17 +1,4 @@
-name,dataSource,condWidgetUsesOutputAsLabel,condDefOutput,cond1Criteria,cond1Value,cond1Output,cond1BgColor,cond1FgColor
-WO commandCnt,~Spacecraft~SpacecraftSubSystem~commCnt,TRUE,Cmd Disabled,greaterThan,0,Cmd Enabled,#006600,#00ff00
-WO deltaTime,~Spacecraft~SpacecraftSubSystem~gammaTime,,,equalTo,200,,#006600,#00ff00
-WO enabledFlag,~Spacecraft~SpacecraftSubSystem~enabledFlag,,,equalTo,1,,#006600,#00ff00
-WO errorCnt,~Spacecraft~SpacecraftSubSystem~errorCnt,,,greaterThan,0,,#660000,#ff0000
-WO houseKeepingCnt,~Spacecraft~SpacecraftSubSystem~houseKeepingCnt,,,greaterThan,0,,#006600,#00ff00
-WO inhibitedFlag,~Spacecraft~SpacecraftSubSystem~inhibitedFlag,,,equalTo,1,,#660000,#ff0000
-WO messageCnt,~Spacecraft~SpacecraftSubSystem~messageCnt,TRUE,No Messages,greaterThan,0,Messaging,#006600,#00ff00
-WO padding1,~Spacecraft~SpacecraftSubSystem~pad9,,,greaterThan,1,,#006600,#00ff00
-WO sysElev,~Spacecraft~SpacecraftSubSystem~sysElev,,,greaterThan,0,,#006600,#00ff00
-WO sysPitch,~Spacecraft~SpacecraftSubSystem~sysPitch,,,greaterThan,0,,#006600,#00ff00
-WO sysRoll,~Spacecraft~SpacecraftSubSystem~sysRoll,,,greaterThan,0,,#006600,#00ff00
-WO timeLoremErrorCnt,~Spacecraft~SpacecraftSubSystem~timeLoremErrorCnt,,,greaterThan,0,,#660000,#ff0000
-WO spinIoInputErrorCnt,~Spacecraft~SpacecraftSubSystem~spinIoInputErrorCnt,,,greaterThan,1,,#006600,#00ff00
-WO wVlt,~Spacecraft~SpacecraftSubSystem~wVlt,,,greaterThan,0,,#006600,#00ff00
-WO xVlt,~Spacecraft~SpacecraftSubSystem~xVlt,,,greaterThan,0,,#006600,#00ff00
-WO yVlt,~Spacecraft~SpacecraftSubSystem~yVlt,,,greaterThan,0,,#006600,#00ff00
+name,dataSource,format,condWidgetUsesOutputAsLabel,condDefault,cond1,cond2,cond3,cond4
+SpacecraftSubSystem busCurr,~Spacecraft~SpacecraftSubSystem~busCurr,%9.4f,,"Default,#666666,#ffffff","Is Equal to Zero,#009900,#ffffff,equalTo,0",,,
+SpacecraftSubSystem commandCount,~Spacecraft~SpacecraftSubSystem~commandCount,,TRUE,"Default,#123456,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#ff9966,#ffffff,greaterThan,0","Is Over 100,#ff9900,#ffffff,greaterThan,100","Is Over 1000,#ff0000,#ffffff,greaterThan,1000"
+SpacecraftSubSystem crc,~Spacecraft~SpacecraftSubSystem~crc,%11.2f,,,,,,

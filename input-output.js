@@ -34,7 +34,14 @@ function csvToArray(str, delimiter = ",") {
 
     // slice from \n index + 1 to the end of the text
     // use split to create an array of each csv value row
-    const rows = str.slice(str.indexOf("\n") + 1).split("\n");
+    let rowStr = str.slice(str.indexOf("\n") + 1);
+
+    rowStr = rowStr.replace(/"[^"]+"/g, function (v) {
+        // Encode all commas that are within double quote chunks with |
+        return v.replace(/,/g, '|');
+    });
+
+    const rows = rowStr.split("\n");
 
     // Map the rows
     // split values from each row into an array
@@ -44,7 +51,9 @@ function csvToArray(str, delimiter = ",") {
     const arr = rows.map(function (row) {
         const values = row.split(delimiter);
         const el = headers.reduce(function (object, header, index) {
-            object[header] = values[index];
+            object[header] = values[index]
+                .replaceAll('\"','')
+                .replaceAll('|',',');
             return object;
         }, {});
         return el;
@@ -74,8 +83,6 @@ function getConfigFromForm() {
     config.dlAlphas.labelW = getFormNumericVal('alphaLayoutLabelWidth');
     config.dlAlphas.itemW = getFormNumericVal('alphaLayoutItemWidth');
     config.dlAlphas.itemH = getFormNumericVal('alphaLayoutItemHeight');
-
-    // console.log(config);
 
     return config;
 }
