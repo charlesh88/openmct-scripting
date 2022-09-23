@@ -9,13 +9,14 @@ function createOpenMCTJSON(telemetryObjects) {
     telemetryObjects: array of objects like this:
     [{
         name, (Used for alpha labels and domain object naming)
-        dataSource, (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
-        condCriteria, (greaterThan, equals, etc.)
-        watchValue,  (0, 1, etc.)
-        condMatchBgColor,  (hex color, #00cc00, etc.)
-        condMatchFgColor (hex color, #00cc00, etc.)
-        condMatchOutput (optional string for Condition Set matching condition output)
+        dataSource (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
+        condWidgetUsesOutputAsLabel (either TRUE of FALSE if Condition Widgets should use the output string from Condition Sets) TODO: wire this up!
         condDefOutput (optional string for Condition Set default condition output)
+        cond1Criteria, (greaterThan, equals, etc.)
+        cond1Value  (0, 1, etc.)
+        cond1Output (optional string for Condition Set matching condition output)
+        cond1BgColor  (hex color, #00cc00, etc.)
+        cond1FgColor (hex color, #00cc00, etc.)
     }]
      */
 

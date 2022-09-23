@@ -10,9 +10,9 @@ const ConditionSet = function (telemetryObject) {
     this.addConditions = function (telemetryObject) {
         this.configuration.conditionCollection.push(createCondition(
             'Condition 1',
-            telemetryObject.condMatchOutput,
-            telemetryObject.condCriteria,
-            telemetryObject.watchValue,
+            telemetryObject.cond1Output,
+            telemetryObject.cond1Criteria,
+            telemetryObject.cond1Value,
             false
         ));
         // Default condition
@@ -62,7 +62,7 @@ const ConditionWidget = function (conditionSet, telemetryObject) {
     os.conditionSetIdentifier = createIdentifier(conditionSet.identifier.key);
     this.label = telemetryObject.name;
     this.conditionalLabel = '';
-    this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condMatchOutput.length > 0);
+    this.configuration.useConditionSetOutputAsLabel = (telemetryObject.cond1Output.length > 0);
 
     for (const cond of conditionSet.configuration.conditionCollection) {
         if (cond.isDefault) {

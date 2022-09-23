@@ -12,8 +12,8 @@ function createStyleObj(cond, telemetryObject) {
     s.style = {};
     s.style.border = '';
     s.style.isStyleInvisible = '';
-    s.style.backgroundColor = (cond && !cond.isDefault) ? telemetryObject.condMatchBgColor : '';
-    s.style.color = (cond && !cond.isDefault) ? telemetryObject.condMatchFgColor : '';
+    s.style.backgroundColor = (cond && !cond.isDefault) ? telemetryObject.cond1BgColor : '';
+    s.style.color = (cond && !cond.isDefault) ? telemetryObject.cond1FgColor : '';
 
     if (cond) {
         s.conditionId = cond.id;
