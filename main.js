@@ -9,7 +9,7 @@ function createOpenMCTJSON(telemetryObjects) {
     telemetryObjects: array of objects like this:
     [{
         name, (Used for alpha labels and domain object naming)
-        datasource, (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
+        dataSource, (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
         condCriteria, (greaterThan, equals, etc.)
         watchValue,  (0, 1, etc.)
         condMatchBgColor,  (hex color, #00cc00, etc.)

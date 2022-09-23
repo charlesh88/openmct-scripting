@@ -4,7 +4,6 @@ const ConditionSet = function (telemetryObject) {
     this.configuration = {};
     this.configuration.conditionTestData = [];
     this.configuration.conditionCollection = [];
-    this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condMatchOutput.length > 0);
 
     this.composition.push(createIdentifier(telemetryObject.dataSource, 'taxonomy'));
 
@@ -63,6 +62,7 @@ const ConditionWidget = function (conditionSet, telemetryObject) {
     os.conditionSetIdentifier = createIdentifier(conditionSet.identifier.key);
     this.label = telemetryObject.name;
     this.conditionalLabel = '';
+    this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condMatchOutput.length > 0);
 
     for (const cond of conditionSet.configuration.conditionCollection) {
         if (cond.isDefault) {
