@@ -48,6 +48,7 @@ const DisplayLayout = function (args) {
         let telemArgs = copyObj(args);
         telemArgs.x = itemPos.x + args.labelW + config.itemMargin;
         telemArgs.y = itemPos.y;
+        telemArgs.format = args.format;
         this.addTelemetryView(telemArgs);
     }
 
@@ -68,7 +69,8 @@ const DisplayLayout = function (args) {
         so.identifier = createIdentifier(args.ident, 'taxonomy');
         so.displayMode = 'value';
         so.value = 'value';
-        so.format = '%9.4f'; // This may not be right
+        so.format = args.format;
+        // so.format = '%9.4f'; // Apply printf formatting; pass this in via the CSV instead.
 
         let styleObj = createStyleObj();
         styleObj.style.border = '1px solid #666666';

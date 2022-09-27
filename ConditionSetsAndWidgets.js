@@ -4,30 +4,60 @@ const ConditionSet = function (telemetryObject) {
     this.configuration = {};
     this.configuration.conditionTestData = [];
     this.configuration.conditionCollection = [];
-    this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condMatchOutput.length > 0);
+
     this.composition.push(createIdentifier(telemetryObject.dataSource, 'taxonomy'));
 
-/*    this.addConditions = function (output, operation, inputValue, isDefault, condMatchBgColor, condMatchFgColor) {
-        this.configuration.conditionCollection.push(createCondition('Condition 1', output, operation, inputValue, false));
-        this.configuration.conditionCollection.push(createCondition('Default', 'Default', operation, null, true));
-    }*/
-    this.addConditions = function (telemetryObject) {
-        this.configuration.conditionCollection.push(createCondition(
-            'Condition 1',
-            telemetryObject.condMatchOutput,
-            telemetryObject.condCriteria,
-            telemetryObject.watchValue,
-            false
-        ));
+    this.addConditions = function (telemetryObject, conditionsArr) {
+        for (let i = 1; i < conditionsArr.length; i++) {
+            this.configuration.conditionCollection.push(createConditionFromArr(
+                'Condition ' + i.toString(),
+                false,
+                conditionsArr[i]
+            ));
+        }
+
         // Default condition
-        this.configuration.conditionCollection.push(createCondition(
+        this.configuration.conditionCollection.push(createConditionFromArr(
             'Default',
-            telemetryObject.condDefOutput,
-            null,
-            null,
-            true
+            true,
+            conditionsArr[0]
         ));
     }
+
+    this.conditionsToArr = function (telemetryObject) {
+        let cArr = [];
+        // Unpack default condition
+        // Output string, bg, fg
+        cArr.push(telemetryObject.condDefault.split(","));
+
+        // Unpack conditions 1 - 4
+        // Output string, bg, fg, criteria, value
+        for (let i = 4; i > 0; i--) {
+            const cCond = telemetryObject['cond' + i.toString()];
+            if (cCond.length > 0) {
+                cArr.push(cCond.split(","));
+            }
+        }
+
+        return cArr;
+    }
+}
+
+function createConditionFromArr(name, isDefault, arr) {
+    let o = {};
+    o.isDefault = isDefault;
+    o.id = createUUID();
+    o.bgColor = arr[1];
+    o.fgColor = arr[2];
+
+    let c = o.configuration = {};
+    c.name = name;
+    c.output = arr[0];
+    c.trigger = 'any';
+    c.criteria = (!isDefault) ? [createConditionCriteria(arr[3], arr[4])] : [];
+    c.summary = c.name + ': ' + c.criteria + '; output ' + c.output;
+
+    return o;
 }
 
 function createCondition(name, output, operation, input, isDefault) {
@@ -65,6 +95,7 @@ const ConditionWidget = function (conditionSet, telemetryObject) {
     os.conditionSetIdentifier = createIdentifier(conditionSet.identifier.key);
     this.label = telemetryObject.name;
     this.conditionalLabel = '';
+    this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condWidgetUsesOutputAsLabel === 'TRUE');
 
     for (const cond of conditionSet.configuration.conditionCollection) {
         if (cond.isDefault) {
