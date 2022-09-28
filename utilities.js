@@ -7,17 +7,23 @@ function createIdentifier(id, namespace) {
     return o;
 }
 
-function createStyleObj(cond) {
+function createStyleObj(args) {
+    /*
+    args = {
+        border: 1px solid #666666,
+        bgColor: #ff0000,
+        fgColor: #ffffff,
+        id (sets a related condition id)
+    }
+     */
     let s = {};
     s.style = {};
-    s.style.border = '';
+    s.style.border = (args && args.border) ? args.border : '';
     s.style.isStyleInvisible = '';
-    s.style.backgroundColor = (cond && cond.bgColor.length > 0) ? cond.bgColor : '';
-    s.style.color = (cond && cond.fgColor.length > 0) ? cond.fgColor : '';
-
-    if (cond) {
-        s.conditionId = cond.id;
-        s.style.output = '* ' + cond.id.substr(0, 4) + ' style output *';
+    s.style.backgroundColor = (args && args.bgColor) ? args.bgColor : '';
+    s.style.color = (args && args.fgColor) ? args.fgColor : '';
+    if (args && args.id) {
+        s.conditionId = args.id;
     }
 
     return s;
