@@ -59,7 +59,8 @@ const DisplayLayout = function (args) {
         let telemArgs = copyObj(args);
         telemArgs.x = itemPos.x + args.labelW + config.itemMargin;
         telemArgs.y = itemPos.y;
-        telemArgs.format = args.format;
+        telemArgs.alphaFormat = args.alphaFormat;
+        telemArgs.alphaShowsUnit = args.alphaShowsUnit;
         response.id = this.addTelemetryView(telemArgs).id;
 
         return response;
@@ -82,7 +83,8 @@ const DisplayLayout = function (args) {
         subObj.identifier = createIdentifier(args.ident, 'taxonomy');
         subObj.displayMode = 'value';
         subObj.value = 'value';
-        subObj.format = args.format;
+        subObj.format = args.alphaFormat;
+        subObj.showUnits = (args.alphaShowsUnit === 'TRUE');
 
         this.configuration.objectStyles[subObj.id] = {};
         this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj({border: ALPHA_BORDER});

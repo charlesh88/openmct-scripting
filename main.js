@@ -10,9 +10,10 @@ function createOpenMCTJSON(telemetryObjects) {
     [{
         name, (Used for alpha labels and domain object naming)
         dataSource (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
-        condWidgetUsesOutputAsLabel (TRUE if Condition Widgets should use the output string from Condition Sets)
+        alphaFormat (printf string, like %9.4f)
         alphaUsesCond (TRUE if an alpha should use defined conditions; requires condDef and cond1 at least)
         alphaShowsUnit (TRUE if an alpha should should display its units)
+        condWidgetUsesOutputAsLabel (TRUE if Condition Widgets should use the output string from Condition Sets)
         condDefault (output string, bgColor, fgColor)
         cond1, cond2, etc. (output string, bgColor, fgColor, criteria, value)
     }]
@@ -82,7 +83,8 @@ function createOpenMCTJSON(telemetryObjects) {
             layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
             placeIndex: alphasItemPlacementTracker.placeIndex,
             shiftIndex: alphasItemPlacementTracker.shiftIndex,
-            format: telemetryObject.format
+            alphaFormat: telemetryObject.alphaFormat,
+            alphaShowsUnit: telemetryObject.alphaShowsUnit
         });
 
         alphasItemPlacementTracker.placeIndex = alpha.placeIndex;
