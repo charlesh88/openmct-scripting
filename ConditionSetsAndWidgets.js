@@ -102,6 +102,6 @@ const ConditionWidget = function (conditionSet, telemetryObject) {
             os.selectedConditionId = cond.id;
             os.defaultConditionId = cond.id;
         }
-        os.styles.push(createStyleObj(cond, telemetryObject));
+        os.styles.push(createStyleObj(cond));
     }
 }

@@ -1,7 +1,8 @@
 const objJson = {};
 let config = {};
-let itemPlaceIndex = 0; // Tracks where an item is within a row or column
-let itemShiftIndex = 0; // Tracks the row or column that an item is in
+let alphasItemPlacementTracker = {};
+let widgetsItemPlacementTracker = {};
+const ALPHA_BORDER = '1px solid #555555';
 
 function createOpenMCTJSON(telemetryObjects) {
     /*
@@ -9,13 +10,12 @@ function createOpenMCTJSON(telemetryObjects) {
     [{
         name, (Used for alpha labels and domain object naming)
         dataSource (Fully qualified path to telemetry data using ~ as separators, like ~Lorem~Ipsum~FooCount)
-        condWidgetUsesOutputAsLabel (use TRUE if Condition Widgets should use the output string from Condition Sets) TODO: wire this up!
-        condDefOutput (optional string for Condition Set default condition output)
-        cond1Criteria, (greaterThan, equals, etc.)
-        cond1Value  (0, 1, etc.)
-        cond1Output (optional string for Condition Set matching condition output)
-        cond1BgColor  (hex color, #00cc00, etc.)
-        cond1FgColor (hex color, #00cc00, etc.)
+        alphaFormat (printf string, like %9.4f)
+        alphaUsesCond (TRUE if an alpha should use defined conditions; requires condDef and cond1 at least)
+        alphaShowsUnit (TRUE if an alpha should should display its units)
+        condWidgetUsesOutputAsLabel (TRUE if Condition Widgets should use the output string from Condition Sets)
+        condDefault (output string, bgColor, fgColor)
+        cond1, cond2, etc. (output string, bgColor, fgColor, criteria, value)
     }]
      */
 
@@ -65,22 +65,52 @@ function createOpenMCTJSON(telemetryObjects) {
     folder.addToComposition(dlAlphas.identifier.key);
     dlAlphas.setLocation(folder);
 
-    itemPlaceIndex = 0; // Tracks where an item is within a row or column
-    itemShiftIndex = 0; // Tracks the row or column that an item is in
+    initAlphasItemPlacementTracker();
+    initWidgetsItemPlacementTracker();
 
     for (const telemetryObject of telemetryObjects) {
-        // Build Condition Sets and Widgets, add to Widgets Layout
         const curIndex = telemetryObjects.indexOf(telemetryObject);
-
-        // Add telem object to LadTable
         LadTable.addToComposition(telemetryObject.dataSource, 'taxonomy');
 
-        // Create Condition Set
+        const alpha = dlAlphas.addTextAndAlphaViewPair({
+            index: curIndex,
+            labelW: config.dlAlphas.labelW,
+            itemW: config.dlAlphas.itemW,
+            itemH: config.dlAlphas.itemH,
+            ident: telemetryObject.dataSource,
+            text: telemetryObject.name,
+            layoutStrategy: config.dlAlphas.layoutStrategy,
+            layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
+            placeIndex: alphasItemPlacementTracker.placeIndex,
+            shiftIndex: alphasItemPlacementTracker.shiftIndex,
+            alphaFormat: telemetryObject.alphaFormat,
+            alphaShowsUnit: telemetryObject.alphaShowsUnit
+        });
+
+        alphasItemPlacementTracker.placeIndex = alpha.placeIndex;
+        alphasItemPlacementTracker.shiftIndex = alpha.shiftIndex;
+        dlAlphas.addToComposition(telemetryObject.dataSource, 'taxonomy');
+
+        // Add conditionals
         if (telemetryObject.cond1.length > 0) {
             let cs = new ConditionSet(telemetryObject);
 
             const conditionsArr = cs.conditionsToArr(telemetryObject);
             cs.addConditions(telemetryObject, conditionsArr);
+
+            // Add a "styles" collection for Conditional styling in dlAlpha.objectStyles[alpha.id]
+            if (telemetryObject.alphaUsesCond === 'TRUE') {
+                for (const cond of cs.configuration.conditionCollection) {
+                    const args = {
+                        border: ALPHA_BORDER,
+                        bgColor: cond.bgColor,
+                        fgColor: cond.fgColor,
+                        id: cond.id
+                    }
+                    dlAlphas.configuration.objectStyles[alpha.id].styles.push(createStyleObj(args));
+                    dlAlphas.configuration.objectStyles[alpha.id].conditionSetIdentifier = createIdentifier(cs.identifier.key);
+                }
+            }
 
             root.addJson(cs);
             folderConditionSets.addToComposition(cs.identifier.key);
@@ -95,7 +125,7 @@ function createOpenMCTJSON(telemetryObjects) {
             // Add Widget to Widgets Display Layout
             dlWidgets.addToComposition(cw.identifier.key);
 
-            dlWidgets.addSubObjectView({
+            const widget = dlWidgets.addSubObjectView({
                 index: curIndex,
                 ident: cw.identifier.key,
                 itemW: config.dlWidgets.itemW,
@@ -103,36 +133,29 @@ function createOpenMCTJSON(telemetryObjects) {
                 hasFrame: false,
                 layoutStrategy: config.dlWidgets.layoutStrategy,
                 layoutStrategyNum: config.dlWidgets.layoutStrategyNum,
+                placeIndex: widgetsItemPlacementTracker.placeIndex,
+                shiftIndex: widgetsItemPlacementTracker.shiftIndex
             });
+
+            widgetsItemPlacementTracker.placeIndex = widget.placeIndex;
+            widgetsItemPlacementTracker.shiftIndex = widget.shiftIndex;
         }
-    }
-
-    // Reset indexers for Alphas
-    itemPlaceIndex = 0; // Tracks where an item is within a row or column
-    itemShiftIndex = 0; // Tracks the row or column that an item is in
-
-    for (const telemetryObject of telemetryObjects) {
-        const curIndex = telemetryObjects.indexOf(telemetryObject);
-
-        // Build Alphas Layout
-        dlAlphas.addTextAndAlphaViewPair({
-            index: curIndex,
-            labelW: config.dlAlphas.labelW,
-            itemW: config.dlAlphas.itemW,
-            itemH: config.dlAlphas.itemH,
-            ident: telemetryObject.dataSource,
-            text: telemetryObject.name,
-            layoutStrategy: config.dlAlphas.layoutStrategy,
-            layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-            format: telemetryObject.format
-        });
-        dlAlphas.addToComposition(telemetryObject.dataSource, 'taxonomy');
-
     }
 
     // Output JSON
     const outputDisplay = document.getElementById('outputGeneratedJson');
     let outputJSON = JSON.stringify(objJson, null, 4);
-    outputStatsDisplay.innerHTML = telemetryObjects.length + ' objects; ' + outputJSON.length + ' chars';
+    const updateTime = new Date();
+    outputStatsDisplay.innerHTML = 'Updated ' + updateTime.getHours() + ':' + updateTime.getMinutes() + '; ' + telemetryObjects.length + ' objects; ' + outputJSON.length + ' chars';
     outputDisplay.innerHTML = outputJSON;
+}
+
+function initAlphasItemPlacementTracker() {
+    alphasItemPlacementTracker.placeIndex = 0;
+    alphasItemPlacementTracker.shiftIndex = 0;
+}
+
+function initWidgetsItemPlacementTracker() {
+    widgetsItemPlacementTracker.placeIndex = 0;
+    widgetsItemPlacementTracker.shiftIndex = 0;
 }

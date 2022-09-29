@@ -23,21 +23,32 @@ const DisplayLayout = function (args) {
     }
 
     this.addSubObjectView = function (args) {
-        const so = this.createBaseItem(args);
-        so.type = 'subobject-view';
-        so.identifier = createIdentifier(args.ident);
-        so.hasFrame = args.hasFrame;
+        const response = {};
+        const subObj = this.createBaseItem(args);
+        subObj.type = 'subobject-view';
+        subObj.identifier = createIdentifier(args.ident);
+        subObj.hasFrame = args.hasFrame;
 
-        const itemPos = this.calcItemPosition(args.itemW, args.itemH, args.layoutStrategy, args.layoutStrategyNum);
-        so.x = itemPos.x;
-        so.y = itemPos.y;
-        this.configuration.items.push(so);
+        const posObj = this.calcItemPosition(args);
+        const itemPos = posObj.itemPos;
+        response.placeIndex = posObj.args.placeIndex;
+        response.shiftIndex = posObj.args.shiftIndex;
+
+        subObj.x = itemPos.x;
+        subObj.y = itemPos.y;
+        this.configuration.items.push(subObj);
+
+        return response;
     }
 
     this.addTextAndAlphaViewPair = function (args) {
-        let combinedW = args.labelW + config.itemMargin + args.itemW;
-
-        const itemPos = this.calcItemPosition(combinedW, args.itemH, args.layoutStrategy, args.layoutStrategyNum);
+        const response = {};
+        const combinedArgs = copyObj(args);
+        combinedArgs.itemW = args.labelW + config.itemMargin + args.itemW;
+        const posObj = this.calcItemPosition(combinedArgs);
+        const itemPos = posObj.itemPos;
+        response.placeIndex = posObj.args.placeIndex;
+        response.shiftIndex = posObj.args.shiftIndex;
 
         let textArgs = copyObj(args);
         textArgs.x = itemPos.x;
@@ -48,60 +59,63 @@ const DisplayLayout = function (args) {
         let telemArgs = copyObj(args);
         telemArgs.x = itemPos.x + args.labelW + config.itemMargin;
         telemArgs.y = itemPos.y;
-        telemArgs.format = args.format;
-        this.addTelemetryView(telemArgs);
+        telemArgs.alphaFormat = args.alphaFormat;
+        telemArgs.alphaShowsUnit = args.alphaShowsUnit;
+        response.id = this.addTelemetryView(telemArgs).id;
+
+        return response;
     }
 
     this.addTextView = function (args) {
-        const so = this.createBaseItem(args);
-        so.x = args.x;
-        so.y = args.y;
-        so.type = 'text-view';
-        so.text = args.text;
-        this.configuration.items.push(so);
+        const subObj = this.createBaseItem(args);
+        subObj.x = args.x;
+        subObj.y = args.y;
+        subObj.type = 'text-view';
+        subObj.text = args.text;
+        this.configuration.items.push(subObj);
     }
 
     this.addTelemetryView = function (args) {
-        const so = this.createBaseItem(args);
-        so.x = args.x;
-        so.y = args.y;
-        so.type = 'telemetry-view';
-        so.identifier = createIdentifier(args.ident, 'taxonomy');
-        so.displayMode = 'value';
-        so.value = 'value';
-        so.format = args.format;
-        // so.format = '%9.4f'; // Apply printf formatting; pass this in via the CSV instead.
+        const subObj = this.createBaseItem(args);
+        subObj.x = args.x;
+        subObj.y = args.y;
+        subObj.type = 'telemetry-view';
+        subObj.identifier = createIdentifier(args.ident, 'taxonomy');
+        subObj.displayMode = 'value';
+        subObj.value = 'value';
+        subObj.format = args.alphaFormat;
+        subObj.showUnits = (args.alphaShowsUnit === 'TRUE');
 
-        let styleObj = createStyleObj();
-        styleObj.style.border = '1px solid #666666';
-        this.configuration.objectStyles[so.id] = {
-            staticStyle: styleObj
-        };
-        this.configuration.items.push(so);
+        this.configuration.objectStyles[subObj.id] = {};
+        this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj({border: ALPHA_BORDER});
+        this.configuration.objectStyles[subObj.id].styles = [];
+        this.configuration.items.push(subObj);
+
+        return subObj;
     }
 
-    this.calcItemPosition = function (itemW, itemH, layoutStrategy, layoutStrategyNum) {
-        let itemPos = {};
-        const itemPlaceMargin = itemPlaceIndex * config.itemMargin;
-        const itemShiftMargin = itemShiftIndex * config.itemMargin;
+    this.calcItemPosition = function (args) {
+        const itemPos = {};
+        const itemPlaceMargin = args.placeIndex * config.itemMargin;
+        const itemShiftMargin = args.shiftIndex * config.itemMargin;
 
-        if (layoutStrategy === 'columns') {
+        if (args.layoutStrategy === 'columns') {
             // Build down first until itemPlaceMargin is reached, then go across
-            itemPos.x = (itemPlaceIndex * itemW) + itemPlaceMargin;
-            itemPos.y = (itemShiftIndex * itemH) + itemShiftMargin;
+            itemPos.x = (args.placeIndex * args.itemW) + itemPlaceMargin;
+            itemPos.y = (args.shiftIndex * args.itemH) + itemShiftMargin;
         } else {
             // Build across first until itemPlaceMargin is reached, then go down
-            itemPos.x = (itemShiftIndex * itemW) + itemShiftMargin;
-            itemPos.y = (itemPlaceIndex * itemH) + itemPlaceMargin;
+            itemPos.x = (args.shiftIndex * args.itemW) + itemShiftMargin;
+            itemPos.y = (args.placeIndex * args.itemH) + itemPlaceMargin;
         }
 
-        if ((itemPlaceIndex + 1) % layoutStrategyNum === 0) {
-            itemPlaceIndex = 0;
-            itemShiftIndex += 1;
+        if ((args.placeIndex + 1) % args.layoutStrategyNum === 0) {
+            args.placeIndex = 0;
+            args.shiftIndex += 1;
         } else {
-            itemPlaceIndex += 1;
+            args.placeIndex += 1;
         }
 
-        return itemPos;
+        return { itemPos, args };
     }
 }

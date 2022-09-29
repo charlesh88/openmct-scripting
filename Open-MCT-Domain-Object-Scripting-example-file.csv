@@ -1,4 +1,8 @@
-name,dataSource,format,condWidgetUsesOutputAsLabel,condDefault,cond1,cond2,cond3,cond4
-SpacecraftSubSystem busCurr,~Spacecraft~SpacecraftSubSystem~busCurr,%9.4f,,"Default,#666666,#ffffff","Is Equal to Zero,#009900,#ffffff,equalTo,0",,,
-SpacecraftSubSystem commandCount,~Spacecraft~SpacecraftSubSystem~commandCount,,TRUE,"Default,#123456,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#ff9966,#ffffff,greaterThan,0","Is Over 100,#ff9900,#ffffff,greaterThan,100","Is Over 1000,#ff0000,#ffffff,greaterThan,1000"
-SpacecraftSubSystem crc,~Spacecraft~SpacecraftSubSystem~crc,%11.2f,,,,,,
+name,dataSource,alphaFormat,alphaShowsUnit,alphaUsesCond,condWidgetUsesOutputAsLabel,condDefault,cond1,cond2,cond3,cond4
+WO commCnt,~Spacecraft~SpacecraftSubSystem~commCnt,%9.4f,,TRUE,,"Default,#666666,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#008800,#ffffff,greaterThan,0",,
+WO gammaTime,~Spacecraft~SpacecraftSubSystem~gammaTime,,TRUE,TRUE,,"Default,#666666,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#008800,#ffffff,greaterThan,0","Is Over 100,#ff9900,#ffffff,greaterThan,100","Is Over 1000,#ff0000,#ffffff,greaterThan,1000"
+WO enabledFlag,~Spacecraft~SpacecraftSubSystem~enabledFlag,%11.2f,,TRUE,,"Default,#666666,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#008800,#ffffff,greaterThan,0",,
+WO errorCnt,~Spacecraft~SpacecraftSubSystem~errorCnt,,,TRUE,,"Default,#666666,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#008800,#ffffff,greaterThan,0",,
+WO wVlt,~Spacecraft~SpacecraftSubSystem~wVlt,,TRUE,,,"Default,#666666,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#008800,#ffffff,greaterThan,0",,
+WO xVlt,~Spacecraft~SpacecraftSubSystem~xVlt,,TRUE,,,"Default,#666666,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#008800,#ffffff,greaterThan,0",,
+WO yVlt,~Spacecraft~SpacecraftSubSystem~yVlt,,TRUE,,,"Default,#666666,#ffffff","Is Defined,#999999,#ffffff,isDefined,","Is Over Zero,#008800,#ffffff,greaterThan,0",,

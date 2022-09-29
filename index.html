@@ -12,14 +12,15 @@
 
 <body translate="no">
 <h1>Generate Open MCT Import JSON</h1>
+<p>v1.1</p>
 <p>
     Based on an input CSV file of telemetry points, this app creates an Open MCT JSON import file that contains the following:
 </p>
 <ul>
-    <li>For each telemetry point in the input file, a Condition Set with a default and a single "match" condition that allows all the standard Open MCT value comparisons. Condition parameters and values are set in the input CSV file.</li>
+    <li>For each telemetry point in the input file, a Condition Set with a default up to 4 conditions that allow all the standard Open MCT value comparisons. Condition parameters and values are set in the input CSV file.</li>
     <li>For each Condition Set, a Condition Widget that uses the Condition Set for dynamic styling, based on colors and label text defined in the input file.</li>
     <li>A Display Layout that includes all the widgets in a grid layout defined by those settings below.</li>
-    <li>A Display Layout that includes all the telemetry points in the input file as alphanumerics, in a grid layout defined by those settings below. Each alpha has a text label from the "name" column in your input file.</li>
+    <li>A Display Layout that includes all the telemetry points in the input file as alphanumerics, in a grid layout defined by those settings below. Each alpha has a text label from the "name" column in the input file.</li>
     <li>A LAD Table that includes all the telemetry points in the input file.</li>
     <li>Folders that hold the Condition Sets and Widgets.</li>
 </ul>
@@ -28,9 +29,9 @@
     <ol>
         <li>Make a CSV file like <a target="_blank" href="Open-MCT-Domain-Object-Scripting-example-file.csv">this example</a>. Note that it must have a header row.
         <li>Input that file using the "Choose File" button.</li>
-        <li>Set parameters. The smaller the Layout Grid numbers are the closer you can place items with a margin, but you'll need to adjust other width and heights accordingly. Using "Columns" will build across first, "Rows" builds down first. For example, with a total of 16 items, using "Columns" set to 2 will result in two columns of elements with 8 rows each.</li>
+        <li>Set parameters. The smaller the Layout Grid numbers are the closer you can place items with a margin, but width and heights will need to be adjusted accordingly. Using "Columns" will build across first, "Rows" builds down first. For example, with a total of 16 items, using "Columns" set to 2 will result in two columns of elements with 8 rows each.</li>
         <li>Press "GENERATE", then "DOWNLOAD" to download the generated JSON file.</li>
-        <li>Import the generated file into your Open MCT environment.</li>
+        <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.</li>
     </ol>
 </div>
 <form id="inputForm">
@@ -62,7 +63,7 @@
             <div class="c-config__value sm"><input type="number" id="widgetLayoutStrategyNum" value="3"/></div>
 
             <div class="c-config__label">Item Width</div>
-            <div class="c-config__value sm"><input type="number" id="widgetLayoutItemWidth" value="100"/></div>
+            <div class="c-config__value sm"><input type="number" id="widgetLayoutItemWidth" value="150"/></div>
 
             <div class="c-config__label">Item Height</div>
             <div class="c-config__value sm"><input type="number" id="widgetLayoutItemHeight" value="15"/></div>
@@ -78,10 +79,10 @@
             <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="2"/></div>
 
             <div class="c-config__label">Label Width</div>
-            <div class="c-config__value sm"><input type="number" id="alphaLayoutLabelWidth" value="100"/></div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutLabelWidth" value="150"/></div>
 
             <div class="c-config__label">Item Width</div>
-            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="20"/></div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="50"/></div>
 
             <div class="c-config__label">Item Height</div>
             <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="10"/></div>
