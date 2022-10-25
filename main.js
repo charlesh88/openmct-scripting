@@ -1,8 +1,9 @@
 const objJson = {};
+const ALPHA_BORDER = '1px solid #555555';
 let config = {};
 let alphasItemPlacementTracker = {};
 let widgetsItemPlacementTracker = {};
-const ALPHA_BORDER = '1px solid #555555';
+let telemFolder = undefined;
 
 function createOpenMCTJSON(telemetryObjects) {
     /*
@@ -15,7 +16,7 @@ function createOpenMCTJSON(telemetryObjects) {
         alphaShowsUnit (TRUE if an alpha should should display its units)
         condWidgetUsesOutputAsLabel (TRUE if Condition Widgets should use the output string from Condition Sets)
         condDefault (output string, bgColor, fgColor)
-        cond1, cond2, etc. (output string, bgColor, fgColor, criteria, value)
+        cond1, cond2, etc. (output string, bgColor, fgColor, trigger, criteria, value)
     }]
      */
 
@@ -70,7 +71,12 @@ function createOpenMCTJSON(telemetryObjects) {
 
     for (const telemetryObject of telemetryObjects) {
         const curIndex = telemetryObjects.indexOf(telemetryObject);
-        LadTable.addToComposition(telemetryObject.dataSource, 'taxonomy');
+
+        // If telemObject dataSource includes "," then it's synthetic
+        // Create the source, add it to the telemSource folder and to the composition
+        // Update telemtryObject.dataSource to use the UUID of the created object
+
+        LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
 
         const alpha = dlAlphas.addTextAndAlphaViewPair({
             index: curIndex,
@@ -89,7 +95,7 @@ function createOpenMCTJSON(telemetryObjects) {
 
         alphasItemPlacementTracker.placeIndex = alpha.placeIndex;
         alphasItemPlacementTracker.shiftIndex = alpha.shiftIndex;
-        dlAlphas.addToComposition(telemetryObject.dataSource, 'taxonomy');
+        dlAlphas.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
 
         // Add conditionals
         if (telemetryObject.cond1.length > 0) {

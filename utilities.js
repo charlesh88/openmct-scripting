@@ -29,6 +29,10 @@ function createStyleObj(args) {
     return s;
 }
 
+function getNamespace(source) {
+    return (source.indexOf('~') != -1) ? 'taxonomy' : '';
+}
+
 function createUUID() {
     var dt = new Date().getTime();
     var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
