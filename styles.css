@@ -26,6 +26,11 @@ h1 {
     font-size: 1.5em;
 }
 
+.app-version {
+    font-weight: 100;
+    opacity: 0.3;
+}
+
 h2 {
     font-size: inherit;
     padding: 4px 6px;
