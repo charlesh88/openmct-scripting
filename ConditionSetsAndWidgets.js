@@ -53,23 +53,10 @@ function createConditionFromArr(name, isDefault, arr) {
     let c = o.configuration = {};
     c.name = name;
     c.output = arr[0];
-    c.trigger = 'any';
-    c.criteria = (!isDefault) ? [createConditionCriteria(arr[3], arr[4])] : [];
-    c.summary = c.name + ': ' + c.criteria + '; output ' + c.output;
-
-    return o;
-}
-
-function createCondition(name, output, operation, input, isDefault) {
-    let o = {};
-    o.isDefault = isDefault;
-    o.id = createUUID();
-    let c = o.configuration = {};
-    c.name = name;
-    c.output = output;
-    c.trigger = 'any';
-    c.criteria = (input !== null) ? [createConditionCriteria(operation, input)] : [];
-    c.summary = name + ': ' + operation + ' ' + input + '; output ' + output;
+    c.trigger = (!isDefault) ? arr[3] : 'all';
+    c.criteria = (!isDefault) ? [createConditionCriteria(arr[4], arr[5])] : [];
+    console.log(c.criteria);
+    c.summary = c.name + ' was scripted';
 
     return o;
 }
