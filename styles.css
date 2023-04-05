@@ -55,12 +55,30 @@ input, button, textarea {
     padding: 5px 10px;
 }
 
-input, button {
+input[type="text"] {
     width: 200px;
 }
 
+button,
+input[type="file"],
+input[type="submit"] {
+    cursor: pointer;
+    width: max-content;
+}
+
+button,
+input[type="submit"] {
+    background-color: #666;
+}
+
+button[disabled],
+input[disabled] {
+    pointer-events: none;
+    opacity: 0.2;
+}
+
 input.upload-file-btn {
-    width: 100%;
+    /*width: 100%;*/
 }
 
 select {
@@ -114,7 +132,8 @@ button, .c-btn-run {
     background: rgba(255, 255, 255, 0.1);
     min-height: 1em;
     overflow: hidden;
-    white-space: nowrap;
+    /*white-space: nowrap;*/
+    word-break: break-all;
 }
 
 .output.lg {

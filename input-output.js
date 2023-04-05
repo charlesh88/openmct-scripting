@@ -25,44 +25,6 @@ myForm.addEventListener("submit", function (e) {
     }
 });
 
-function csvToArray(str, delimiter = ",") {
-    // https://sebhastian.com/javascript-csv-to-array/
-    str = str.replaceAll('\r','');
-    // slice from start of text to the first \n index
-    // use split to create an array from string by delimiter
-    const headers = str.slice(0, str.indexOf("\n")).split(delimiter);
-
-    // slice from \n index + 1 to the end of the text
-    // use split to create an array of each csv value row
-    let rowStr = str.slice(str.indexOf("\n") + 1);
-
-    rowStr = rowStr.replace(/"[^"]+"/g, function (v) {
-        // Encode all commas that are within double quote chunks with |
-        return v.replace(/,/g, '|');
-    });
-
-    const rows = rowStr.split("\n");
-
-    // Map the rows
-    // split values from each row into an array
-    // use headers.reduce to create an object
-    // object properties derived from headers:values
-    // the object passed as an element of the array
-    const arr = rows.map(function (row) {
-        const values = row.split(delimiter);
-        const el = headers.reduce(function (object, header, index) {
-            object[header] = values[index]
-                .replaceAll('\"','')
-                .replaceAll('|',',');
-            return object;
-        }, {});
-        return el;
-    });
-
-    // return the array
-    return arr;
-}
-
 function getConfigFromForm() {
     // Get form values
     const config = {};
@@ -98,14 +60,14 @@ downloadJson = function (filename = 'Generated Open MCT import.json') {
         type: 'text/plain',
     })
 
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(file)
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(file);
 
-    link.href = url
-    link.download = file.name
-    document.body.appendChild(link)
-    link.click()
+    link.href = url;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
 
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
 }
