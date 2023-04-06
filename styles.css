@@ -123,6 +123,18 @@ button, .c-btn-run {
     padding: 5px 0;
 }
 
+.c-file-input {
+    align-items: center;
+    display: flex;
+}
+
+.c-file-input input[type="file"] {
+    flex: 1 1 auto;
+}
+.c-file-input .c-btn {
+    flex: 0 0 max-content;
+}
+
 .output, .message {
     display: block;
     padding: 10px;
@@ -131,8 +143,8 @@ button, .c-btn-run {
 .output {
     background: rgba(255, 255, 255, 0.1);
     min-height: 1em;
-    overflow: hidden;
-    /*white-space: nowrap;*/
+    max-height: 10em;
+    overflow: auto;
     word-break: break-all;
 }
 

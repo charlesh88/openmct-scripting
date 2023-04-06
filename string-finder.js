@@ -69,8 +69,10 @@ findMatches = function() {
 
     addStat("matches-stats", resultsUnique.length + " unique matches found:");
 
-    for (let i = 0; i < resultsUnique.length; i++) {
-        outputHolder.innerHTML += resultsUnique[i] + '<br />';
+    const resultsUniqueSorted = resultsUnique.sort();
+
+    for (let i = 0; i < resultsUniqueSorted.length; i++) {
+        outputHolder.innerHTML += resultsUniqueSorted[i] + '<br />';
     }
 }
 
@@ -93,6 +95,8 @@ replaceStrings = function() {
         //replaceOutput.innerHTML = replacedText;
         replacedFileText =  replacedText;
         btnSaveReplaced.removeAttribute("disabled");
+
+        addStat("replace-stats", "Replace action complete");
 
     } else {
         addStat("replace-stats", "Select an input file to search first");
