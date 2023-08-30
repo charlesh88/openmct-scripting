@@ -64,6 +64,7 @@ function csvToArray(str, delimiter = ",") {
     });
 
     // return the array
+    console.log('csvToArray',arr);
     return arr;
 }
 
@@ -94,3 +95,27 @@ function addStat(objID, str, clear = false) {
         dispObj.innerHTML += str + '<br />';
     }
 }
+
+function getFormNumericVal(id) {
+    const v = document.getElementById(id).value;
+    return (v) ? parseInt(v) : null;
+}
+
+downloadJson = function (filename = 'Generated Open MCT import.json') {
+    const strJson = JSON.stringify(objJson, null, 4);
+    const file = new File([strJson], filename, {
+        type: 'text/plain',
+    })
+
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(file);
+
+    link.href = url;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+}
+

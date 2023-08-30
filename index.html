@@ -8,7 +8,7 @@
 </head>
 
 <body translate="no">
-<h1>Generate Open MCT Import JSON <span class="app-version">v1.2</span></h1>
+<h1>Generate Open MCT Import JSON <span class="app-version">v2.0</span></h1>
 <p>
     Based on an input CSV file of telemetry points, this app creates an Open MCT JSON import file that contains the following:
 </p>
@@ -20,22 +20,41 @@
     <li>A LAD Table that includes all the telemetry points in the input file.</li>
     <li>Folders that hold the Condition Sets and Widgets.</li>
 </ul>
-<div class="page-section">
-    <h2>How to Use</h2>
+<div class="page-section c-how-holder">
+    <div class="c-how">
+    <h2>How to Use: CSV</h2>
     <ol>
+        <li>Select input type 'CSV'.</li>
         <li>Make a CSV file like <a target="_blank" href="Open-MCT-Domain-Object-Scripting-example-file.csv">this example</a>. Note that it must have a header row.
         <li>Input that file using the "Choose File" button.</li>
         <li>Set parameters. The smaller the Layout Grid numbers are the closer you can place items with a margin, but width and heights will need to be adjusted accordingly. Using "Columns" will build across first, "Rows" builds down first. For example, with a total of 16 items, using "Columns" set to 2 will result in two columns of elements with 8 rows each.</li>
         <li>Press "GENERATE", then "DOWNLOAD" to download the generated JSON file.</li>
         <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.</li>
     </ol>
+    </div>
+    <div class="c-how">
+        <h2>How to Use: Pride Procedure</h2>
+        <ol>
+            <li>Select input type 'Pride procedure'.</li>
+            <li>Choose a .prl file using the "Choose File" button.</li>
+            <li>Set parameters as defined at left. Recommend defaults, but set Columns = 1 and Item Width = 150.</li>
+            <li>Press "GENERATE", then "DOWNLOAD" to download the generated JSON file.</li>
+            <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.</li>
+        </ol>
+    </div>
 </div>
 <form id="inputForm">
     <div class="page-section">
         <h2>Input File</h2>
-        <input class="upload-file-btn" type="file" id="csvFile" accept=".csv"/>
-        <div id="input-stats" class="message"></div>
-        <div id="display-csv" class="output" contenteditable="true"></div>
+            <input class="upload-file-btn" type="file" id="inputFile" accept=".csv,.prl"/>
+            <label for="inputType">Input type:</label>
+            <select id="inputType">
+                <option value="csv">CSV</option>
+                <option value="prl" selected>Pride procedure</option>
+            </select>
+            <div id="input-stats" class="message"></div>
+            <div id="display-csv" class="output" contenteditable="true"></div>
+
     </div>
     <div class="page-section c-config-holder">
         <div class="c-config">
@@ -101,8 +120,9 @@
 <script src="ConditionSetsAndWidgets.js"></script>
 <script src="DisplayLayouts.js"></script>
 <script src="DomainObjects.js"></script>
-<script src="main.js"></script>
 <script src="utilities.js"></script>
+<script src="main.js"></script>
+<script src="main-prl-to-display.js"></script>
 </body>
 </html>
 

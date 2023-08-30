@@ -101,11 +101,16 @@ button, .c-btn-run {
     width: 75px;
 }
 
-.c-config-holder {
+.c-config-holder,
+.c-how-holder {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-column-gap: 10px;
     align-items: start;
+}
+
+.c-how-holder {
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .c-config {

@@ -66,12 +66,44 @@ const DisplayLayout = function (args) {
         return response;
     }
 
+    this.addLabel = function (args) {
+        console.log('addLabel',args);
+        const response = {};
+        const combinedArgs = copyObj(args);
+        combinedArgs.itemW = args.itemW;
+        const posObj = this.calcItemPosition(combinedArgs);
+
+        console.log(posObj);
+
+        const itemPos = posObj.itemPos;
+        response.placeIndex = posObj.args.placeIndex;
+        response.shiftIndex = posObj.args.shiftIndex;
+
+        let textArgs = copyObj(args);
+        textArgs.x = itemPos.x;
+        textArgs.y = itemPos.y;
+        textArgs.itemW = combinedArgs.itemW;
+        textArgs.bgColor = '#2f2f2f';
+        textArgs.fgColor = '#ccc';
+        this.addTextView(textArgs);
+
+        return response;
+    }
+
     this.addTextView = function (args) {
         const subObj = this.createBaseItem(args);
         subObj.x = args.x;
         subObj.y = args.y;
         subObj.type = 'text-view';
         subObj.text = args.text;
+        if (args.bgColor || args.fgColor) {
+            this.configuration.objectStyles[subObj.id] = {};
+            this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj({
+                bgColor: args.bgColor? args.bgColor : '',
+                fgColor: args.fgColor? args.fgColor : ''
+            });
+            this.configuration.objectStyles[subObj.id].styles = [];
+        }
         this.configuration.items.push(subObj);
     }
 

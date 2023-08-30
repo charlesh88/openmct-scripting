@@ -1,22 +1,29 @@
 const outputStatsDisplay = document.getElementById('output-stats');
 const myForm = document.getElementById("inputForm");
-const csvFile = document.getElementById("csvFile");
+const inputFile = document.getElementById("inputFile");
 const inputStatsDisplay = document.getElementById("input-stats");
 const displayInputCsv = document.getElementById('display-csv');
 
 myForm.addEventListener("submit", function (e) {
     // https://sebhastian.com/javascript-csv-to-array/
+    // Fires when the Generate button is pressed
     e.preventDefault();
-    const input = csvFile.files[0];
+    const input = inputFile.files[0];
+    const inputType = document.getElementById('inputType').selectedOptions[0].value;
+    // console.log(inputType);
     const reader = new FileReader();
 
     if (input !== undefined) {
         reader.onload = function (e) {
-            const text = e.target.result;
-            const data = csvToArray(text);
-            inputStatsDisplay.innerHTML = data.length + ' items found.';
-            displayInputCsv.innerHTML = JSON.stringify(data);
-            createOpenMCTJSON(data);
+            if (inputType.includes('csv')) {
+                const data = csvToArray(e.target.result);
+                inputStatsDisplay.innerHTML = data.length + ' items found.';
+                displayInputCsv.innerHTML = JSON.stringify(data);
+                createOpenMCTJSONfromCSV(data, 'csv');
+            } else {
+                // console.log('Pride proc stuff path goes here');
+                prlToDisplayMain(e.target.result, input.name);
+            }
         };
 
         reader.readAsText(input);
@@ -47,27 +54,4 @@ function getConfigFromForm() {
     config.dlAlphas.itemH = getFormNumericVal('alphaLayoutItemHeight');
 
     return config;
-}
-
-function getFormNumericVal(id) {
-    const v = document.getElementById(id).value;
-    return (v) ? parseInt(v) : null;
-}
-
-downloadJson = function (filename = 'Generated Open MCT import.json') {
-    const strJson = JSON.stringify(objJson, null, 4);
-    const file = new File([strJson], filename, {
-        type: 'text/plain',
-    })
-
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(file);
-
-    link.href = url;
-    link.download = file.name;
-    document.body.appendChild(link);
-    link.click();
-
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
 }
