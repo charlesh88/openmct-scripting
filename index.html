@@ -44,18 +44,6 @@
     </div>
 </div>
 <form id="inputForm">
-    <div class="page-section">
-        <h2>Input File</h2>
-            <input class="upload-file-btn" type="file" id="inputFile" accept=".csv,.prl"/>
-            <label for="inputType">Input type:</label>
-            <select id="inputType">
-                <option value="csv">CSV</option>
-                <option value="prl" selected>Pride procedure</option>
-            </select>
-            <div id="input-stats" class="message"></div>
-            <div id="display-csv" class="output" contenteditable="true"></div>
-
-    </div>
     <div class="page-section c-config-holder">
         <div class="c-config">
             <h2>Global</h2>
@@ -103,9 +91,22 @@
             <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="10"/></div>
         </div>
     </div>
-    <div class="page-section page-section--centered">
-        <input class="c-btn-run" type="submit" value="GENERATE"/>
+
+    <div class="page-section">
+        <h2>Input File</h2>
+        <input class="upload-file-btn" type="file" id="fileinput" accept=".csv,.prl"/>
+<!--        <label for="inputType">Input type:</label>
+        <select id="inputType">
+            <option value="csv">CSV</option>
+            <option value="prl" selected>Pride procedure</option>
+        </select>-->
+        <div id="input-stats" class="message"></div>
+        <div id="display-csv" class="output" contenteditable="true"></div>
+
     </div>
+    <!--div class="page-section page-section--centered">
+        <input class="c-btn-run" type="submit" value="GENERATE"/>
+    </div-->
 </form>
 <div class="page-section">
     <h2>Output</h2>
