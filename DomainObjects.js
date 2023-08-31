@@ -28,3 +28,8 @@ const Obj = function (name, type, hasComposition) {
         this.location = location.identifier.key;
     }
 }
+
+const TabsView = function(name) {
+    Obj.call(this, name, 'tabs', true);
+    this.keep_alive = true;
+}

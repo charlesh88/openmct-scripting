@@ -79,13 +79,13 @@
                     <option value="rows">Rows</option>
                 </select>
             </div>
-            <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="2"/></div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="1"/></div>
 
             <div class="c-config__label">Label Width</div>
             <div class="c-config__value sm"><input type="number" id="alphaLayoutLabelWidth" value="150"/></div>
 
             <div class="c-config__label">Item Width</div>
-            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="50"/></div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="150"/></div>
 
             <div class="c-config__label">Item Height</div>
             <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="10"/></div>
@@ -94,12 +94,13 @@
 
     <div class="page-section">
         <h2>Input File</h2>
-        <input class="upload-file-btn" type="file" id="fileinput" accept=".csv,.prl"/>
-<!--        <label for="inputType">Input type:</label>
+        <label for="inputType">Input type:</label>
         <select id="inputType">
             <option value="csv">CSV</option>
-            <option value="prl" selected>Pride procedure</option>
-        </select>-->
+            <option value="prl" selected>Pride procedure (.prl)</option>
+        </select>
+        <input class="upload-file-btn" type="file" id="fileinput" accept=".csv,.prl" multiple/>
+
         <div id="input-stats" class="message"></div>
         <div id="display-csv" class="output" contenteditable="true"></div>
 

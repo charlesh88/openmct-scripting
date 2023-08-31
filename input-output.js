@@ -41,19 +41,6 @@ function readFileAsText(file){
 
         fr.onload = function(){
             resolve(fr.result);
-            const filename = file.name;
-            // console.log(file.name, 'fr.onload',fr);
-            if (filename.includes('.csv')) {
-                const data = csvToArray(fr.result);
-                inputStatsDisplay.innerHTML = data.length + ' items found.';
-                displayInputCsv.innerHTML = JSON.stringify(data);
-                createOpenMCTJSONfromCSV(data, 'csv');
-            } else if (filename.includes('.prl')) {
-                // console.log('Pride proc stuff path goes here');
-                prlToDisplayMain(fr.result, filename);
-            } else {
-                inputStatsDisplay.innerHTML = 'Please select a CSV or PRL file and try again.'
-            }
         };
 
         fr.onerror = function(){
@@ -66,14 +53,30 @@ function readFileAsText(file){
 
 // Handle fileupload
 document.getElementById("fileinput").addEventListener("change", function(ev){
-    let file = ev.currentTarget.files[0];
+    let files = ev.currentTarget.files;
+    let readers = [];
+    let filenames = [];
+    const fileType = document.getElementById('inputType').selectedOptions[0].value;
 
-    // Abort file reading if no file was selected
-    if(!file) return;
+    // Abort if there were no files selected
+    if(!files.length) return;
 
-    readFileAsText(file).then((fileContent) => {
-        // Print file content on the console
-        console.log(fileContent);
+    // Store promises in array
+    for(let i = 0;i < files.length;i++){
+        filenames.push(files[i].name);
+        readers.push(readFileAsText(files[i]));
+    }
+
+    // Trigger Promises
+    Promise.all(readers).then((values) => {
+        // Values will be an array that contains an item
+        // with the text of every selected file
+        // ["File1 Content", "File2 Content" ... "FileN Content"]
+        // console.log(filenames);
+        // console.log(values);
+        if (fileType.includes('prl')) {
+            prlToDisplays(filenames, values);
+        }
     });
 }, false);
 

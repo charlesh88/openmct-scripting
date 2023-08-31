@@ -3,24 +3,43 @@ const STEP_LABEL_STYLE = {
     fgColor: '#999'
 }
 
-
-prlToDisplayMain = function (prlContents, prlFilename) {
-    const prlObjects = extractFromPrl(prlContents);
-    const procName = prlFilename.split('.')[0]; // remove .prl
-    console.log(procName);
+prlToDisplays = function(prlFilenames, prlContentArr) {
+    // For each elem in prlContentArr, create a LAD Table and Display Layout
+    // Put the layouts into a Tab View
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
 
     // Create the root folder
-    let folder = new Obj(config.rootName, 'folder', true);
-    root.addJson(folder);
-    objJson.rootId = folder.identifier.key;
+    let folderRoot = new Obj(config.rootName, 'folder', true);
+    root.addJson(folderRoot);
+    objJson.rootId = folderRoot.identifier.key;
 
-    //Create a LAD Table
-    let LadTable = new Obj(procName, 'LadTable', true);
-    root.addJson(LadTable);
-    folder.addToComposition(LadTable.identifier.key);
-    LadTable.setLocation(folder);
+    // Create a Display Layouts folder
+    let folderDL = new Obj('Display Layouts', 'folder', true);
+    root.addJson(folderDL);
+    folderRoot.addToComposition(folderDL.identifier.key);
+    folderDL.setLocation(folderRoot);
+
+    // Create a Tabs view
+    let procTabs = new TabsView('Procedure Displays');
+    root.addJson(procTabs);
+    folderRoot.addToComposition(procTabs.identifier.key);
+    procTabs.setLocation(folderRoot);
+
+    for (let i = 0; i < prlFilenames.length; i++) {
+        const procDL = prlToDisplay(prlFilenames[i], prlContentArr[i]);
+        root.addJson(procDL);
+        procTabs.addToComposition(procDL.identifier.key);
+        folderDL.addToComposition(procDL.identifier.key);
+        procDL.setLocation(folderDL);
+    }
+
+    outputJSON();
+}
+
+prlToDisplay = function(prlFilename, prlContents) {
+    const prlObjects = extractFromPrl(prlContents);
+    const procName = prlFilename.split('.')[0]; // remove .prl
 
     //Create a Display Layout for alphas and add it to the root folder
     let dlAlphas = new DisplayLayout({
@@ -28,9 +47,6 @@ prlToDisplayMain = function (prlContents, prlFilename) {
         'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
         'itemMargin': config.itemMargin
     });
-    root.addJson(dlAlphas);
-    folder.addToComposition(dlAlphas.identifier.key);
-    dlAlphas.setLocation(folder);
 
     initAlphasItemPlacementTracker();
 
@@ -38,7 +54,6 @@ prlToDisplayMain = function (prlContents, prlFilename) {
         const curIndex = prlObjects.indexOf(prlObject);
         const isTelemetry = prlObject.dataSource.length > 0;
         let dlItem = {};
-        // console.log(curIndex, config.dlAlphas);
 
         if (isTelemetry) {
             // If there's a datasource, add a label + alpha pair
@@ -80,15 +95,9 @@ prlToDisplayMain = function (prlContents, prlFilename) {
 
         alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
         alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
-
-        if (isTelemetry) {
-            LadTable.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
-        }
     }
 
-    // console.log('dlAlphas', dlAlphas);
-
-    outputJSON(prlObjects);
+    return dlAlphas;
 }
 
 extractFromPrl = function (str) {
@@ -110,7 +119,6 @@ extractFromPrl = function (str) {
         if (stepMatch) {
             curStep = stepMatch[0];
             if (curStepTelem.length > 0) {
-                // console.log(curStep + ': cst: ' + curStepTelem);
                 output.push(createTableObj('label', 'Step ' + curStep));
                 output = output.concat(curStepTelem);
                 curStepTelem = [];
@@ -123,30 +131,30 @@ extractFromPrl = function (str) {
         }
     }
 
-    // console.log(output);
     return output;
 }
 
 createTableObj = function (type, str) {
-    let o = {};
-    o.alphaFormat = '';
-    o.alphaShowsUnit = 'TRUE';
-    o.alphaUsesCond = '';
+    let tableObj = {};
+    tableObj.alphaFormat = '';
+    tableObj.alphaShowsUnit = 'TRUE';
+    tableObj.alphaUsesCond = '';
 
     if (type.includes('label')) {
-        o.name = str;
-        o.type = 'label';
-        o.dataSource = '';
+        tableObj.name = str;
+        tableObj.type = 'label';
+        tableObj.dataSource = '';
     }
 
     if (type.includes('path')) {
-        o.name = nameFromPath(str, '/', 2);
-        o.dataSource = str.replaceAll('/', '~');
-        o.type = 'telemetry';
+        tableObj.name = nameFromPath(str, '/', 2);
+        tableObj.dataSource = str.replaceAll('/', '~');
+        tableObj.type = 'telemetry';
     }
 
-    return o;
+    return tableObj;
 }
+
 nameFromPath = function (str, delim, places) {
     // places counts backwards from the end of the path
     const pathArr = str.split(delim);

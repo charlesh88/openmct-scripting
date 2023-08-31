@@ -182,7 +182,7 @@ function createOpenMCTJSONfromCSV(telemetryObjects) {
     }
 
     // Output JSON
-    outputJSON(telemetryObjects);
+    outputJSON();
 /*    const outputDisplay = document.getElementById('outputGeneratedJson');
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
@@ -200,10 +200,10 @@ function initWidgetsItemPlacementTracker() {
     widgetsItemPlacementTracker.shiftIndex = 0;
 }
 
-function outputJSON(telemetryObjects) {
+function outputJSON() {
     const outputDisplay = document.getElementById('outputGeneratedJson');
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
-    outputStatsDisplay.innerHTML = 'Updated ' + updateTime.getHours() + ':' + updateTime.getMinutes() + '; ' + telemetryObjects.length + ' objects; ' + outputJSON.length + ' chars';
+    outputStatsDisplay.innerHTML = 'Updated ' + updateTime.getHours() + ':' + updateTime.getMinutes() + '; ' + outputJSON.length + ' chars';
     outputDisplay.innerHTML = outputJSON;
 }
