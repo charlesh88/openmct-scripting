@@ -169,7 +169,6 @@ extractFromPrl = function (str) {
         }
     }
 
-    // console.log('arrStepsAndTelem', arrStepsAndTelem);
     return arrStepsAndTelem;
 }
 

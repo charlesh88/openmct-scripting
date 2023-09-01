@@ -1,8 +1,3 @@
-const outputStatsDisplay = document.getElementById('output-stats');
-const myForm = document.getElementById("inputForm");
-const inputFile = document.getElementById("inputFile");
-const inputStatsDisplay = document.getElementById("input-stats");
-const displayInputCsv = document.getElementById('display-csv');
 
 /*myForm.addEventListener("submit", function (e) {
     // https://sebhastian.com/javascript-csv-to-array/
@@ -34,6 +29,7 @@ const displayInputCsv = document.getElementById('display-csv');
     }
 });*/
 
+
 /************************************* https://ourcodeworld.com/articles/read/1438/how-to-read-multiple-files-at-once-using-the-filereader-class-in-javascript#google_vignette */
 function readFileAsText(file){
     return new Promise(function(resolve,reject){
@@ -52,11 +48,17 @@ function readFileAsText(file){
 }
 
 // Handle fileupload
-document.getElementById("fileinput").addEventListener("change", function(ev){
-    let files = ev.currentTarget.files;
+inputPrl.addEventListener("change", function(ev){
+    uploadFiles(ev.currentTarget.files, 'prl');
+}, false);
+
+inputCsv.addEventListener("change", function(ev){
+    uploadFiles(ev.currentTarget.files, 'csv');
+}, false);
+
+function uploadFiles(files, fileType) {
     let readers = [];
     let filenames = [];
-    const fileType = document.getElementById('inputType').selectedOptions[0].value;
 
     // Abort if there were no files selected
     if(!files.length) return;
@@ -72,16 +74,13 @@ document.getElementById("fileinput").addEventListener("change", function(ev){
         // Values will be an array that contains an item
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
-        // console.log(filenames);
-        // console.log(values);
         if (fileType.includes('prl')) {
             prlToDisplays(filenames, values);
+        } else if (fileType.includes('csv')) {
+            createOpenMCTJSONfromCSV(values[0]);
         }
     });
-}, false);
-
-
-
+}
 
 function getConfigFromForm() {
     // Get form values
@@ -105,4 +104,37 @@ function getConfigFromForm() {
     config.dlAlphas.itemH = getFormNumericVal('alphaLayoutItemHeight');
 
     return config;
+}
+
+function outputJSON() {
+    let outputJSON = JSON.stringify(objJson, null, 4);
+    const updateTime = new Date();
+    outputStatsDisplay.innerHTML =
+        'Generated ' +
+        updateTime.getHours() + ':' +
+        updateTime.getMinutes() + ':' +
+        updateTime.getSeconds() + ' | ' +
+        outputJSON.length + ' chars';
+    btnDownload.removeAttribute('disabled');
+}
+
+downloadJson = function () {
+    const filename =  config.rootName
+        .concat(' - ')
+        .concat(inputType.value.includes('csv')? downloadFilenames.csv : downloadFilenames.prl);
+    const strJson = JSON.stringify(objJson, null, 4);
+    const file = new File([strJson], filename, {
+        type: 'text/json',
+    })
+
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(file);
+
+    link.href = url;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
 }

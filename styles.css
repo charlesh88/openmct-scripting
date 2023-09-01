@@ -31,15 +31,22 @@ h1 {
     opacity: 0.3;
 }
 
-h2 {
+h2, h3 {
     font-size: inherit;
+    text-transform: uppercase;
+}
+
+h2 {
     padding: 4px 6px;
     margin: 2px 0;
     border-radius: 3px;
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
     opacity: 0.5;
+}
+
+h3 {
+  font-weight: normal;
 }
 
 input, button, textarea, select, .output {
@@ -87,7 +94,7 @@ select {
 }
 
 button, .c-btn-run {
-    background: #778899;
+    background: #ecb157;
     color: #222;
     font-weight: 600;
     padding: 5px 30px;
@@ -101,23 +108,31 @@ button, .c-btn-run {
     width: 75px;
 }
 
-.c-config-holder,
-.c-how-holder {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-column-gap: 10px;
-    align-items: start;
+[class*='-holder'] {
+    display: flex;
 }
 
-.c-how-holder {
-    grid-template-columns: repeat(2, 1fr);
+[class*='-holder'] > * {
+    flex: 1 1 50%;
+}
+
+[class*='-holder'] > * + * {
+    margin-left: 10px;
+}
+
+.c-how {
+    max-height: 20vh;
+    overflow: auto;
+    padding: 0 10px;
 }
 
 .c-config {
+    align-items: start;
     display: grid;
     grid-template-columns: max-content 1fr;
     grid-column-gap: 5px;
     grid-row-gap: 5px;
+    height: min-content;
 }
 
 .c-config h2 {
@@ -141,7 +156,6 @@ button, .c-btn-run {
 }
 
 .output, .message {
-    display: block;
     padding: 10px;
 }
 
@@ -164,4 +178,8 @@ button, .c-btn-run {
 
 .page-section + .page-section {
     margin-top: 10px;
+}
+
+.--hidden {
+    display: none;
 }

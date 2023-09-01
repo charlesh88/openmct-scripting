@@ -1,11 +1,14 @@
 const objJson = {};
 const ALPHA_BORDER = '1px solid #555555';
+const downloadFilenames = {
+    'csv': 'from CSV',
+    'prl': 'from Pride procedures'
+}
 let config = {};
 let alphasItemPlacementTracker = {};
 let widgetsItemPlacementTracker = {};
-let telemFolder = undefined;
 
-function createOpenMCTJSONfromCSV(telemetryObjects) {
+function createOpenMCTJSONfromCSV(csv) {
     /*
     telemetryObjects: array of objects like this:
     [{
@@ -19,6 +22,9 @@ function createOpenMCTJSONfromCSV(telemetryObjects) {
         cond1, cond2, etc. (output string, bgColor, fgColor, trigger, criteria, value)
     }]
     */
+
+    const telemetryObjects = csvToArray(csv);
+    console.log(telemetryObjects);
 
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
@@ -181,13 +187,7 @@ function createOpenMCTJSONfromCSV(telemetryObjects) {
         }
     }
 
-    // Output JSON
     outputJSON();
-/*    const outputDisplay = document.getElementById('outputGeneratedJson');
-    let outputJSON = JSON.stringify(objJson, null, 4);
-    const updateTime = new Date();
-    outputStatsDisplay.innerHTML = 'Updated ' + updateTime.getHours() + ':' + updateTime.getMinutes() + '; ' + telemetryObjects.length + ' objects; ' + outputJSON.length + ' chars';
-    outputDisplay.innerHTML = outputJSON;*/
 }
 
 function initAlphasItemPlacementTracker() {
@@ -198,12 +198,4 @@ function initAlphasItemPlacementTracker() {
 function initWidgetsItemPlacementTracker() {
     widgetsItemPlacementTracker.placeIndex = 0;
     widgetsItemPlacementTracker.shiftIndex = 0;
-}
-
-function outputJSON() {
-    const outputDisplay = document.getElementById('outputGeneratedJson');
-    let outputJSON = JSON.stringify(objJson, null, 4);
-    const updateTime = new Date();
-    outputStatsDisplay.innerHTML = 'Updated ' + updateTime.getHours() + ':' + updateTime.getMinutes() + '; ' + outputJSON.length + ' chars';
-    outputDisplay.innerHTML = outputJSON;
 }

@@ -64,7 +64,7 @@ function csvToArray(str, delimiter = ",") {
     });
 
     // return the array
-    console.log('csvToArray',arr);
+    // console.log('csvToArray',arr);
     return arr;
 }
 
@@ -101,21 +101,13 @@ function getFormNumericVal(id) {
     return (v) ? parseInt(v) : null;
 }
 
-downloadJson = function (filename = 'Generated Open MCT import.json') {
-    const strJson = JSON.stringify(objJson, null, 4);
-    const file = new File([strJson], filename, {
-        type: 'text/plain',
-    })
-
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(file);
-
-    link.href = url;
-    link.download = file.name;
-    document.body.appendChild(link);
-    link.click();
-
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+toggleHiddenClass = function(arrIDs) {
+    for (let i = 0; i < arrIDs.length; i++) {
+        if (arrIDs[i].className.includes('--hidden')) {
+            arrIDs[i].classList.remove('--hidden');
+        } else {
+            arrIDs[i].classList.add('--hidden');
+        }
+    }
 }
 
