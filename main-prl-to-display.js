@@ -20,6 +20,12 @@ prlToDisplays = function(prlFilenames, prlContentArr) {
     folderRoot.addToComposition(folderDL.identifier.key);
     folderDL.setLocation(folderRoot);
 
+    // Create a Stacked Plots folder
+    let folderSP = new Obj('Stacked Plots', 'folder', true);
+    root.addJson(folderSP);
+    folderRoot.addToComposition(folderSP.identifier.key);
+    folderSP.setLocation(folderRoot);
+
     // Create a Tabs view
     let procTabs = new TabsView('Procedure Displays');
     root.addJson(procTabs);
@@ -27,11 +33,20 @@ prlToDisplays = function(prlFilenames, prlContentArr) {
     procTabs.setLocation(folderRoot);
 
     for (let i = 0; i < prlFilenames.length; i++) {
-        const procDL = prlToDisplay(prlFilenames[i], prlContentArr[i]);
+        const procViews = prlToDisplay(prlFilenames[i], prlContentArr[i]);
+
+        // Add the proc's Display Layout
+        const procDL = procViews.display_layout;
         root.addJson(procDL);
-        procTabs.addToComposition(procDL.identifier.key);
+        procTabs.addToComposition(procDL.identifier.key); // Change this later to add a flex layout
         folderDL.addToComposition(procDL.identifier.key);
         procDL.setLocation(folderDL);
+
+        // Add the proc's Stacked Plot
+        const procSP = procViews.stacked_plot;
+        root.addJson(procSP);
+        folderSP.addToComposition(procSP.identifier.key);
+        procSP.setLocation(folderSP);
     }
 
     outputJSON();
@@ -40,13 +55,17 @@ prlToDisplays = function(prlFilenames, prlContentArr) {
 prlToDisplay = function(prlFilename, prlContents) {
     const prlObjects = extractFromPrl(prlContents);
     const procName = prlFilename.split('.')[0]; // remove .prl
+    let responseObj = {};
 
     //Create a Display Layout for alphas and add it to the root folder
-    let dlAlphas = new DisplayLayout({
+    let procDisplayLayout = new DisplayLayout({
         'name': procName,
         'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
         'itemMargin': config.itemMargin
     });
+
+    //Create a Stacked Plot for telemetry
+    let procStackedPlot = new StackedPlot(procName + ' Telemetry');
 
     initAlphasItemPlacementTracker();
 
@@ -57,7 +76,7 @@ prlToDisplay = function(prlFilename, prlContents) {
 
         if (isTelemetry) {
             // If there's a datasource, add a label + alpha pair
-            dlItem = dlAlphas.addTextAndAlphaViewPair({
+            dlItem = procDisplayLayout.addTextAndAlphaViewPair({
                 index: curIndex,
                 labelW: config.dlAlphas.labelW,
                 itemW: config.dlAlphas.itemW,
@@ -72,10 +91,11 @@ prlToDisplay = function(prlFilename, prlContents) {
                 alphaShowsUnit: prlObject.alphaShowsUnit
             });
 
-            dlAlphas.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
+            procDisplayLayout.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
+            procStackedPlot.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
 
         } else {
-            dlItem = dlAlphas.addLabel(
+            dlItem = procDisplayLayout.addLabel(
                 {
                     index: curIndex,
                     itemW: config.dlAlphas.labelW + config.itemMargin + config.dlAlphas.itemW,
@@ -97,41 +117,60 @@ prlToDisplay = function(prlFilename, prlContents) {
         alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
     }
 
-    return dlAlphas;
+    responseObj.display_layout = procDisplayLayout;
+    responseObj.stacked_plot = procStackedPlot;
+
+    return responseObj;
 }
 
 extractFromPrl = function (str) {
-    const regexTelemStr = '(?<=<prl:Identifier>)(.*)(?=<\/prl:Identifier>)';
-    const regexStepStr = '(?<=<prl:StepNumber>)(.*)(?=<\/prl:StepNumber>)';
+    let xmlDoc = new DOMParser().parseFromString(str,"text/xml");
+    const steps = xmlDoc.getElementsByTagName("prl:Step");
+    let arrStepsAndTelem = [];
 
-    // Split inputFileText by line return
-    // let str = inputFileText;
-    let curStep = '';
-    let curStepTelem = [];
-    let stepMatch = [];
-    let telemMatch = [];
-    let output = [];
-    str = str.replaceAll('\r', '');
-    const rows = str.split("\n");
+    for (let i = 0; i < steps.length; i++) {
+        const arrDataReferences = steps[i].getElementsByTagName("prl:DataReference");
+        const nodeStepTitle = steps[i].getElementsByTagName("prl:StepTitle")[0];
+        const strStepLabel = 'STEP '
+            .concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent);
+            // .concat(': ')
+            // .concat(nodeStepTitle.getElementsByTagName("prl:Text")[0].textContent)
 
-    for (let i = 0; i < rows.length; i++) {
-        stepMatch = rows[i].match(regexStepStr);
-        if (stepMatch) {
-            curStep = stepMatch[0];
-            if (curStepTelem.length > 0) {
-                output.push(createTableObj('label', 'Step ' + curStep));
-                output = output.concat(curStepTelem);
-                curStepTelem = [];
+        let arrUniquePathsForStep = [];
+
+        if (arrDataReferences.length > 0) {
+            arrStepsAndTelem.push(createTableObj('label', strStepLabel));
+
+            for (let j = 0; j < arrDataReferences.length; j++) {
+                const description = arrDataReferences[j].getElementsByTagName("prl:Description")[0].textContent;
+                const identifier = arrDataReferences[j].getElementsByTagName("prl:Identifier")[0].textContent;
+                let path = identifier;
+
+                /*
+                    Pride stores aggregates like this:
+                    DataReference > Description: [EpsIo] SaciTelemetry.LIG_CTLR_CURR
+                    DataReference > Idenfitier: /ViperRover/EpsIo/SaciTelemetry
+                    So, we have to look for '.' in the Description to figure out if its an aggregate
+                    If so, grab everything past the first '.' and append it to the Identifier
+                    to get a valid path
+                 */
+
+                if (description.includes('.')) {
+                    const pathEnd = description.substring(description.indexOf('.'), description.length);
+                    path = identifier.concat(pathEnd);
+                }
+
+                if (!arrUniquePathsForStep.includes(path)) {
+                    // Don't include the same telemetry more than once in a given step
+                    arrUniquePathsForStep.push(path);
+                    arrStepsAndTelem.push(createTableObj('path', path));
+                }
             }
-        }
-
-        telemMatch = rows[i].match(regexTelemStr);
-        if (telemMatch) {
-            curStepTelem.push(createTableObj('path', telemMatch[0]));
         }
     }
 
-    return output;
+    // console.log('arrStepsAndTelem', arrStepsAndTelem);
+    return arrStepsAndTelem;
 }
 
 createTableObj = function (type, str) {

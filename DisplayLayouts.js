@@ -67,13 +67,13 @@ const DisplayLayout = function (args) {
     }
 
     this.addLabel = function (args) {
-        console.log('addLabel',args);
+        // console.log('addLabel',args);
         const response = {};
         const combinedArgs = copyObj(args);
         combinedArgs.itemW = args.itemW;
         const posObj = this.calcItemPosition(combinedArgs);
 
-        console.log(posObj);
+        // console.log(posObj);
 
         const itemPos = posObj.itemPos;
         response.placeIndex = posObj.args.placeIndex;

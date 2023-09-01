@@ -33,3 +33,12 @@ const TabsView = function(name) {
     Obj.call(this, name, 'tabs', true);
     this.keep_alive = true;
 }
+
+const StackedPlot = function(name) {
+    Obj.call(this, name, 'telemetry.plot.stacked', true);
+    this.configuration = {
+        series: [],
+        yAxis: {},
+        xAxis: {}
+    }
+}
