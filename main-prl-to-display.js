@@ -1,13 +1,16 @@
 const STEP_LABEL_STYLE = {
-    bgColor: '#333',
-    fgColor: '#999'
+    bgColor: '#555',
+    fgColor: '#ccc'
 }
 
-prlToDisplays = function(prlFilenames, prlContentArr) {
+prlToDisplays = function (prlFilenames, prlContentArr) {
     // For each elem in prlContentArr, create a LAD Table and Display Layout
     // Put the layouts into a Tab View
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
+
+    // Clear out the outputMsgs display
+    outputMsgText.innerHTML = '';
 
     // Create the root folder
     let folderRoot = new Obj(config.rootName, 'folder', true);
@@ -33,12 +36,15 @@ prlToDisplays = function(prlFilenames, prlContentArr) {
     procTabs.setLocation(folderRoot);
 
     for (let i = 0; i < prlFilenames.length; i++) {
+        if (i > 0) {
+            outputMsg('------------------------------------------------------------------------------------------------');
+        }
         const procViews = prlToDisplay(prlFilenames[i], prlContentArr[i]);
 
         // Add the proc's Display Layout
         const procDL = procViews.display_layout;
         root.addJson(procDL);
-        procTabs.addToComposition(procDL.identifier.key); // Change this later to add a flex layout
+        procTabs.addToComposition(procDL.identifier.key);
         folderDL.addToComposition(procDL.identifier.key);
         procDL.setLocation(folderDL);
 
@@ -52,53 +58,44 @@ prlToDisplays = function(prlFilenames, prlContentArr) {
     outputJSON();
 }
 
-prlToDisplay = function(prlFilename, prlContents) {
+prlToDisplay = function (prlFilename, prlContents) {
+    const procName = removeExtension(prlFilename); // remove .prl
     const prlObjects = extractFromPrl(prlContents);
-    const procName = prlFilename.split('.')[0]; // remove .prl
     let responseObj = {};
 
-    //Create a Display Layout for alphas and add it to the root folder
-    let procDisplayLayout = new DisplayLayout({
-        'name': procName,
-        'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
-        'itemMargin': config.itemMargin
-    });
+    if (prlObjects.length == 0) {
+        outputMsg(procName.concat(' -- NO TELEMETRY FOUND'));
+    } else {
+        outputMsg(procName);
+        //Create a Display Layout for alphas and add it to the root folder
+        let procDisplayLayout = new DisplayLayout({
+            'name': procName,
+            'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
+            'itemMargin': config.itemMargin
+        });
 
-    //Create a Stacked Plot for telemetry
-    let procStackedPlot = new StackedPlot(procName + ' Telemetry');
+        //Create a Stacked Plot for telemetry
+        let procStackedPlot = new StackedPlot(procName + ' Telemetry');
 
-    initAlphasItemPlacementTracker();
+        initAlphasItemPlacementTracker();
 
-    for (const prlObject of prlObjects) {
-        const curIndex = prlObjects.indexOf(prlObject);
-        const isTelemetry = prlObject.dataSource.length > 0;
-        let dlItem = {};
+        const longestLabel = findLongestLabel(prlObjects);
+        const labelWidth = labelWidthFromChars(parseInt(config.layoutGrid[0]), longestLabel);
+        // console.log(longestLabel);
 
-        if (isTelemetry) {
-            // If there's a datasource, add a label + alpha pair
-            dlItem = procDisplayLayout.addTextAndAlphaViewPair({
-                index: curIndex,
-                labelW: config.dlAlphas.labelW,
-                itemW: config.dlAlphas.itemW,
-                itemH: config.dlAlphas.itemH,
-                ident: prlObject.dataSource,
-                text: prlObject.name,
-                layoutStrategy: config.dlAlphas.layoutStrategy,
-                layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-                placeIndex: alphasItemPlacementTracker.placeIndex,
-                shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                alphaFormat: prlObject.alphaFormat,
-                alphaShowsUnit: prlObject.alphaShowsUnit
-            });
+        for (const prlObject of prlObjects) {
+            const curIndex = prlObjects.indexOf(prlObject);
+            const isTelemetry = prlObject.dataSource.length > 0;
+            let dlItem = {};
 
-            procDisplayLayout.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
-            procStackedPlot.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
+            outputMsg(prlObject.name.concat(': ').concat(prlObject.dataSource));
 
-        } else {
-            dlItem = procDisplayLayout.addLabel(
-                {
+            if (isTelemetry) {
+                // If there's a datasource, add a label + alpha pair
+                dlItem = procDisplayLayout.addTextAndAlphaViewPair({
                     index: curIndex,
-                    itemW: config.dlAlphas.labelW + config.itemMargin + config.dlAlphas.itemW,
+                    labelW: labelWidth,
+                    itemW: config.dlAlphas.itemW,
                     itemH: config.dlAlphas.itemH,
                     ident: prlObject.dataSource,
                     text: prlObject.name,
@@ -108,68 +105,167 @@ prlToDisplay = function(prlFilename, prlContents) {
                     shiftIndex: alphasItemPlacementTracker.shiftIndex,
                     alphaFormat: prlObject.alphaFormat,
                     alphaShowsUnit: prlObject.alphaShowsUnit
+                });
 
-                }
-            )
+                procDisplayLayout.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
+                procStackedPlot.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
+
+            } else {
+                dlItem = procDisplayLayout.addLabel(
+                    {
+                        index: curIndex,
+                        itemW: labelWidth + config.itemMargin + config.dlAlphas.itemW,
+                        itemH: config.dlAlphas.itemH,
+                        ident: prlObject.dataSource,
+                        text: prlObject.name,
+                        layoutStrategy: config.dlAlphas.layoutStrategy,
+                        layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
+                        placeIndex: alphasItemPlacementTracker.placeIndex,
+                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
+                        alphaFormat: prlObject.alphaFormat,
+                        alphaShowsUnit: prlObject.alphaShowsUnit
+
+                    }
+                )
+            }
+
+            alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
+            alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
         }
 
-        alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
-        alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
+        responseObj.display_layout = procDisplayLayout;
+        responseObj.stacked_plot = procStackedPlot;
     }
-
-    responseObj.display_layout = procDisplayLayout;
-    responseObj.stacked_plot = procStackedPlot;
 
     return responseObj;
 }
 
 extractFromPrl = function (str) {
-    let xmlDoc = new DOMParser().parseFromString(str,"text/xml");
+    let xmlDoc = new DOMParser().parseFromString(str, "text/xml");
     const steps = xmlDoc.getElementsByTagName("prl:Step");
     let arrStepsAndTelem = [];
 
     for (let i = 0; i < steps.length; i++) {
         const arrDataReferences = steps[i].getElementsByTagName("prl:DataReference");
+        const arrDataNomenclature = steps[i].getElementsByTagName("prl:DataNomenclature")
+        const arrVerifications = steps[i].getElementsByTagName("prl:VerifyGoal");
         const nodeStepTitle = steps[i].getElementsByTagName("prl:StepTitle")[0];
         const strStepLabel = 'STEP '
             .concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent);
-            // .concat(': ')
-            // .concat(nodeStepTitle.getElementsByTagName("prl:Text")[0].textContent)
+        // .concat(': ')
+        // .concat(nodeStepTitle.getElementsByTagName("prl:Text")[0].textContent)
 
         let arrUniquePathsForStep = [];
 
-        if (arrDataReferences.length > 0) {
+        if (
+            arrDataReferences.length > 0 ||
+            arrDataNomenclature.length > 0 ||
+            arrVerifications.length > 0
+        ) {
+            // 1. This step has either data refs or data nomenclature, so add a step label
             arrStepsAndTelem.push(createTableObj('label', strStepLabel));
 
-            for (let j = 0; j < arrDataReferences.length; j++) {
-                const description = arrDataReferences[j].getElementsByTagName("prl:Description")[0].textContent;
-                const identifier = arrDataReferences[j].getElementsByTagName("prl:Identifier")[0].textContent;
-                let path = identifier;
+            // 2. Get all the unique paths for data refs and add them to the uniquepaths array
+            if (arrDataReferences.length > 0) {
+                arrUniquePathsForStep = extractTelemFromDataReferences(arrDataReferences, arrUniquePathsForStep);
+            }
 
-                /*
-                    Pride stores aggregates like this:
-                    DataReference > Description: [EpsIo] SaciTelemetry.LIG_CTLR_CURR
-                    DataReference > Idenfitier: /ViperRover/EpsIo/SaciTelemetry
-                    So, we have to look for '.' in the Description to figure out if its an aggregate
-                    If so, grab everything past the first '.' and append it to the Identifier
-                    to get a valid path
-                 */
+            if (arrDataNomenclature.length > 0) {
+                arrUniquePathsForStep = extractTelemFromDataNomenclature(arrDataNomenclature, arrUniquePathsForStep);
+            }
 
-                if (description.includes('.')) {
-                    const pathEnd = description.substring(description.indexOf('.'), description.length);
-                    path = identifier.concat(pathEnd);
-                }
+            if (arrVerifications.length > 0) {
+                arrUniquePathsForStep = extractTelemFromVerifications(arrVerifications, arrUniquePathsForStep);
+            }
 
-                if (!arrUniquePathsForStep.includes(path)) {
-                    // Don't include the same telemetry more than once in a given step
-                    arrUniquePathsForStep.push(path);
-                    arrStepsAndTelem.push(createTableObj('path', path));
-                }
+            // 4. Iterate through the unique paths array and create table objs for them, adding to arrStepsAndTelem
+            for (let j = 0; j < arrUniquePathsForStep.length; j++) {
+                arrStepsAndTelem.push(createTableObj('path', arrUniquePathsForStep[j]));
             }
         }
     }
 
+    // console.log('extractFromPrl: ', arrStepsAndTelem);
     return arrStepsAndTelem;
+}
+
+extractTelemFromDataReferences = function (arrToIterate, arrUniquePathsForStep) {
+    for (let i = 0; i < arrToIterate.length; i++) {
+        // console.log(arrToIterate[i], arrToIterate[i].getElementsByTagName("prl:Description"));
+        let description = '', identifier = ''; //
+
+        if (arrToIterate[i].getElementsByTagName("prl:Description")[0]) {
+            description = arrToIterate[i].getElementsByTagName("prl:Description")[0].textContent;
+            identifier = arrToIterate[i].getElementsByTagName("prl:Identifier")[0].textContent;
+            let path = identifier;
+
+            /*
+                Pride stores aggregates like this:
+                DataReference > Description: [EpsIo] SaciTelemetry.LIG_CTLR_CURR
+                DataReference > Idenfitier: /ViperRover/EpsIo/SaciTelemetry
+                So, we have to look for '.' in the Description to figure out if its an aggregate
+                If so, grab everything past the first '.' and append it to the Identifier
+                to get a valid path
+             */
+
+            if (description.includes('.')) {
+                const pathEnd = description.substring(description.indexOf('.'), description.length);
+                path = identifier.concat(pathEnd);
+            }
+
+            if (!arrUniquePathsForStep.includes(path)) {
+                // Don't include the same telemetry more than once in a given step
+                // console.log('extractTelemFromDataReferences adding ', path);
+                arrUniquePathsForStep.push(path);
+            }
+        }
+    }
+
+    return arrUniquePathsForStep;
+}
+
+extractTelemFromDataNomenclature = function (arrToIterate, arrUniquePathsForStep) {
+    // NOT USED. DATANOMENCLATURE WITHOUT A DATASOURCE DON'T HAVE THE RIGHT PATHS, e.g.
+    // '[EpsIo] SaciTelemetry.PAPI6B_BUS_VOLTAGE'
+    for (let i = 0; i < arrToIterate.length; i++) {
+        let path = arrToIterate[i].textContent;
+
+        path = convertSybilStyle(path);
+
+        if (!arrUniquePathsForStep.includes(path)) {
+            arrUniquePathsForStep.push(path);
+        }
+    }
+
+    return arrUniquePathsForStep;
+}
+
+extractTelemFromVerifications = function (arrToIterate, arrUniquePathsForStep) {
+    // arrToIterate is an array of the following
+    // <prl:VerifyGoal>
+    //    <prl:TargetDescription>
+    //         <prl:Text>/ViperRover/MsoloIo/enabledFlag</prl:Text>
+    for (let i = 0; i < arrToIterate.length; i++) {
+        let path = arrToIterate[i]
+            .getElementsByTagName('prl:TargetDescription')[0]
+            .getElementsByTagName('prl:Text')[0].textContent;
+
+        path = convertSybilStyle(path);
+
+        if (!arrUniquePathsForStep.includes(path)) {
+            arrUniquePathsForStep.push(path);
+        }
+    }
+
+    return arrUniquePathsForStep;
+}
+
+convertSybilStyle = function (strSybilRef) {
+    // Converts telem refs like [EpsIo] SaciTelemetry.PAPI6B_BUS_VOLTAGE
+    // Replace first '[' with 'ViperRover/'
+    // Replace second '] ' with '/'
+    const pathRoot = '/ViperRover/';
+    return strSybilRef.replace('[', pathRoot).replace('] ', '/');
 }
 
 createTableObj = function (type, str) {
@@ -203,4 +299,17 @@ nameFromPath = function (str, delim, places) {
     }
 
     return name.trim();
+}
+
+findLongestLabel = function(objArr) {
+    let maxLen = 0;
+    let curLen = 0;
+    for (let i = 0; i < objArr.length; i++) {
+        curLen = objArr[i].name.toString().length;
+        if (curLen > maxLen) {
+            maxLen = curLen;
+        }
+    }
+
+    return maxLen;
 }

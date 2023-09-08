@@ -111,17 +111,18 @@ function outputJSON() {
     const updateTime = new Date();
     outputStatsDisplay.innerHTML =
         'Generated ' +
-        updateTime.getHours() + ':' +
-        updateTime.getMinutes() + ':' +
-        updateTime.getSeconds() + ' | ' +
+        updateTime.getHours().toString().padStart(2, '0') + ':' +
+        updateTime.getMinutes().toString().padStart(2, '0') + ':' +
+        updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
     btnDownload.removeAttribute('disabled');
 }
 
 downloadJson = function () {
-    const filename =  config.rootName
+    const filename = config.rootName
         .concat(' - ')
-        .concat(inputType.value.includes('csv')? downloadFilenames.csv : downloadFilenames.prl);
+        .concat(inputType.value.includes('csv')? downloadFilenames.csv : downloadFilenames.prl)
+        .concat('.json');
     const strJson = JSON.stringify(objJson, null, 4);
     const file = new File([strJson], filename, {
         type: 'text/json',
@@ -137,4 +138,8 @@ downloadJson = function () {
 
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+}
+
+function outputMsg(msg) {
+    outputMsgText.innerHTML = outputMsgText.innerHTML.concat("<br>".concat(msg));
 }

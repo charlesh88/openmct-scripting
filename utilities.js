@@ -111,3 +111,20 @@ toggleHiddenClass = function(arrIDs) {
     }
 }
 
+function removeExtension(str) {
+    // Remove the last '.' separated element from a string
+    return str.substring(0, str.lastIndexOf('.'));
+}
+
+function labelWidthFromChars(pxScale, charCnt) {
+    // Calcs a label width to a scale from a character count
+    const pxPerChar = 14;
+    const retinaScanAdj = 0.5;
+    const width = Math.ceil(((pxPerChar * retinaScanAdj) / pxScale) * charCnt);
+    // const pad = 0.1; // 10% padding
+
+    console.log('labelWidthFromChars',pxScale, charCnt, width);
+
+    return width;
+}
+

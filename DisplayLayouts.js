@@ -83,8 +83,8 @@ const DisplayLayout = function (args) {
         textArgs.x = itemPos.x;
         textArgs.y = itemPos.y;
         textArgs.itemW = combinedArgs.itemW;
-        textArgs.bgColor = '#2f2f2f';
-        textArgs.fgColor = '#ccc';
+        textArgs.bgColor = STEP_LABEL_STYLE.bgColor;
+        textArgs.fgColor = STEP_LABEL_STYLE.fgColor;
         this.addTextView(textArgs);
 
         return response;

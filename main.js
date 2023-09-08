@@ -24,7 +24,7 @@ function createOpenMCTJSONfromCSV(csv) {
     */
 
     const telemetryObjects = csvToArray(csv);
-    console.log(telemetryObjects);
+    // console.log(telemetryObjects);
 
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();

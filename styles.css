@@ -41,8 +41,7 @@ h2 {
     margin: 2px 0;
     border-radius: 3px;
     background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
-    opacity: 0.5;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 h3 {
@@ -84,10 +83,6 @@ input[disabled] {
     opacity: 0.2;
 }
 
-input.upload-file-btn {
-    /*width: 100%;*/
-}
-
 select {
     background: #444;
     padding: 4px;
@@ -98,6 +93,44 @@ button, .c-btn-run {
     color: #222;
     font-weight: 600;
     padding: 5px 30px;
+}
+
+form {
+    display: contents;
+}
+
+.page {
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px;
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    overflow: hidden;
+}
+
+.page-section {
+    flex: 0 0 auto;
+}
+
+.page-section.--can-shrink,
+.page-section.--expands {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.page-section.--can-shrink {
+    flex: 0 1 auto;
+    min-height: 15vh;
+}
+
+.page-section.--expands {
+    flex: 2 1 auto;
+}
+
+.page-section.--can-shrink .--scrolls,
+.page-section.--expands .--scrolls{
+    overflow: auto;
 }
 
 .c-btn-run {
@@ -120,10 +153,15 @@ button, .c-btn-run {
     margin-left: 10px;
 }
 
-.c-how {
-    max-height: 20vh;
+.c-how,
+.c-msg {
+    /*max-height: 20vh;*/
     overflow: auto;
     padding: 0 10px;
+}
+
+.c-msg {
+    line-height: 150%;
 }
 
 .c-config {
@@ -181,5 +219,5 @@ button, .c-btn-run {
 }
 
 .--hidden {
-    display: none;
+    display: none !important;
 }
