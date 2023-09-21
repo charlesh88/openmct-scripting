@@ -115,7 +115,8 @@ function outputJSON() {
         updateTime.getMinutes().toString().padStart(2, '0') + ':' +
         updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
-    btnDownload.removeAttribute('disabled');
+    btnDownloadJson.removeAttribute('disabled');
+    btnDownloadTelemList.removeAttribute('disabled');
 }
 
 downloadJson = function () {
@@ -128,6 +129,18 @@ downloadJson = function () {
         type: 'text/json',
     })
 
+    downloadFile(file);
+}
+
+downloadTelemList = function() {
+    const filename = 'Unique Telemetry List.csv';
+    const list = globalArrUniquePaths.join('\n');
+    const file = new File([list], filename, { type: 'text/csv'});
+
+    downloadFile(file);
+}
+
+downloadFile = function(file) {
     const link = document.createElement('a');
     const url = URL.createObjectURL(file);
 
@@ -138,6 +151,7 @@ downloadJson = function () {
 
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+
 }
 
 function outputMsg(msg) {

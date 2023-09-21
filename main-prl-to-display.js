@@ -3,6 +3,8 @@ const STEP_LABEL_STYLE = {
     fgColor: '#ccc'
 }
 
+let globalArrUniquePaths = [];
+
 prlToDisplays = function (prlFilenames, prlContentArr) {
     // For each elem in prlContentArr, create a LAD Table and Display Layout
     // Put the layouts into a Tab View
@@ -40,20 +42,25 @@ prlToDisplays = function (prlFilenames, prlContentArr) {
             outputMsg('------------------------------------------------------------------------------------------------');
         }
         const procViews = prlToDisplay(prlFilenames[i], prlContentArr[i]);
+        console.log(procViews, procViews.length);
 
-        // Add the proc's Display Layout
-        const procDL = procViews.display_layout;
-        root.addJson(procDL);
-        procTabs.addToComposition(procDL.identifier.key);
-        folderDL.addToComposition(procDL.identifier.key);
-        procDL.setLocation(folderDL);
+        if (procViews.length > 0) {
+            // Add the proc's Display Layout
+            const procDL = procViews.display_layout;
+            root.addJson(procDL);
+            procTabs.addToComposition(procDL.identifier.key);
+            folderDL.addToComposition(procDL.identifier.key);
+            procDL.setLocation(folderDL);
 
-        // Add the proc's Stacked Plot
-        const procSP = procViews.stacked_plot;
-        root.addJson(procSP);
-        folderSP.addToComposition(procSP.identifier.key);
-        procSP.setLocation(folderSP);
+            // Add the proc's Stacked Plot
+            const procSP = procViews.stacked_plot;
+            root.addJson(procSP);
+            folderSP.addToComposition(procSP.identifier.key);
+            procSP.setLocation(folderSP);
+        }
     }
+
+    console.log(globalArrUniquePaths);
 
     outputJSON();
 }
@@ -213,10 +220,16 @@ extractTelemFromDataReferences = function (arrToIterate, arrUniquePathsForStep) 
                 path = identifier.concat(pathEnd);
             }
 
-            if (!arrUniquePathsForStep.includes(path)) {
-                // Don't include the same telemetry more than once in a given step
-                // console.log('extractTelemFromDataReferences adding ', path);
-                arrUniquePathsForStep.push(path);
+            if (!path.includes(' ')) {
+                // If there are any spaces in the path, ignore it
+
+                if (!arrUniquePathsForStep.includes(path)) {
+                    arrUniquePathsForStep.push(path);
+
+                    if (!globalArrUniquePaths.includes(path)) {
+                        globalArrUniquePaths.push(path);
+                    }
+                }
             }
         }
     }
@@ -225,15 +238,21 @@ extractTelemFromDataReferences = function (arrToIterate, arrUniquePathsForStep) 
 }
 
 extractTelemFromDataNomenclature = function (arrToIterate, arrUniquePathsForStep) {
-    // NOT USED. DATANOMENCLATURE WITHOUT A DATASOURCE DON'T HAVE THE RIGHT PATHS, e.g.
-    // '[EpsIo] SaciTelemetry.PAPI6B_BUS_VOLTAGE'
     for (let i = 0; i < arrToIterate.length; i++) {
         let path = arrToIterate[i].textContent;
 
-        path = convertSybilStyle(path);
+        // path = convertSybilStyle(path);
 
-        if (!arrUniquePathsForStep.includes(path)) {
-            arrUniquePathsForStep.push(path);
+        if (!path.includes(' ')) {
+            // If there are any spaces in the path, ignore it
+
+            if (!arrUniquePathsForStep.includes(path)) {
+                arrUniquePathsForStep.push(path);
+
+                if (!globalArrUniquePaths.includes(path)) {
+                    globalArrUniquePaths.push(path);
+                }
+            }
         }
     }
 
@@ -250,10 +269,18 @@ extractTelemFromVerifications = function (arrToIterate, arrUniquePathsForStep) {
             .getElementsByTagName('prl:TargetDescription')[0]
             .getElementsByTagName('prl:Text')[0].textContent;
 
-        path = convertSybilStyle(path);
+        if (!path.includes(' ')) {
+            // If there are any spaces in the path, ignore it
 
-        if (!arrUniquePathsForStep.includes(path)) {
-            arrUniquePathsForStep.push(path);
+            // path = convertSybilStyle(path);
+
+            if (!arrUniquePathsForStep.includes(path)) {
+                arrUniquePathsForStep.push(path);
+
+                if (!globalArrUniquePaths.includes(path)) {
+                    globalArrUniquePaths.push(path);
+                }
+            }
         }
     }
 
@@ -290,7 +317,7 @@ createTableObj = function (type, str) {
 }
 
 nameFromPath = function (str, delim, places) {
-    // places counts backwards from the end of the path
+    // 'places' counts backwards from the end of the path
     const pathArr = str.split(delim);
     let name = '';
 

@@ -8,9 +8,10 @@ const inputCsv = document.getElementById("inputCsv");
 const formSectionWidgets = document.getElementById("configFormSectionWidgets");
 const howCsv = document.getElementById("howCsv");
 const howPrl = document.getElementById("howPrl");
-const btnDownload = document.getElementById("btnDownload");
+const btnDownloadJson = document.getElementById("btnDownloadJson");
+const btnDownloadTelemList = document.getElementById("btnDownloadTelemList");
 const outputMsgText = document.getElementById("outputMsg");
 
 inputType.addEventListener("change", function(ev){
-    toggleHiddenClass([howCsv, howPrl, inputCsv, inputPrl, formSectionWidgets])
+    toggleHiddenClass([howCsv, howPrl, inputCsv, inputPrl, btnDownloadTelemList, formSectionWidgets])
 }, false);
