@@ -133,6 +133,10 @@ form {
     overflow: auto;
 }
 
+.page-section.--min-content {
+    min-height: min-content !important;
+}
+
 .c-btn-run {
     background: #ff8000;
 }

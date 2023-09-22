@@ -47,15 +47,6 @@ function readFileAsText(file){
     });
 }
 
-// Handle fileupload
-inputPrl.addEventListener("change", function(ev){
-    uploadFiles(ev.currentTarget.files, 'prl');
-}, false);
-
-inputCsv.addEventListener("change", function(ev){
-    uploadFiles(ev.currentTarget.files, 'csv');
-}, false);
-
 function uploadFiles(files, fileType) {
     let readers = [];
     let filenames = [];
@@ -76,6 +67,8 @@ function uploadFiles(files, fileType) {
         // ["File1 Content", "File2 Content" ... "FileN Content"]
         if (fileType.includes('prl')) {
             prlToDisplays(filenames, values);
+        } else if (fileType.includes('py')) {
+            gcsExtractTelemetry(filenames, values);
         } else if (fileType.includes('csv')) {
             createOpenMCTJSONfromCSV(values[0]);
         }

@@ -15,3 +15,12 @@ const outputMsgText = document.getElementById("outputMsg");
 inputType.addEventListener("change", function(ev){
     toggleHiddenClass([howCsv, howPrl, inputCsv, inputPrl, btnDownloadTelemList, formSectionWidgets])
 }, false);
+
+// Handle fileupload
+inputPrl.addEventListener("change", function(ev){
+    uploadFiles(ev.currentTarget.files, 'prl');
+}, false);
+
+inputCsv.addEventListener("change", function(ev){
+    uploadFiles(ev.currentTarget.files, 'csv');
+}, false);
