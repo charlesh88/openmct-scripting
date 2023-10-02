@@ -53,9 +53,9 @@ function createConditionFromArr(name, isDefault, arr) {
     let c = o.configuration = {};
     c.name = name;
     c.output = arr[0];
-    c.trigger = (!isDefault) ? arr[3] : 'all';
-    c.criteria = (!isDefault) ? [createConditionCriteria(arr[4], arr[5])] : [];
-    console.log(c.criteria);
+    c.trigger = 'all';
+    c.criteria = (!isDefault) ? [createConditionCriteria(arr[3], arr[4])] : [];
+    // console.log('createConditionFromArr: ', c.trigger, c.criteria);
     c.summary = c.name + ' was scripted';
 
     return o;
