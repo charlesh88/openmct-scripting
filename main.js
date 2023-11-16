@@ -4,6 +4,10 @@ const downloadFilenames = {
     'csv': 'from CSV',
     'prl': 'from Pride procedures'
 }
+const VALID_PATH = [
+    'Viper',
+    'yamcs'
+];
 let config = {};
 let alphasItemPlacementTracker = {};
 let widgetsItemPlacementTracker = {};

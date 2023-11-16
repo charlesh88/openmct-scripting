@@ -67,8 +67,6 @@ function uploadFiles(files, fileType) {
         // ["File1 Content", "File2 Content" ... "FileN Content"]
         if (fileType.includes('prl')) {
             prlToDisplays(filenames, values);
-        } else if (fileType.includes('py')) {
-            gcsExtractTelemetry(filenames, values);
         } else if (fileType.includes('csv')) {
             createOpenMCTJSONfromCSV(values[0]);
         }
@@ -129,22 +127,33 @@ downloadTelemList = function() {
     const filename = 'Unique Telemetry List.csv';
     const list = globalArrUniquePaths.join('\n');
     const file = new File([list], filename, { type: 'text/csv'});
-
     downloadFile(file);
+    return false;
+}
+
+downloadTelemAndRefsList = function() {
+    const filename = 'Telemetry and Refs.csv';
+
+    const list = globalArrPathsAndRefs.join('\n');
+    const file = new File([list], filename, { type: 'text/csv'});
+    downloadFile(file);
+    return false;
 }
 
 downloadFile = function(file) {
+    // alert('wtf?!');
+    // console.log(file);
     const link = document.createElement('a');
+    link.setAttribute('download', file.name);
     const url = URL.createObjectURL(file);
-
     link.href = url;
-    link.download = file.name;
-    document.body.appendChild(link);
+    link.setAttribute('target', '_blank');
+    // link.download = file.name;
+    // document.body.appendChild(link);
     link.click();
-
-    document.body.removeChild(link);
+    //
+    // document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
-
 }
 
 function outputMsg(msg) {

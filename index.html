@@ -10,7 +10,7 @@
 <body translate="no">
 <div class="page">
     <div class="page-section">
-        <h1>Open MCT Views Generator <span class="app-version">v2.1</span></h1>
+        <h1>Open MCT Views Generator <span class="app-version">v2.2</span></h1>
 
         <label for="inputType">Choose a file input type:</label>
         <select id="inputType">
@@ -89,64 +89,66 @@
         </div>
     </div>
 
-    <form id="inputForm">
-        <div class="page-section c-config-holder">
-            <div class="c-config">
-                <h2>General Settings</h2>
-                <div class="c-config__label">Root Name</div>
-                <div class="c-config__value"><input type="text" id="rootName" value="Generated Open MCT"/></div>
-                <div class="c-config__label">Layout Grid [X,Y]</div>
-                <div class="c-config__value sm"><input id="layoutGrid" value="2,2"/></div>
+    <div class="page-section c-config-holder">
+        <div class="c-config">
+            <h2>General Settings</h2>
+            <div class="c-config__label">Root Name</div>
+            <div class="c-config__value"><input type="text" id="rootName" value="Generated Open MCT"/></div>
+            <div class="c-config__label">Layout Grid [X,Y]</div>
+            <div class="c-config__value sm"><input id="layoutGrid" value="2,2"/></div>
 
-                <div class="c-config__label">Item Margin</div>
-                <div class="c-config__value sm"><input id="itemMargin" value="1"/></div>
-            </div>
-            <div class="c-config" id="configFormSectionWidgets">
-                <h2>Widget Layout</h2>
-                <div class="c-config__value">
-                    <select id="widgetLayoutStrategy">
-                        <option value="columns">Columns</option>
-                        <option value="rows">Rows</option>
-                    </select>
-                </div>
-                <div class="c-config__value sm"><input type="number" id="widgetLayoutStrategyNum" value="3"/></div>
-
-                <div class="c-config__label">Item Width</div>
-                <div class="c-config__value sm"><input type="number" id="widgetLayoutItemWidth" value="150"/></div>
-
-                <div class="c-config__label">Item Height</div>
-                <div class="c-config__value sm"><input type="number" id="widgetLayoutItemHeight" value="15"/></div>
-            </div>
-            <div class="c-config">
-                <h2>Alpha Layout</h2>
-                <div class="c-config__value">
-                    <select id="alphaLayoutStrategy">
-                        <option value="columns">Columns</option>
-                        <option value="rows">Rows</option>
-                    </select>
-                </div>
-                <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="1"/></div>
-
-                <div class="c-config__label">Label Width</div>
-                <div class="c-config__value sm"><input type="number" id="alphaLayoutLabelWidth" value="150"/></div>
-
-                <div class="c-config__label">Item Width</div>
-                <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="150"/></div>
-
-                <div class="c-config__label">Item Height</div>
-                <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="10"/></div>
-            </div>
+            <div class="c-config__label">Item Margin</div>
+            <div class="c-config__value sm"><input id="itemMargin" value="1"/></div>
         </div>
+        <div class="c-config" id="configFormSectionWidgets">
+            <h2>Widget Layout</h2>
+            <div class="c-config__value">
+                <select id="widgetLayoutStrategy">
+                    <option value="columns">Columns</option>
+                    <option value="rows">Rows</option>
+                </select>
+            </div>
+            <div class="c-config__value sm"><input type="number" id="widgetLayoutStrategyNum" value="3"/></div>
 
-        <div class="page-section">
-            <h2>Input File(s)</h2>
+            <div class="c-config__label">Item Width</div>
+            <div class="c-config__value sm"><input type="number" id="widgetLayoutItemWidth" value="150"/></div>
+
+            <div class="c-config__label">Item Height</div>
+            <div class="c-config__value sm"><input type="number" id="widgetLayoutItemHeight" value="15"/></div>
+        </div>
+        <div class="c-config">
+            <h2>Alpha Layout</h2>
+            <div class="c-config__value">
+                <select id="alphaLayoutStrategy">
+                    <option value="columns">Columns</option>
+                    <option value="rows">Rows</option>
+                </select>
+            </div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="1"/></div>
+
+            <div class="c-config__label">Label Width</div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutLabelWidth" value="150"/></div>
+
+            <div class="c-config__label">Item Width</div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="150"/></div>
+
+            <div class="c-config__label">Item Height</div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="10"/></div>
+        </div>
+    </div>
+
+    <div class="page-section">
+        <h2>Input File(s)</h2>
+        <form id="inputForm">
             <input class="upload-file-btn" type="file" id="inputCsv" accept=".csv"/>
             <input class="upload-file-btn --hidden" type="file" id="inputPrl" accept=".prl" multiple/>
-            <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
-            <button class=" --hidden" id="btnDownloadTelemList" onclick="downloadTelemList();" disabled>DOWNLOAD TELEMETRY LIST</button>
-            <span id="output-stats" class="message"></span>
-        </div>
-    </form>
+        </form>
+        <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
+        <button class=" --hidden" id="btnDownloadTelemList" onclick="downloadTelemList();" disabled>DOWNLOAD TELEMETRY
+            LIST
+        </button>
+        <span id="output-stats" class="message"></span>
+    </div>
 
     <div class="page-section --expands">
         <h2>Output</h2>
@@ -162,6 +164,7 @@
 <script src="utilities.js"></script>
 <script src="ui-elements-prl-to-display.js"></script>
 <script src="main.js"></script>
+<script src="telemetry-extract-prl.js"></script>
 <script src="main-prl-to-display.js"></script>
 </body>
 </html>

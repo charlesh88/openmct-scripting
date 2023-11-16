@@ -31,7 +31,7 @@ function createStyleObj(args) {
 
 function csvToArray(str, delimiter = ",") {
     // https://sebhastian.com/javascript-csv-to-array/
-    str = str.replaceAll('\r','');
+    str = str.replaceAll('\r', '');
     // slice from start of text to the first \n index
     // use split to create an array from string by delimiter
     const headers = str.slice(0, str.indexOf("\n")).split(delimiter);
@@ -56,8 +56,8 @@ function csvToArray(str, delimiter = ",") {
         const values = row.split(delimiter);
         const el = headers.reduce(function (object, header, index) {
             object[header] = values[index]
-                .replaceAll('\"','')
-                .replaceAll('|',',');
+                .replaceAll('\"', '')
+                .replaceAll('|', ',');
             return object;
         }, {});
         return el;
@@ -101,7 +101,7 @@ function getFormNumericVal(id) {
     return (v) ? parseInt(v) : null;
 }
 
-toggleHiddenClass = function(arrIDs) {
+toggleHiddenClass = function (arrIDs) {
     for (let i = 0; i < arrIDs.length; i++) {
         if (arrIDs[i].className.includes('--hidden')) {
             arrIDs[i].classList.remove('--hidden');
@@ -123,8 +123,33 @@ function labelWidthFromChars(pxScale, charCnt) {
     const width = Math.ceil(((pxPerChar * retinaScanAdj) / pxScale) * charCnt);
     // const pad = 0.1; // 10% padding
 
-    console.log('labelWidthFromChars',pxScale, charCnt, width);
+    // console.log('labelWidthFromChars',pxScale, charCnt, width);
 
     return width;
+}
+
+function strClean(str) {
+    let oStr = '';
+    oStr = str.replaceAll('\n', '');
+    return oStr;
+}
+
+function validatePath(path) {
+    for (let i = 0; i < VALID_PATH.length; i++) {
+        if (path.includes(VALID_PATH[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function escForCsv(str) {
+    // Change all commas; change double-quotes to double-double-quotes
+    let o = '"'.concat(str.replace(/,/g, ';;').replace(/"/g, '""')).concat('"');
+
+    // Restore commas
+    o = o.replace(/;;/g, ',');
+
+    return o;
 }
 

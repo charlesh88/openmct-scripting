@@ -48,14 +48,14 @@ h3 {
   font-weight: normal;
 }
 
-input, button, textarea, select, .output {
+input[type="text"], button, textarea, select, .output {
     border: 1px solid #333;
     border-radius: 3px;
     box-sizing: border-box;
     color: inherit;
 }
 
-input, button, textarea {
+input[type="text"], button, textarea {
     background: #222;
     appearance: none;
     padding: 5px 10px;

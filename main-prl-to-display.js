@@ -42,9 +42,8 @@ prlToDisplays = function (prlFilenames, prlContentArr) {
             outputMsg('------------------------------------------------------------------------------------------------');
         }
         const procViews = prlToDisplay(prlFilenames[i], prlContentArr[i]);
-        console.log(procViews, procViews.length);
 
-        if (procViews.length > 0) {
+        if (Object.keys(procViews).length > 0) {
             // Add the proc's Display Layout
             const procDL = procViews.display_layout;
             root.addJson(procDL);
@@ -60,13 +59,15 @@ prlToDisplays = function (prlFilenames, prlContentArr) {
         }
     }
 
-    console.log(globalArrUniquePaths);
+    // console.log(globalArrUniquePaths);
 
     outputJSON();
 }
 
 prlToDisplay = function (prlFilename, prlContents) {
-    const procName = removeExtension(prlFilename); // remove .prl
+    const procNameFull = removeExtension(prlFilename); // remove .prl
+    // Shorten name by clipping at 2nd '_' in the proc name
+    const procName = procNameFull.substring(0, procNameFull.indexOf('_', procNameFull.indexOf('_') + 1));
     const prlObjects = extractFromPrl(prlContents);
     let responseObj = {};
 
@@ -131,7 +132,6 @@ prlToDisplay = function (prlFilename, prlContents) {
                         shiftIndex: alphasItemPlacementTracker.shiftIndex,
                         alphaFormat: prlObject.alphaFormat,
                         alphaShowsUnit: prlObject.alphaShowsUnit
-
                     }
                 )
             }
@@ -144,6 +144,8 @@ prlToDisplay = function (prlFilename, prlContents) {
         responseObj.stacked_plot = procStackedPlot;
     }
 
+    // console.log(procName + ' responseObj', responseObj);
+
     return responseObj;
 }
 
@@ -152,23 +154,49 @@ extractFromPrl = function (str) {
     const steps = xmlDoc.getElementsByTagName("prl:Step");
     let arrStepsAndTelem = [];
 
-    for (let i = 0; i < steps.length; i++) {
-        const arrDataReferences = steps[i].getElementsByTagName("prl:DataReference");
-        const arrDataNomenclature = steps[i].getElementsByTagName("prl:DataNomenclature")
-        const arrVerifications = steps[i].getElementsByTagName("prl:VerifyGoal");
-        const nodeStepTitle = steps[i].getElementsByTagName("prl:StepTitle")[0];
-        const strStepLabel = 'STEP '
-            .concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent);
-        // .concat(': ')
-        // .concat(nodeStepTitle.getElementsByTagName("prl:Text")[0].textContent)
+    for (let s = 0; s < steps.length; s++) {
+        // COMPILE TELEM FOR A GIVEN STEP
+        const arrDataReferences = steps[s].getElementsByTagName("prl:DataReference");
+        const arrDataNomenclature = steps[s].getElementsByTagName("prl:DataNomenclature");
+        // const arrVerifications = steps[s].getElementsByTagName("prl:VerifyGoal");
+        const nodeStepTitle = steps[s].getElementsByTagName("prl:StepTitle")[0];
+        // const strStepLabel = 'STEP '
+        //     .concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent);
 
         let arrUniquePathsForStep = [];
 
-        if (
+        if (arrDataReferences && arrDataReferences.length > 0) {
+            const arrPaths = extractTelemFromPrlDataReferences(arrDataReferences);
+            for (let i = 0; i < arrPaths.length; i++) {
+                if (!arrUniquePathsForStep.includes(arrPaths[i])) {
+                    arrUniquePathsForStep.push(arrPaths[i]);
+                }
+            }
+        }
+
+        if (arrDataNomenclature && arrDataNomenclature.length > 0) {
+            const arrPaths = extractTelemFromPrlDataNomenclature(arrDataNomenclature);
+            for (let i = 0; i < arrPaths.length; i++) {
+                if (!arrUniquePathsForStep.includes(arrPaths[i])) {
+                    arrUniquePathsForStep.push(arrPaths[i]);
+                }
+            }
+        }
+
+        if (arrUniquePathsForStep.length > 0) {
+            // Add a step label
+            arrStepsAndTelem.push(createTableObj('label', 'STEP '.concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent)));
+
+            for (let i = 0; i < arrUniquePathsForStep.length; i++) {
+                arrStepsAndTelem.push(createTableObj('path', arrUniquePathsForStep[i]));
+            }
+        }
+
+/*        if (
             arrDataReferences.length > 0 ||
-            arrDataNomenclature.length > 0 ||
-            arrVerifications.length > 0
+            arrDataNomenclature.length > 0
         ) {
+            // NEED A BETTER TEST - ARE THERE ACTUAL GOOD TELEM REFS IN HERE?
             // 1. This step has either data refs or data nomenclature, so add a step label
             arrStepsAndTelem.push(createTableObj('label', strStepLabel));
 
@@ -181,18 +209,18 @@ extractFromPrl = function (str) {
                 arrUniquePathsForStep = extractTelemFromDataNomenclature(arrDataNomenclature, arrUniquePathsForStep);
             }
 
-            if (arrVerifications.length > 0) {
-                arrUniquePathsForStep = extractTelemFromVerifications(arrVerifications, arrUniquePathsForStep);
-            }
+            // if (arrVerifications.length > 0) {
+            //     arrUniquePathsForStep = extractTelemFromVerifications(arrVerifications, arrUniquePathsForStep);
+            // }
 
             // 4. Iterate through the unique paths array and create table objs for them, adding to arrStepsAndTelem
             for (let j = 0; j < arrUniquePathsForStep.length; j++) {
                 arrStepsAndTelem.push(createTableObj('path', arrUniquePathsForStep[j]));
             }
-        }
+        }*/
     }
 
-    // console.log('extractFromPrl: ', arrStepsAndTelem);
+    // console.log('extractFromPrl arrStepsAndTelem', arrStepsAndTelem);
     return arrStepsAndTelem;
 }
 
