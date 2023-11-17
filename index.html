@@ -10,11 +10,12 @@
 <body translate="no">
 <div class="page">
     <div class="page-section">
-        <h1>Open MCT Views Generator <span class="app-version">v2.2</span></h1>
+        <h1>Open MCT Views Generator <span class="app-version">v2.3</span></h1>
 
         <label for="inputType">Choose a file input type:</label>
         <select id="inputType">
             <option value="csv" selected>CSV</option>
+            <option value="py">GCS (.py)</option>
             <option value="prl">Pride procedure (.prl)</option>
         </select>
     </div>
@@ -144,9 +145,6 @@
             <input class="upload-file-btn --hidden" type="file" id="inputPrl" accept=".prl" multiple/>
         </form>
         <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
-        <button class=" --hidden" id="btnDownloadTelemList" onclick="downloadTelemList();" disabled>DOWNLOAD TELEMETRY
-            LIST
-        </button>
         <span id="output-stats" class="message"></span>
     </div>
 

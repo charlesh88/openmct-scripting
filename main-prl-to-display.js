@@ -5,8 +5,8 @@ const STEP_LABEL_STYLE = {
 
 let globalArrUniquePaths = [];
 
-prlToDisplays = function (prlFilenames, prlContentArr) {
-    // For each elem in prlContentArr, create a LAD Table and Display Layout
+filesToDisplays = function (fileNames, fileContent) {
+    // For each elem in fileContent, create a LAD Table and Display Layout
     // Put the layouts into a Tab View
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
@@ -37,11 +37,11 @@ prlToDisplays = function (prlFilenames, prlContentArr) {
     folderRoot.addToComposition(procTabs.identifier.key);
     procTabs.setLocation(folderRoot);
 
-    for (let i = 0; i < prlFilenames.length; i++) {
+    for (let i = 0; i < fileNames.length; i++) {
         if (i > 0) {
             outputMsg('------------------------------------------------------------------------------------------------');
         }
-        const procViews = prlToDisplay(prlFilenames[i], prlContentArr[i]);
+        const procViews = fileToDisplay(fileNames[i], fileContent[i]);
 
         if (Object.keys(procViews).length > 0) {
             // Add the proc's Display Layout
@@ -64,11 +64,11 @@ prlToDisplays = function (prlFilenames, prlContentArr) {
     outputJSON();
 }
 
-prlToDisplay = function (prlFilename, prlContents) {
-    const procNameFull = removeExtension(prlFilename); // remove .prl
+fileToDisplay = function (fileName, fileContent) {
+    const procNameFull = removeExtension(fileName); // remove .prl
     // Shorten name by clipping at 2nd '_' in the proc name
     const procName = procNameFull.substring(0, procNameFull.indexOf('_', procNameFull.indexOf('_') + 1));
-    const prlObjects = extractFromPrl(prlContents);
+    const prlObjects = extractFromPrl(fileContent);
     let responseObj = {};
 
     if (prlObjects.length == 0) {

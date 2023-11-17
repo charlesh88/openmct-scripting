@@ -1,35 +1,3 @@
-
-/*myForm.addEventListener("submit", function (e) {
-    // https://sebhastian.com/javascript-csv-to-array/
-    // Fires when the Generate button is pressed
-    e.preventDefault();
-    const input = inputFile.files[0];
-    const inputType = document.getElementById('inputType').selectedOptions[0].value;
-    // console.log(inputType);
-    const reader = new FileReader();
-
-    if (input !== undefined) {
-        reader.onload = function (e) {
-            if (input.name.includes('.csv')) {
-                const data = csvToArray(e.target.result);
-                inputStatsDisplay.innerHTML = data.length + ' items found.';
-                displayInputCsv.innerHTML = JSON.stringify(data);
-                createOpenMCTJSONfromCSV(data, 'csv');
-            } else if (input.name.includes('.prl')) {
-                // console.log('Pride proc stuff path goes here');
-                prlToDisplayMain(e.target.result, input.name);
-            } else {
-                inputStatsDisplay.innerHTML = 'Please select a CSV or PRL file and try again.'
-            }
-        };
-
-        reader.readAsText(input);
-    } else {
-        inputStatsDisplay.innerHTML = 'Please select a CSV or PRL file and try again.'
-    }
-});*/
-
-
 /************************************* https://ourcodeworld.com/articles/read/1438/how-to-read-multiple-files-at-once-using-the-filereader-class-in-javascript#google_vignette */
 function readFileAsText(file){
     return new Promise(function(resolve,reject){
@@ -65,8 +33,8 @@ function uploadFiles(files, fileType) {
         // Values will be an array that contains an item
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
-        if (fileType.includes('prl')) {
-            prlToDisplays(filenames, values);
+        if (fileType.includes('prl') || fileType.includes('py')) {
+            filesToDisplays(filenames, values);
         } else if (fileType.includes('csv')) {
             createOpenMCTJSONfromCSV(values[0]);
         }
@@ -107,13 +75,24 @@ function outputJSON() {
         updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
     btnDownloadJson.removeAttribute('disabled');
-    btnDownloadTelemList.removeAttribute('disabled');
 }
 
 downloadJson = function () {
+    let fileDesc = '';
+    switch (inputType.value) {
+        case 'csv':
+            fileDesc = downloadFileDesc.csv;
+            break;
+        case 'prl':
+            fileDesc = downloadFileDesc.prl;
+            break;
+        case 'py':
+            fileDesc = downloadFileDesc.py;
+    }
+
     const filename = config.rootName
         .concat(' - ')
-        .concat(inputType.value.includes('csv')? downloadFilenames.csv : downloadFilenames.prl)
+        .concat(fileDesc)
         .concat('.json');
     const strJson = JSON.stringify(objJson, null, 4);
     const file = new File([strJson], filename, {

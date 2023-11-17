@@ -1,8 +1,9 @@
 const objJson = {};
 const ALPHA_BORDER = '1px solid #555555';
-const downloadFilenames = {
+const downloadFileDesc = {
     'csv': 'from CSV',
-    'prl': 'from Pride procedures'
+    'prl': 'from Pride procedures',
+    'py': 'from GCS'
 }
 const VALID_PATH = [
     'Viper',
