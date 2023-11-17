@@ -112,6 +112,7 @@ extractTelemFromPrl = function (strValue, filename) {
     const arrDataReferences = xmlDoc.getElementsByTagName("prl:DataReference");
     const arrDataNomenclature = xmlDoc.getElementsByTagName("prl:DataNomenclature");
     let arrTelem = [];
+    let arrUniqueTelemForProc = [];
     // const arrVerifications = xmlDoc.getElementsByTagName("prl:VerifyGoal");
     // const filterParams = checkboxFilterParameters.checked;
 
@@ -124,29 +125,34 @@ extractTelemFromPrl = function (strValue, filename) {
         if (arrTelem.length > 0) {
             for (let i = 0; i < arrTelem.length; i++) {
                 const path = arrTelem[i];
-                addToArrPathsAndRefs(escForCsv(path), filename,'DataReference');
                 addToArrUniquePaths(path);
+                if (!arrUniqueTelemForProc.includes(path)) {
+                    arrUniqueTelemForProc.push(path);
+                    addToArrPathsAndRefs(escForCsv(path), filename,'DataReference');
+                }
             }
         }
-        nonUniqueTelemCntr += arrTelem.length;
+        nonUniqueTelemCntr += arrUniqueTelemForProc.length;
     }
+
+    // Reset so we can also grab telem in a different ref type
+    arrUniqueTelemForProc = [];
 
     if (arrDataNomenclature.length > 0) {
         arrTelem = extractTelemFromPrlDataNomenclature(arrDataReferences);
         if (arrTelem.length > 0) {
             for (let i = 0; i < arrTelem.length; i++) {
                 const path = arrTelem[i];
-                addToArrPathsAndRefs(escForCsv(path), filename,'DataNomenclature');
                 addToArrUniquePaths(path);
+                if (!arrUniqueTelemForProc.includes(path)) {
+                    arrUniqueTelemForProc.push(path);
+                    addToArrPathsAndRefs(escForCsv(path), filename,'DataNomenclature');
+                }
             }
         }
-        nonUniqueTelemCntr += arrTelem.length;
+        nonUniqueTelemCntr += arrUniqueTelemForProc.length;
 
     }
-/*    if (arrVerifications.length > 0) {
-        // console.log('arrVerifications', arrVerifications);
-        nonUniqueTelemCntr += extractTelemFromPrlVerifications(arrVerifications, filename, filterParams);
-    }*/
 
     return nonUniqueTelemCntr;
 }
