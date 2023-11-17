@@ -68,10 +68,14 @@ fileToDisplay = function (fileName, fileContent) {
     const procNameFull = removeExtension(fileName); // remove .prl
     // Shorten name by clipping at 2nd '_' in the proc name
     const procName = procNameFull.substring(0, procNameFull.indexOf('_', procNameFull.indexOf('_') + 1));
-    const prlObjects = extractFromPrl(fileContent);
+
+    // TODO: add a divergence here to get telem from either .prl or .py file types
+    const fileObjs = extractFromPrl(fileContent);
+
+    console.log('fileObjs', fileObjs);
     let responseObj = {};
 
-    if (prlObjects.length == 0) {
+    if (fileObjs.length == 0) {
         outputMsg(procName.concat(' -- NO TELEMETRY FOUND'));
     } else {
         outputMsg(procName);
@@ -87,12 +91,12 @@ fileToDisplay = function (fileName, fileContent) {
 
         initAlphasItemPlacementTracker();
 
-        const longestLabel = findLongestLabel(prlObjects);
+        const longestLabel = findLongestLabel(fileObjs);
         const labelWidth = labelWidthFromChars(parseInt(config.layoutGrid[0]), longestLabel);
         // console.log(longestLabel);
 
-        for (const prlObject of prlObjects) {
-            const curIndex = prlObjects.indexOf(prlObject);
+        for (const prlObject of fileObjs) {
+            const curIndex = fileObjs.indexOf(prlObject);
             const isTelemetry = prlObject.dataSource.length > 0;
             let dlItem = {};
 
@@ -160,8 +164,6 @@ extractFromPrl = function (str) {
         const arrDataNomenclature = steps[s].getElementsByTagName("prl:DataNomenclature");
         // const arrVerifications = steps[s].getElementsByTagName("prl:VerifyGoal");
         const nodeStepTitle = steps[s].getElementsByTagName("prl:StepTitle")[0];
-        // const strStepLabel = 'STEP '
-        //     .concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent);
 
         let arrUniquePathsForStep = [];
 
@@ -191,36 +193,8 @@ extractFromPrl = function (str) {
                 arrStepsAndTelem.push(createTableObj('path', arrUniquePathsForStep[i]));
             }
         }
-
-/*        if (
-            arrDataReferences.length > 0 ||
-            arrDataNomenclature.length > 0
-        ) {
-            // NEED A BETTER TEST - ARE THERE ACTUAL GOOD TELEM REFS IN HERE?
-            // 1. This step has either data refs or data nomenclature, so add a step label
-            arrStepsAndTelem.push(createTableObj('label', strStepLabel));
-
-            // 2. Get all the unique paths for data refs and add them to the uniquepaths array
-            if (arrDataReferences.length > 0) {
-                arrUniquePathsForStep = extractTelemFromDataReferences(arrDataReferences, arrUniquePathsForStep);
-            }
-
-            if (arrDataNomenclature.length > 0) {
-                arrUniquePathsForStep = extractTelemFromDataNomenclature(arrDataNomenclature, arrUniquePathsForStep);
-            }
-
-            // if (arrVerifications.length > 0) {
-            //     arrUniquePathsForStep = extractTelemFromVerifications(arrVerifications, arrUniquePathsForStep);
-            // }
-
-            // 4. Iterate through the unique paths array and create table objs for them, adding to arrStepsAndTelem
-            for (let j = 0; j < arrUniquePathsForStep.length; j++) {
-                arrStepsAndTelem.push(createTableObj('path', arrUniquePathsForStep[j]));
-            }
-        }*/
     }
 
-    // console.log('extractFromPrl arrStepsAndTelem', arrStepsAndTelem);
     return arrStepsAndTelem;
 }
 
