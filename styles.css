@@ -31,36 +31,56 @@ h1 {
     opacity: 0.3;
 }
 
-h2 {
+h2, h3 {
     font-size: inherit;
+    text-transform: uppercase;
+}
+
+h2 {
     padding: 4px 6px;
     margin: 2px 0;
     border-radius: 3px;
     background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    opacity: 0.5;
+    color: rgba(255, 255, 255, 0.8);
 }
 
-input, button, textarea, select, .output {
+h3 {
+  font-weight: normal;
+}
+
+input[type="text"], button, textarea, select, .output {
     border: 1px solid #333;
     border-radius: 3px;
     box-sizing: border-box;
     color: inherit;
 }
 
-input, button, textarea {
+input[type="text"], button, textarea {
     background: #222;
     appearance: none;
     padding: 5px 10px;
 }
 
-input, button {
+input[type="text"] {
     width: 200px;
 }
 
-input.upload-file-btn {
-    width: 100%;
+button,
+input[type="file"],
+input[type="submit"] {
+    cursor: pointer;
+    width: max-content;
+}
+
+button,
+input[type="submit"] {
+    background-color: #666;
+}
+
+button[disabled],
+input[disabled] {
+    pointer-events: none;
+    opacity: 0.2;
 }
 
 select {
@@ -69,10 +89,52 @@ select {
 }
 
 button, .c-btn-run {
-    background: #778899;
+    background: #ecb157;
     color: #222;
     font-weight: 600;
     padding: 5px 30px;
+}
+
+form {
+    display: contents;
+}
+
+.page {
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px;
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    overflow: hidden;
+}
+
+.page-section {
+    flex: 0 0 auto;
+}
+
+.page-section.--can-shrink,
+.page-section.--expands {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.page-section.--can-shrink {
+    flex: 0 1 auto;
+    min-height: 15vh;
+}
+
+.page-section.--expands {
+    flex: 2 1 auto;
+}
+
+.page-section.--can-shrink .--scrolls,
+.page-section.--expands .--scrolls{
+    overflow: auto;
+}
+
+.page-section.--min-content {
+    min-height: min-content !important;
 }
 
 .c-btn-run {
@@ -83,18 +145,36 @@ button, .c-btn-run {
     width: 75px;
 }
 
-.c-config-holder {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-column-gap: 10px;
-    align-items: start;
+[class*='-holder'] {
+    display: flex;
+}
+
+[class*='-holder'] > * {
+    flex: 1 1 50%;
+}
+
+[class*='-holder'] > * + * {
+    margin-left: 10px;
+}
+
+.c-how,
+.c-msg {
+    /*max-height: 20vh;*/
+    overflow: auto;
+    padding: 0 10px;
+}
+
+.c-msg {
+    line-height: 150%;
 }
 
 .c-config {
+    align-items: start;
     display: grid;
     grid-template-columns: max-content 1fr;
     grid-column-gap: 5px;
     grid-row-gap: 5px;
+    height: min-content;
 }
 
 .c-config h2 {
@@ -105,16 +185,28 @@ button, .c-btn-run {
     padding: 5px 0;
 }
 
+.c-file-input {
+    align-items: center;
+    display: flex;
+}
+
+.c-file-input input[type="file"] {
+    flex: 1 1 auto;
+}
+.c-file-input .c-btn {
+    flex: 0 0 max-content;
+}
+
 .output, .message {
-    display: block;
     padding: 10px;
 }
 
 .output {
     background: rgba(255, 255, 255, 0.1);
     min-height: 1em;
-    overflow: hidden;
-    white-space: nowrap;
+    max-height: 10em;
+    overflow: auto;
+    word-break: break-all;
 }
 
 .output.lg {
@@ -128,4 +220,8 @@ button, .c-btn-run {
 
 .page-section + .page-section {
     margin-top: 10px;
+}
+
+.--hidden {
+    display: none !important;
 }

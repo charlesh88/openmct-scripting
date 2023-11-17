@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Open MCT JSON Find and Replace</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="string-finder.css">
+</head>
+
+<body translate="no">
+<h1>Open MCT JSON Find and Replace <span class="app-version">v1.0</span></h1>
+<p>
+    Searches a JSON file for string matches. Use the results to compile a replacements table, then load that in and use
+    it to replace string fragments in the file.
+</p>
+<div class="page-section">
+    <h2>Input File</h2>
+    <form id="input-form" class="c-file-input">
+        <input class="upload-file-btn" type="file" id="input-file" accept=".json"/>
+        <input class="c-btn" type="submit" value="LOAD"/>
+    </form>
+</div>
+
+<div class="page-section c-search-and-replace-holder">
+    <div class="c-search-holder">
+        <div class="c-config">
+            <h2>Search Input File</h2>
+            <div class="c-config__label">Search Regex</div>
+            <div class="c-config__value"><input type="text" id="search-regex" value='~[a-z~\.A-Z 0-9_]*'/></div>
+            <div class="c-config__label"></div>
+            <div class="c-config__value">
+                <button disabled class="c-btn-run" id="search-button" onclick="findMatches()">SEARCH</button>
+            </div>
+        </div>
+
+        <h2>Output</h2>
+        <div id="matches-stats" class="message"></div>
+        <div id="matches-output" class="output" contenteditable="true"></div>
+    </div>
+    <div class="c-replace-holder">
+        <div class="c-config">
+            <h2>Replace in Input File</h2>
+            <div class="c-config__label">Replacement CSV file:</div>
+            <div class="c-config__value">
+                <form id="replace-form" class="c-file-input">
+                    <input class="upload-file-btn" type="file" id="replace-file"
+                           accept=".csv"/>
+                    <input class="c-btn" type="submit" value="LOAD"/>
+                </form>
+            </div>
+            <div class="c-config__label"></div>
+            <div class="c-config__value">
+                <button disabled class="c-btn-run" id="replace-button"
+                        onclick="replaceStrings()">REPLACE</button>
+                <button disabled class="c-btn-run" id="save-replaced-button"
+                        onclick="saveReplacedFile()">SAVE FILE</button>
+            </div>
+        </div>
+
+        <h2>Output</h2>
+        <div id="replace-stats" class="message"></div>
+        <div id="replace-output" class="output" contenteditable="true"></div>
+    </div>
+</div>
+
+<script src="string-finder.js"></script>
+<script src="utilities.js"></script>
+</body>
+</html>
+

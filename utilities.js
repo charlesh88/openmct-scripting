@@ -29,6 +29,45 @@ function createStyleObj(args) {
     return s;
 }
 
+function csvToArray(str, delimiter = ",") {
+    // https://sebhastian.com/javascript-csv-to-array/
+    str = str.replaceAll('\r', '');
+    // slice from start of text to the first \n index
+    // use split to create an array from string by delimiter
+    const headers = str.slice(0, str.indexOf("\n")).split(delimiter);
+
+    // slice from \n index + 1 to the end of the text
+    // use split to create an array of each csv value row
+    let rowStr = str.slice(str.indexOf("\n") + 1);
+
+    rowStr = rowStr.replace(/"[^"]+"/g, function (v) {
+        // Encode all commas that are within double quote chunks with |
+        return v.replace(/,/g, '|');
+    });
+
+    const rows = rowStr.split("\n");
+
+    // Map the rows
+    // split values from each row into an array
+    // use headers.reduce to create an object
+    // object properties derived from headers:values
+    // the object passed as an element of the array
+    const arr = rows.map(function (row) {
+        const values = row.split(delimiter);
+        const el = headers.reduce(function (object, header, index) {
+            object[header] = values[index]
+                .replaceAll('\"', '')
+                .replaceAll('|', ',');
+            return object;
+        }, {});
+        return el;
+    });
+
+    // return the array
+    // console.log('csvToArray',arr);
+    return arr;
+}
+
 function getNamespace(source) {
     return (source.indexOf('~') != -1) ? 'taxonomy' : '';
 }
@@ -46,3 +85,71 @@ function createUUID() {
 function copyObj(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
+
+function addStat(objID, str, clear = false) {
+    const dispObj = document.getElementById(objID);
+    if (dispObj) {
+        if (clear) {
+            dispObj.innerHTML = '';
+        }
+        dispObj.innerHTML += str + '<br />';
+    }
+}
+
+function getFormNumericVal(id) {
+    const v = document.getElementById(id).value;
+    return (v) ? parseInt(v) : null;
+}
+
+toggleHiddenClass = function (arrIDs) {
+    for (let i = 0; i < arrIDs.length; i++) {
+        if (arrIDs[i].className.includes('--hidden')) {
+            arrIDs[i].classList.remove('--hidden');
+        } else {
+            arrIDs[i].classList.add('--hidden');
+        }
+    }
+}
+
+function removeExtension(str) {
+    // Remove the last '.' separated element from a string
+    return str.substring(0, str.lastIndexOf('.'));
+}
+
+function labelWidthFromChars(pxScale, charCnt) {
+    // Calcs a label width to a scale from a character count
+    const pxPerChar = 14;
+    const retinaScanAdj = 0.5;
+    const width = Math.ceil(((pxPerChar * retinaScanAdj) / pxScale) * charCnt);
+    // const pad = 0.1; // 10% padding
+
+    // console.log('labelWidthFromChars',pxScale, charCnt, width);
+
+    return width;
+}
+
+function strClean(str) {
+    let oStr = '';
+    oStr = str.replaceAll('\n', '');
+    return oStr;
+}
+
+function validatePath(path) {
+    for (let i = 0; i < VALID_PATH.length; i++) {
+        if (path.includes(VALID_PATH[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function escForCsv(str) {
+    // Change all commas; change double-quotes to double-double-quotes
+    let o = '"'.concat(str.replace(/,/g, ';;').replace(/"/g, '""')).concat('"');
+
+    // Restore commas
+    o = o.replace(/;;/g, ',');
+
+    return o;
+}
+

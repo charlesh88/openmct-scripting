@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Telemetry Extractor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body translate="no">
+<div class="page">
+    <div class="page-section">
+        <h1>Telemetry Extractor <span class="app-version">v2.1</span></h1>
+        <label for="inputType">Choose a file input type:</label>
+        <select id="inputType">
+            <option value="gcs" selected>GCS (.py)</option>
+            <option value="prl">Pride procedure (.prl)</option>
+        </select>
+    </div>
+    <div class="page-section --min-content">
+        <h2>What it does</h2>
+        <div class="c-how --scrolls">
+            <ul>
+                <li>Crawls selected GCS .py files and finds telemetry in getval and checkval calls.</li>
+                <li>Crawls selected Pride .prl files and finds telemetry in DataReferences and DataNomenclatures.</li>
+                <li>Outputs .csv files of de-duped unique telemetry paths and a full table of paths with their file references.</li>
+            </ul>
+        </div>
+    </div>
+        <!--div class="page-section">
+            <h2>Options</h2>
+            <input type="checkbox" id="checkboxFilterParameters" />
+            <label for="checkboxFilterParameters"
+                   title="When checked, parameter refs with spaces will be excluded."
+            >Filter for well-formed parameter references</label>
+        </div-->
+        <div class="page-section">
+            <h2>Input File(s)</h2>
+            <form id="inputForm">
+            <input id="inputGCS" class="upload-file-btn" type="file" accept=".py" multiple/>
+            <input id="inputPrl" class="upload-file-btn --hidden" type="file" accept=".prl" multiple/>
+            </form>
+            <button id="btnDownloadTelemList" onclick="downloadTelemList();" disabled>DOWNLOAD UNIQUE TELEMETRY</button>
+            <button id="btnDownloadTelemAndRefsList" onclick="downloadTelemAndRefsList();" disabled>DOWNLOAD TELEMETRY AND REFS</button>
+            <span id="output-stats" class="message"></span>
+        </div>
+    <div class="page-section --expands">
+        <h2>Output</h2>
+        <div class="c-msg" id="outputMsg">
+        </div>
+    </div>
+</div>
+
+<script src="input-output.js"></script>
+<script src="utilities.js"></script>
+<script src="telemetry-extract-prl.js"></script>
+<script src="main-telemetry-extract.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
+

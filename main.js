@@ -1,11 +1,18 @@
 const objJson = {};
 const ALPHA_BORDER = '1px solid #555555';
+const downloadFilenames = {
+    'csv': 'from CSV',
+    'prl': 'from Pride procedures'
+}
+const VALID_PATH = [
+    'Viper',
+    'yamcs'
+];
 let config = {};
 let alphasItemPlacementTracker = {};
 let widgetsItemPlacementTracker = {};
-let telemFolder = undefined;
 
-function createOpenMCTJSON(telemetryObjects) {
+function createOpenMCTJSONfromCSV(csv) {
     /*
     telemetryObjects: array of objects like this:
     [{
@@ -18,7 +25,10 @@ function createOpenMCTJSON(telemetryObjects) {
         condDefault (output string, bgColor, fgColor)
         cond1, cond2, etc. (output string, bgColor, fgColor, trigger, criteria, value)
     }]
-     */
+    */
+
+    const telemetryObjects = csvToArray(csv);
+    // console.log(telemetryObjects);
 
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
@@ -46,6 +56,10 @@ function createOpenMCTJSON(telemetryObjects) {
     folder.addToComposition(LadTable.identifier.key);
     LadTable.setLocation(folder);
 
+    for (const telemetryObject of telemetryObjects) {
+        LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
+    }
+
     // Create a Display Layout for widgets and add it to the root folder
     let dlWidgets = new DisplayLayout({
         'name': 'DL Widgets',
@@ -71,31 +85,60 @@ function createOpenMCTJSON(telemetryObjects) {
 
     for (const telemetryObject of telemetryObjects) {
         const curIndex = telemetryObjects.indexOf(telemetryObject);
+        const isTelemetry = telemetryObject.dataSource.length > 0;
 
         // If telemObject dataSource includes "," then it's synthetic
         // Create the source, add it to the telemSource folder and to the composition
         // Update telemtryObject.dataSource to use the UUID of the created object
 
-        LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
+        // LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
 
-        const alpha = dlAlphas.addTextAndAlphaViewPair({
-            index: curIndex,
-            labelW: config.dlAlphas.labelW,
-            itemW: config.dlAlphas.itemW,
-            itemH: config.dlAlphas.itemH,
-            ident: telemetryObject.dataSource,
-            text: telemetryObject.name,
-            layoutStrategy: config.dlAlphas.layoutStrategy,
-            layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-            placeIndex: alphasItemPlacementTracker.placeIndex,
-            shiftIndex: alphasItemPlacementTracker.shiftIndex,
-            alphaFormat: telemetryObject.alphaFormat,
-            alphaShowsUnit: telemetryObject.alphaShowsUnit
-        });
+        let dlItem = {};
 
-        alphasItemPlacementTracker.placeIndex = alpha.placeIndex;
-        alphasItemPlacementTracker.shiftIndex = alpha.shiftIndex;
-        dlAlphas.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
+        if (isTelemetry) {
+            // If there's a datasource, add a label + alpha pair
+            dlItem = dlAlphas.addTextAndAlphaViewPair({
+                index: curIndex,
+                labelW: config.dlAlphas.labelW,
+                itemW: config.dlAlphas.itemW,
+                itemH: config.dlAlphas.itemH,
+                ident: telemetryObject.dataSource,
+                text: telemetryObject.name,
+                layoutStrategy: config.dlAlphas.layoutStrategy,
+                layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
+                placeIndex: alphasItemPlacementTracker.placeIndex,
+                shiftIndex: alphasItemPlacementTracker.shiftIndex,
+                alphaFormat: telemetryObject.alphaFormat,
+                alphaShowsUnit: telemetryObject.alphaShowsUnit
+            });
+
+            dlAlphas.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
+        } else {
+            // If no datasource, treat as a standalone label
+            dlItem = dlAlphas.addLabel(
+                {
+                    index: curIndex,
+                    itemW: config.dlAlphas.labelW + config.itemMargin + dlAlphas.itemW,
+                    itemH: config.dlAlphas.itemH,
+                    ident: telemetryObject.dataSource,
+                    text: telemetryObject.name,
+                    layoutStrategy: config.dlAlphas.layoutStrategy,
+                    layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
+                    placeIndex: alphasItemPlacementTracker.placeIndex,
+                    shiftIndex: alphasItemPlacementTracker.shiftIndex,
+                    alphaFormat: telemetryObject.alphaFormat,
+                    alphaShowsUnit: telemetryObject.alphaShowsUnit
+
+                }
+            )
+        }
+
+        alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
+        alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
+
+        // if (isTelemetry) {
+        //     dlAlphas.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
+        // }
 
         // Add conditionals
         if (telemetryObject.cond1.length > 0) {
@@ -104,7 +147,7 @@ function createOpenMCTJSON(telemetryObjects) {
             const conditionsArr = cs.conditionsToArr(telemetryObject);
             cs.addConditions(telemetryObject, conditionsArr);
 
-            // Add a "styles" collection for Conditional styling in dlAlpha.objectStyles[alpha.id]
+            // Add a "styles" collection for Conditional styling in dlAlpha.objectStyles[dlItem.id]
             if (telemetryObject.alphaUsesCond === 'TRUE') {
                 for (const cond of cs.configuration.conditionCollection) {
                     const args = {
@@ -113,8 +156,8 @@ function createOpenMCTJSON(telemetryObjects) {
                         fgColor: cond.fgColor,
                         id: cond.id
                     }
-                    dlAlphas.configuration.objectStyles[alpha.id].styles.push(createStyleObj(args));
-                    dlAlphas.configuration.objectStyles[alpha.id].conditionSetIdentifier = createIdentifier(cs.identifier.key);
+                    dlAlphas.configuration.objectStyles[dlItem.id].styles.push(createStyleObj(args));
+                    dlAlphas.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(cs.identifier.key);
                 }
             }
 
@@ -148,12 +191,7 @@ function createOpenMCTJSON(telemetryObjects) {
         }
     }
 
-    // Output JSON
-    const outputDisplay = document.getElementById('outputGeneratedJson');
-    let outputJSON = JSON.stringify(objJson, null, 4);
-    const updateTime = new Date();
-    outputStatsDisplay.innerHTML = 'Updated ' + updateTime.getHours() + ':' + updateTime.getMinutes() + '; ' + telemetryObjects.length + ' objects; ' + outputJSON.length + ' chars';
-    outputDisplay.innerHTML = outputJSON;
+    outputJSON();
 }
 
 function initAlphasItemPlacementTracker() {

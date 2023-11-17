@@ -2,53 +2,105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-   <title>Generate Open MCT Object Views</title>
+    <title>Open MCT Views Generator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body translate="no">
-<h1>Generate Open MCT Import JSON <span class="app-version">v1.2</span></h1>
-<p>
-    Based on an input CSV file of telemetry points, this app creates an Open MCT JSON import file that contains the following:
-</p>
-<ul>
-    <li>For each telemetry point in the input file, a Condition Set with a default up to 4 conditions that allow all the standard Open MCT value comparisons. Condition parameters and values are set in the input CSV file.</li>
-    <li>For each Condition Set, a Condition Widget that uses the Condition Set for dynamic styling, based on colors and label text defined in the input file.</li>
-    <li>A Display Layout that includes all the widgets in a grid layout defined by those settings below.</li>
-    <li>A Display Layout that includes all the telemetry points in the input file as alphanumerics, in a grid layout defined by those settings below. Each alpha has a text label from the "name" column in the input file.</li>
-    <li>A LAD Table that includes all the telemetry points in the input file.</li>
-    <li>Folders that hold the Condition Sets and Widgets.</li>
-</ul>
-<div class="page-section">
-    <h2>How to Use</h2>
-    <ol>
-        <li>Make a CSV file like <a target="_blank" href="Open-MCT-Domain-Object-Scripting-example-file.csv">this example</a>. Note that it must have a header row.
-        <li>Input that file using the "Choose File" button.</li>
-        <li>Set parameters. The smaller the Layout Grid numbers are the closer you can place items with a margin, but width and heights will need to be adjusted accordingly. Using "Columns" will build across first, "Rows" builds down first. For example, with a total of 16 items, using "Columns" set to 2 will result in two columns of elements with 8 rows each.</li>
-        <li>Press "GENERATE", then "DOWNLOAD" to download the generated JSON file.</li>
-        <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.</li>
-    </ol>
-</div>
-<form id="inputForm">
+<div class="page">
     <div class="page-section">
-        <h2>Input File</h2>
-        <input class="upload-file-btn" type="file" id="csvFile" accept=".csv"/>
-        <div id="input-stats" class="message"></div>
-        <div id="display-csv" class="output" contenteditable="true"></div>
+        <h1>Open MCT Views Generator <span class="app-version">v2.2</span></h1>
+
+        <label for="inputType">Choose a file input type:</label>
+        <select id="inputType">
+            <option value="csv" selected>CSV</option>
+            <option value="prl">Pride procedure (.prl)</option>
+        </select>
     </div>
+    <div class="page-section --can-shrink" id="howCsv">
+        <h2>CSV as a source</h2>
+        <div class="c-how --scrolls">
+            <h3>What it does</h3>
+            <ul>
+                <li>For each telemetry point in the input file, a Condition Set with a default up to 4 conditions that
+                    allow all the standard Open MCT value comparisons. Condition parameters and values are set in the
+                    input CSV file.
+                </li>
+                <li>For each Condition Set, a Condition Widget that uses the Condition Set for dynamic styling, based on
+                    colors and label text defined in the input file.
+                </li>
+                <li>A Display Layout that includes all the widgets in a grid layout defined by the settings below.</li>
+                <li>A Display Layout that includes all the telemetry points in the input file as alphanumerics, in a
+                    grid layout defined by the settings below. Each alpha has a text label from the "name" column in the
+                    input file.
+                </li>
+                <li>A LAD Table that includes all the telemetry points in the input file.</li>
+                <li>Folders that hold the Condition Sets and Widgets.</li>
+                <li>A single folder that holds all of the above, named using your input Root Name below.</li>
+            </ul>
+
+            <h3>How to use</h3>
+            <ol>
+                <li>Make a CSV file like <a target="_blank" href="Open-MCT-Domain-Object-Scripting-example-file.csv">this
+                    example</a>. Note that it must have a header row.
+                <li>Set parameters below. The smaller the Layout Grid numbers are the closer you can place items with a
+                    margin, but width and heights will need to be adjusted accordingly. Using "Columns" will build
+                    across first, "Rows" builds down first. For example, with a total of 16 items, using "Columns" set
+                    to 2 will result in two columns of elements with 8 rows each.
+                </li>
+                <li>Press the "Choose File" button and select your CSV file. A JSON file will immediately be
+                    generated.
+                </li>
+                <li>Press "DOWNLOAD" to download the generated JSON file.</li>
+                <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="page-section --can-shrink --hidden" id="howPrl">
+        <h2>Pride procedure .prl files as a source</h2>
+        <div class="c-how">
+            <h3>What it does</h3>
+            <ul>
+                <li>Each selected .prl file will be traversed, and steps with telemetry in them as data references will
+                    be extracted. Steps without telemetry will be ignored.
+                </li>
+                <li>For each procedure, a Display Layout will be genned that includes all its telemetry points as
+                    alphanumerics. Each alphanumeric will have a text label, based on the telemetry path. Labels will
+                    also be added for procedure step numbers.
+                </li>
+                <li>For each procedure, a Stacked Plot will be genned that includes all its telemetry points.</li>
+                <li>A single Tabs view will be created that includes all the generated Display Layouts.</li>
+                <li>Folders that hold the layouts and plots.</li>
+                <li>A single folder that holds all of the above, named using your input Root Name below.</li>
+            </ul>
+
+            <h3>How to use</h3>
+            <ol>
+                <li>Set parameters below. Label Width is recommended to be 220.
+                    <!--Recommend defaults, but set Columns = 1 and Item Width = 150.--></li>
+                <li>Press the "Choose File" button and select one or more Pride .prl files. A JSON file will immediately
+                    be generated.
+                </li>
+                <li>Press "DOWNLOAD" to download the generated JSON file.</li>
+                <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.</li>
+            </ol>
+        </div>
+    </div>
+
     <div class="page-section c-config-holder">
         <div class="c-config">
-            <h2>Global</h2>
+            <h2>General Settings</h2>
             <div class="c-config__label">Root Name</div>
-            <div class="c-config__value"><input type="text" id="rootName" value="Scripted Open MCT"/></div>
+            <div class="c-config__value"><input type="text" id="rootName" value="Generated Open MCT"/></div>
             <div class="c-config__label">Layout Grid [X,Y]</div>
             <div class="c-config__value sm"><input id="layoutGrid" value="2,2"/></div>
 
             <div class="c-config__label">Item Margin</div>
             <div class="c-config__value sm"><input id="itemMargin" value="1"/></div>
         </div>
-        <div class="c-config">
+        <div class="c-config" id="configFormSectionWidgets">
             <h2>Widget Layout</h2>
             <div class="c-config__value">
                 <select id="widgetLayoutStrategy">
@@ -72,37 +124,48 @@
                     <option value="rows">Rows</option>
                 </select>
             </div>
-            <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="2"/></div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="1"/></div>
 
             <div class="c-config__label">Label Width</div>
             <div class="c-config__value sm"><input type="number" id="alphaLayoutLabelWidth" value="150"/></div>
 
             <div class="c-config__label">Item Width</div>
-            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="50"/></div>
+            <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="150"/></div>
 
             <div class="c-config__label">Item Height</div>
             <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="10"/></div>
         </div>
     </div>
-    <div class="page-section page-section--centered">
-        <input class="c-btn-run" type="submit" value="GENERATE"/>
+
+    <div class="page-section">
+        <h2>Input File(s)</h2>
+        <form id="inputForm">
+            <input class="upload-file-btn" type="file" id="inputCsv" accept=".csv"/>
+            <input class="upload-file-btn --hidden" type="file" id="inputPrl" accept=".prl" multiple/>
+        </form>
+        <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
+        <button class=" --hidden" id="btnDownloadTelemList" onclick="downloadTelemList();" disabled>DOWNLOAD TELEMETRY
+            LIST
+        </button>
+        <span id="output-stats" class="message"></span>
     </div>
-</form>
-<div class="page-section">
-    <h2>Output</h2>
-    <div id="output-stats" class="message"></div>
-    <div id="outputGeneratedJson" class="output" contenteditable="true"></div>
-</div>
-<div class="page-section page-section--centered">
-    <button onclick="downloadJson();">DOWNLOAD</button>
+
+    <div class="page-section --expands">
+        <h2>Output</h2>
+        <div class="c-msg" id="outputMsg">
+        </div>
+    </div>
 </div>
 
 <script src="input-output.js"></script>
 <script src="ConditionSetsAndWidgets.js"></script>
 <script src="DisplayLayouts.js"></script>
 <script src="DomainObjects.js"></script>
-<script src="main.js"></script>
 <script src="utilities.js"></script>
+<script src="ui-elements-prl-to-display.js"></script>
+<script src="main.js"></script>
+<script src="telemetry-extract-prl.js"></script>
+<script src="main-prl-to-display.js"></script>
 </body>
 </html>
 
