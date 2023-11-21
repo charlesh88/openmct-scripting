@@ -217,14 +217,12 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     });
 
     const rows = csv.split('\n');
-    // console.log(rows);
-
     const rowArr = rows.map(function (row) {
         const values = row.split(',');
         return values;
     });
 
-    console.log('tO',telemetryObjects);
+    // console.log('telemetryObjects', telemetryObjects);
 
     // Create a layout for the matrix and add it to the root folder
     let dlMatrix = new DisplayLayout({
@@ -243,35 +241,35 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     // Iterate through telemetry collection
     for (let r = 1; r < rowArr.length; r++) {
         const row = rowArr[r];
-        console.log(row);
-
         const rowH = parseInt(row[0]);
-
         let curX = 0;
 
         // Iterate through row cells
         for (let c = 1; c < row.length; c++) {
             // Process each cell in the matrix
-            let cell = row[c];
+            let cell = row[c].trim();
             const colW = parseInt(arrColWidths[c]);
 
             /*
-                TODO: Look for commas, and if present, strip out and handle args
-                - If a comma followed by "_xx", display as:
+                Look for converted commas, and if present, strip out and handle args
+                - If a | followed by "_xx", display as:
                 - _cw: Condition Widget
                 - _op: Overlay Plot
              */
 
-            if (cell.includes(',')) {
-                const cellArgs = cell.substring(cell.indexOf(','),cell.length);
-                cell = cell.substring(0,cell.indexOf(','));
+            const argSeparator = '|';
+            let cellArgs;
+
+            if (cell.includes(argSeparator)) {
+                cellArgs = cell.substring(cell.indexOf(argSeparator) + 1, cell.length);
+                cell = cell.substring(0, cell.indexOf(argSeparator)).replaceAll('"','').trim();
             }
 
             if (cell.includes("~")) {
                 // It's a telemetry path, add a telemetry view
-                console.log('Add telem for '
+/*                console.log('Add telem for "'
                     .concat(cell)
-                    .concat(' at ')
+                    .concat('" at ')
                     .concat(curX.toString())
                     .concat(', ')
                     .concat(curY.toString())
@@ -279,29 +277,49 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     .concat(colW)
                     .concat('; h = ')
                     .concat(rowH)
-                );
+                );*/
 
                 // If telem, get the corresponding telemetryObject
                 const telemetryObject = telemetryObjects.find(e => e.dataSource === cell);
 
-                dlItem = dlMatrix.addTelemetryView({
-                    itemW: colW,
-                    itemH: rowH,
-                    x: curX,
-                    y: curY,
-                    ident: cell,
-                    alphaFormat: (telemetryObject)? telemetryObject.alphaFormat : '',
-                    alphaShowsUnit: (telemetryObject)? telemetryObject.alphaShowsUnit : 'TRUE'
-                });
-                if (telemetryObject) {
-                    // TODO: add a check here for existence of alphaObjStyles
-                    dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.alphaObjStyles;
-                    dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = telemetryObject.csKey;
+                if (cellArgs) {
+                    if (cellArgs.includes('_cw')) {
+                        // Add previously created Condition Widget
+                        dlMatrix.addSubObjectViewInPlace({
+                            itemW: colW,
+                            itemH: rowH,
+                            x: curX,
+                            y: curY,
+                            ident: telemetryObject.cwKey,
+                            hasFrame: false
+                        });
+
+                        dlMatrix.addToComposition(telemetryObject.cwKey);
+                    }
+                } else {
+                    // Add as a telemetry view (alphanumeric)
+                    dlItem = dlMatrix.addTelemetryView({
+                        itemW: colW,
+                        itemH: rowH,
+                        x: curX,
+                        y: curY,
+                        ident: cell,
+                        alphaFormat: telemetryObject.alphaFormat,
+                        alphaShowsUnit: telemetryObject.alphaShowsUnit
+                    });
+
+                    if (telemetryObject.alphaObjStyles) {
+                        dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.alphaObjStyles;
+                        dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = telemetryObject.csKey;
+                    }
                 }
+
                 dlMatrix.addToComposition(cell, getNamespace(cell));
-            } else if (cell.length > 0) {
+            }
+        else
+            if (cell.length > 0) {
                 // It's a label, add a text view
-                console.log('Add label for '
+/*                console.log('Add label for '
                     .concat(cell)
                     .concat(' at ')
                     .concat(curX.toString())
@@ -311,7 +329,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     .concat(colW)
                     .concat('; h = ')
                     .concat(rowH)
-                );
+                );*/
 
                 dlItem = dlMatrix.addTextView({
                     itemW: colW,
@@ -322,7 +340,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 });
             } else {
                 // Blank cell, skip it
-                console.log('Blank cell at '
+ /*               console.log('Blank cell at '
                     .concat(curX.toString())
                     .concat(', ')
                     .concat(curY.toString())
@@ -330,16 +348,12 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     .concat(colW)
                     .concat('; h = ')
                     .concat(rowH)
-                );
+                );*/
             }
 
-            curX += colW + ((c > 1)? config.itemMargin : 0);
+            curX += colW + ((c > 1) ? config.itemMargin : 0);
         }
 
-        curY += rowH + ((r > 1)? config.itemMargin : 0);
+        curY += rowH + ((r > 1) ? config.itemMargin : 0);
     }
-
-
-
-
 }

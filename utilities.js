@@ -121,9 +121,6 @@ function labelWidthFromChars(pxScale, charCnt) {
     const pxPerChar = 14;
     const retinaScanAdj = 0.5;
     const width = Math.ceil(((pxPerChar * retinaScanAdj) / pxScale) * charCnt);
-    // const pad = 0.1; // 10% padding
-
-    // console.log('labelWidthFromChars',pxScale, charCnt, width);
 
     return width;
 }
@@ -152,4 +149,3 @@ function escForCsv(str) {
 
     return o;
 }
-

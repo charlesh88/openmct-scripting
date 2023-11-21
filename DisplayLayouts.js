@@ -41,6 +41,19 @@ const DisplayLayout = function (args) {
         return response;
     }
 
+    this.addSubObjectViewInPlace = function (args) {
+        const response = {};
+        const subObj = this.createBaseItem(args);
+        subObj.type = 'subobject-view';
+        subObj.identifier = createIdentifier(args.ident);
+        subObj.hasFrame = args.hasFrame;
+        subObj.x = args.x;
+        subObj.y = args.y;
+        this.configuration.items.push(subObj);
+
+        return response;
+    }
+
     this.addTextAndAlphaViewPair = function (args) {
         const response = {};
         const combinedArgs = copyObj(args);
