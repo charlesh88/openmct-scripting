@@ -126,7 +126,6 @@ function outputJSON() {
         updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
     btnDownloadJson.removeAttribute('disabled');
-    // btnDownloadTelemList.removeAttribute('disabled');
 }
 
 downloadJson = function () {

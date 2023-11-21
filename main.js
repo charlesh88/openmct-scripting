@@ -159,8 +159,6 @@ function createOpenMCTJSONfromCSV(csv) {
                     const alphaCondStyleObj = createStyleObj(args);
                     dlAlphas.configuration.objectStyles[dlItem.id].styles.push(alphaCondStyleObj);
                     dlAlphas.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(cs.identifier.key);
-
-                    telemetryObjects[curIndex].csStyleObj = alphaCondStyleObj;
                 }
                 telemetryObjects[curIndex].alphaObjStyles = dlAlphas.configuration.objectStyles[dlItem.id].styles;
             }
@@ -292,10 +290,14 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     x: curX,
                     y: curY,
                     ident: cell,
-                    alphaFormat: telemetryObject.alphaFormat,
-                    alphaShowsUnit: telemetryObject.alphaShowsUnit
+                    alphaFormat: (telemetryObject)? telemetryObject.alphaFormat : '',
+                    alphaShowsUnit: (telemetryObject)? telemetryObject.alphaShowsUnit : 'TRUE'
                 });
-
+                if (telemetryObject) {
+                    // TODO: add a check here for existence of alphaObjStyles
+                    dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.alphaObjStyles;
+                    dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = telemetryObject.csKey;
+                }
                 dlMatrix.addToComposition(cell, getNamespace(cell));
             } else if (cell.length > 0) {
                 // It's a label, add a text view
