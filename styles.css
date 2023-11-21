@@ -45,17 +45,25 @@ h2 {
 }
 
 h3 {
-  font-weight: normal;
+    font-weight: normal;
 }
 
-input[type="text"], button, textarea, select, .output {
+input[type="text"],
+input[type="number"],
+button,
+textarea,
+select,
+.output {
     border: 1px solid #333;
     border-radius: 3px;
     box-sizing: border-box;
     color: inherit;
 }
 
-input[type="text"], button, textarea {
+input[type="text"],
+input[type="number"],
+button,
+textarea {
     background: #222;
     appearance: none;
     padding: 5px 10px;
@@ -104,7 +112,10 @@ form {
     flex-direction: column;
     padding: 0 10px;
     position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     overflow: hidden;
 }
 
@@ -129,7 +140,7 @@ form {
 }
 
 .page-section.--can-shrink .--scrolls,
-.page-section.--expands .--scrolls{
+.page-section.--expands .--scrolls {
     overflow: auto;
 }
 
@@ -193,6 +204,7 @@ form {
 .c-file-input input[type="file"] {
     flex: 1 1 auto;
 }
+
 .c-file-input .c-btn {
     flex: 0 0 max-content;
 }

@@ -73,6 +73,25 @@ function uploadFiles(files, fileType) {
     });
 }
 
+function uploadMatrixFile(files, fileType) {
+    let readers = [];
+    let filenames = [];
+
+    // Abort if there were no files selected
+    if(!files.length) return;
+
+    // Store promises in array
+    for(let i = 0;i < files.length;i++){
+        filenames.push(files[i].name);
+        readers.push(readFileAsText(files[i]));
+    }
+
+    // Trigger Promises
+    Promise.all(readers).then((values) => {
+        createOpenMCTMatrixLayoutJSONfromCSV(values[0]);
+    });
+}
+
 function getConfigFromForm() {
     // Get form values
     const config = {};
@@ -107,7 +126,7 @@ function outputJSON() {
         updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
     btnDownloadJson.removeAttribute('disabled');
-    btnDownloadTelemList.removeAttribute('disabled');
+    // btnDownloadTelemList.removeAttribute('disabled');
 }
 
 downloadJson = function () {

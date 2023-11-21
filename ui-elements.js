@@ -5,6 +5,7 @@ const myForm = document.getElementById("inputForm");
 const inputType = document.getElementById("inputType");
 const inputPrl = document.getElementById("inputPrl");
 const inputCsv = document.getElementById("inputCsv");
+const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const formSectionWidgets = document.getElementById("configFormSectionWidgets");
 const howCsv = document.getElementById("howCsv");
 const howPrl = document.getElementById("howPrl");
@@ -23,4 +24,8 @@ inputPrl.addEventListener("change", function(ev){
 
 inputCsv.addEventListener("change", function(ev){
     uploadFiles(ev.currentTarget.files, 'csv');
+}, false);
+
+inputMatrixCsv.addEventListener("change", function(ev){
+    uploadMatrixFile(ev.currentTarget.files, 'csv');
 }, false);
