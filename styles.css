@@ -36,12 +36,22 @@ h2, h3 {
     text-transform: uppercase;
 }
 
-h2 {
+.--main h2 {
     padding: 4px 6px;
     margin: 2px 0;
     border-radius: 3px;
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.8);
+}
+
+.--sidebar {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 5px;
+}
+
+.--sidebar h2 {
+    font-size: 1.25em;
+    margin-top: 0;
 }
 
 h3 {
@@ -109,14 +119,24 @@ form {
 
 .page {
     display: flex;
+    flex-direction: row;
+    /*position: absolute;*/
+    /*top: 0;*/
+    /*right: 0;*/
+    /*bottom: 0;*/
+    /*left: 0;*/
+    /*overflow: hidden;*/
+}
+
+.page-main {
+    display: flex;
     flex-direction: column;
-    padding: 0 10px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    overflow: hidden;
+    flex: 1 1 70%;
+}
+
+.page-main + .page-main {
+    margin-left: 10px;
+    flex: 0 1 30%;
 }
 
 .page-section {
@@ -230,7 +250,7 @@ form {
     text-align: center;
 }
 
-.page-section + .page-section {
+.--main .page-section + .page-section {
     margin-top: 10px;
 }
 

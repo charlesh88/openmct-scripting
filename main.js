@@ -85,6 +85,11 @@ function createOpenMCTJSONfromCSV(csv) {
     initAlphasItemPlacementTracker();
     initWidgetsItemPlacementTracker();
 
+    outputMsg('Telemetry CSV imported, '
+        .concat(telemetryObjects.length.toString())
+        .concat(' rows found')
+    );
+
     for (const telemetryObject of telemetryObjects) {
         const curIndex = telemetryObjects.indexOf(telemetryObject);
         const isTelemetry = telemetryObject.dataSource.length > 0;
@@ -92,8 +97,6 @@ function createOpenMCTJSONfromCSV(csv) {
         // If telemObject dataSource includes "," then it's synthetic
         // Create the source, add it to the telemSource folder and to the composition
         // Update telemtryObject.dataSource to use the UUID of the created object
-
-        // LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
 
         let dlItem = {};
 
@@ -209,7 +212,7 @@ function initWidgetsItemPlacementTracker() {
 }
 
 function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
-    console.log('createOpenMCTMatrixLayoutJSONfromCSV\n', csv);
+    // console.log('createOpenMCTMatrixLayoutJSONfromCSV\n', csv);
     csv = csv.replaceAll('\r', '');
     csv = csv.replace(/"[^"]+"/g, function (v) {
         // Encode all commas that are within double quote chunks with |
@@ -238,6 +241,13 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     let curY = 0;
     let dlItem = {};
 
+    outputMsg('Matrix Layout started: '
+        .concat(arrColWidths.length.toString())
+        .concat(' columns and ')
+        .concat(rowArr.length.toString())
+        .concat(' rows')
+    );
+
     // Iterate through telemetry collection
     for (let r = 1; r < rowArr.length; r++) {
         const row = rowArr[r];
@@ -248,7 +258,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         for (let c = 1; c < row.length; c++) {
             // Process each cell in the matrix
             let cell = row[c].trim();
-            const colW = parseInt(arrColWidths[c]);
+            let colW = parseInt(arrColWidths[c]);
 
             /*
                 Look for converted commas, and if present, strip out and handle args
@@ -331,29 +341,48 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     .concat(rowH)
                 );*/
 
-                dlItem = dlMatrix.addTextView({
+                if (cellArgs && cellArgs.includes('_span')) {
+                    const start = cellArgs.indexOf('_span');
+                    let spanNum = cellArgs.substring(start + 6);
+                    spanNum = parseInt(spanNum.substring(0, spanNum.indexOf(')')));
+
+                    // Span includes the current column, c
+                    // arrColWidths.length is the max number of cols that can be spanned
+                    for (let i = c + 1; i < arrColWidths.length; i++) {
+                        colW += parseInt(arrColWidths[i]) + config.itemMargin;
+                    }
+                }
+
+                const args = {
                     itemW: colW,
                     itemH: rowH,
                     x: curX,
                     y: curY,
                     text: cell
-                });
-            } else {
-                // Blank cell, skip it
- /*               console.log('Blank cell at '
-                    .concat(curX.toString())
-                    .concat(', ')
-                    .concat(curY.toString())
-                    .concat('; w = ')
-                    .concat(colW)
-                    .concat('; h = ')
-                    .concat(rowH)
-                );*/
+                };
+
+                // console.log('args for', cell,'colW:',colW);
+
+                if (cellArgs && cellArgs.includes('_bg')) {
+                    const start = cellArgs.indexOf('_bg');
+                    const bgColorStr = cellArgs.substring(start + 4, start + 11);
+                    args.bgColor = bgColorStr;
+                }
+
+                if (cellArgs && cellArgs.includes('_fg')) {
+                    const start = cellArgs.indexOf('_fg');
+                    const fgColorStr = cellArgs.substring(start + 4, start + 11);
+                    args.fgColor = fgColorStr;
+                }
+
+                dlItem = dlMatrix.addTextView(args);
             }
 
             curX += colW + ((c > 1) ? config.itemMargin : 0);
         }
 
-        curY += rowH + ((r > 1) ? config.itemMargin : 0);
+        curY += rowH + config.itemMargin;
     }
+
+    outputMsg('Matrix Layout generated');
 }
