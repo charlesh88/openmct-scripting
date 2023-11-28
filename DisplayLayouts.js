@@ -1,3 +1,13 @@
+function initAlphasItemPlacementTracker() {
+    alphasItemPlacementTracker.placeIndex = 0;
+    alphasItemPlacementTracker.shiftIndex = 0;
+}
+
+function initWidgetsItemPlacementTracker() {
+    widgetsItemPlacementTracker.placeIndex = 0;
+    widgetsItemPlacementTracker.shiftIndex = 0;
+}
+
 // DISPLAY LAYOUT
 const DisplayLayout = function (args) {
     Obj.call(this, args.name, 'layout', true);
