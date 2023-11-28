@@ -30,22 +30,29 @@ function createStyleObj(args) {
 }
 
 function csvToArray(str, delimiter = ",") {
-    // https://sebhastian.com/javascript-csv-to-array/
+    // Based on https://sebhastian.com/javascript-csv-to-array/
+
+    // Remove return chars
     str = str.replaceAll('\r', '');
-    // slice from start of text to the first \n index
+
+    // Get headers: slice from start of text to the first \n index
     // use split to create an array from string by delimiter
-    const headers = str.slice(0, str.indexOf("\n")).split(delimiter);
+    const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
 
     // slice from \n index + 1 to the end of the text
     // use split to create an array of each csv value row
-    let rowStr = str.slice(str.indexOf("\n") + 1);
+    let rowStr = str.slice(str.indexOf('\n') + 1);
 
+    // Convert "/" in paths to "~". Doing this globally because paths can be in different fields.
+    rowStr = rowStr.replaceAll('/', '~');
+
+    // Encode all commas that are within double quote chunks with '|'
     rowStr = rowStr.replace(/"[^"]+"/g, function (v) {
-        // Encode all commas that are within double quote chunks with |
         return v.replace(/,/g, '|');
     });
 
-    const rows = rowStr.split("\n");
+    // Split rowStr into an array of individual row strings
+    const rows = rowStr.split('\n');
 
     // Map the rows
     // split values from each row into an array

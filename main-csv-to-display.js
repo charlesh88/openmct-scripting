@@ -50,7 +50,6 @@ function createOpenMCTJSONfromCSV(csv) {
     telemetryObjects = csvToArray(csv);
 
     config = getConfigFromForm();
-    // let root = objJson.openmct = new Container();
 
     // Create the root folder
     folderRoot = new Obj(config.rootName, 'folder', true);
@@ -266,6 +265,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
             // Process each cell in the matrix
             let cell = row[c].trim();
             let colW = parseInt(arrColWidths[c]);
+            let itemW = colW;
 
             /*
                 Look for converted commas, and if present, strip out and handle args
@@ -282,19 +282,21 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 cell = cell.substring(0, cell.indexOf(argSeparator)).replaceAll('"','').trim();
             }
 
+            if (cellArgs && cellArgs.includes('_span')) {
+                const start = cellArgs.indexOf('_span');
+                let spanNum = cellArgs.substring(start + 6);
+                spanNum = parseInt(spanNum.substring(0, spanNum.indexOf(')')));
+
+                // Span includes the current column, c
+                // Add widths from columns to be spanned to itemW
+                for (let i = c + 1; i < (c + spanNum); i++) {
+                    itemW += parseInt(arrColWidths[i]) + config.itemMargin;
+                }
+            }
+
+            // console.log('Row',r,'Cell',c,'colW',colW,'itemW',itemW);
+
             if (cell.includes("~")) {
-                // It's a telemetry path, add a telemetry view
-                /*                console.log('Add telem for "'
-                                    .concat(cell)
-                                    .concat('" at ')
-                                    .concat(curX.toString())
-                                    .concat(', ')
-                                    .concat(curY.toString())
-                                    .concat('; w = ')
-                                    .concat(colW)
-                                    .concat('; h = ')
-                                    .concat(rowH)
-                                );*/
 
                 // If telem, get the corresponding telemetryObject
                 const telemetryObject = telemetryObjects.find(e => e.dataSource === cell);
@@ -303,7 +305,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     if (cellArgs.includes('_cw')) {
                         // Add previously created Condition Widget
                         dlMatrix.addSubObjectViewInPlace({
-                            itemW: colW,
+                            itemW: itemW,
                             itemH: rowH,
                             x: curX,
                             y: curY,
@@ -316,7 +318,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 } else {
                     // Add as a telemetry view (alphanumeric)
                     dlItem = dlMatrix.addTelemetryView({
-                        itemW: colW,
+                        itemW: itemW,
                         itemH: rowH,
                         x: curX,
                         y: curY,
@@ -335,33 +337,9 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
             }
             else
             if (cell.length > 0) {
-                // It's a label, add a text view
-                /*                console.log('Add label for '
-                                    .concat(cell)
-                                    .concat(' at ')
-                                    .concat(curX.toString())
-                                    .concat(', ')
-                                    .concat(curY.toString())
-                                    .concat('; w = ')
-                                    .concat(colW)
-                                    .concat('; h = ')
-                                    .concat(rowH)
-                                );*/
-
-                if (cellArgs && cellArgs.includes('_span')) {
-                    const start = cellArgs.indexOf('_span');
-                    let spanNum = cellArgs.substring(start + 6);
-                    spanNum = parseInt(spanNum.substring(0, spanNum.indexOf(')')));
-
-                    // Span includes the current column, c
-                    // arrColWidths.length is the max number of cols that can be spanned
-                    for (let i = c + 1; i < arrColWidths.length; i++) {
-                        colW += parseInt(arrColWidths[i]) + config.itemMargin;
-                    }
-                }
 
                 const args = {
-                    itemW: colW,
+                    itemW: itemW,
                     itemH: rowH,
                     x: curX,
                     y: curY,
