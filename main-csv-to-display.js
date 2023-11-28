@@ -271,7 +271,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 Look for converted commas, and if present, strip out and handle args
                 - If a | followed by "_xx", display as:
                 - _cw: Condition Widget
-                - _op: Overlay Plot
+                - _op: Overlay Plot (NOT IMPLEMENTED)
              */
 
             const argSeparator = '|';
@@ -284,20 +284,20 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
             if (cellArgs && cellArgs.includes('_span')) {
                 const start = cellArgs.indexOf('_span');
-                let spanNum = cellArgs.substring(start + 6);
-                spanNum = parseInt(spanNum.substring(0, spanNum.indexOf(')')));
+                let spanNumStr = cellArgs.substring(start + 6);
+                const spanNum = parseInt(spanNumStr.substring(0, spanNumStr.indexOf(')')));
 
                 // Span includes the current column, c
                 // Add widths from columns to be spanned to itemW
                 for (let i = c + 1; i < (c + spanNum); i++) {
                     itemW += parseInt(arrColWidths[i]) + config.itemMargin;
+                    // console.log('...incrementing itemW',itemW);
                 }
             }
 
             // console.log('Row',r,'Cell',c,'colW',colW,'itemW',itemW);
 
             if (cell.includes("~")) {
-
                 // If telem, get the corresponding telemetryObject
                 const telemetryObject = telemetryObjects.find(e => e.dataSource === cell);
 
@@ -337,7 +337,6 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
             }
             else
             if (cell.length > 0) {
-
                 const args = {
                     itemW: itemW,
                     itemH: rowH,
