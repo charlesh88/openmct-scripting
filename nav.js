@@ -4,12 +4,16 @@ const navArray = [
         "pathname": "/"
     },
     {
+        "name": "Matrix Layout from CSV",
+        "pathname": "/index-csv-to-matrix.html"
+    },
+    {
         "name": "Procedure Displays",
-        "pathname": "/gen-from-prl.html"
+        "pathname": "/index-gen-from-prl.html"
     },
     {
         "name": "Extract Telemetry",
-        "pathname": "/telemetry-extract.html"
+        "pathname": "/index-telemetry-extract.html"
     }
 ];
 

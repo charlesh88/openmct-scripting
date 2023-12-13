@@ -277,6 +277,10 @@ form {
     display: none !important;
 }
 
+.--callout {
+    color: #ffcc00;
+}
+
 /*************************************** NAV */
 .c-nav {
     background-color: black;

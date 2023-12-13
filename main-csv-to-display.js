@@ -4,10 +4,6 @@ inputCsv.addEventListener("change", function(ev){
     uploadFiles(ev.currentTarget.files, 'csv');
 }, false);
 
-inputMatrixCsv.addEventListener("change", function(ev){
-    uploadMatrixFile(ev.currentTarget.files, 'csv');
-}, false);
-
 function getConfigFromForm() {
     // Get form values
     const config = {};
