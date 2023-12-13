@@ -1,33 +1,34 @@
 const navArray = [
     {
         "name": "Displays from CSV",
-        "pathname": "/"
+        "pathname": "index.html"
     },
     {
         "name": "Matrix Layout from CSV",
-        "pathname": "/index-csv-to-matrix.html"
+        "pathname": "index-csv-to-matrix.html"
     },
     {
         "name": "Procedure Displays",
-        "pathname": "/index-gen-from-prl.html"
+        "pathname": "index-gen-from-prl.html"
     },
     {
         "name": "Extract Telemetry",
-        "pathname": "/index-telemetry-extract.html"
+        "pathname": "index-telemetry-extract.html"
     }
 ];
 
 function addNav() {
-    const curPathname = window.location.pathname;
+    let curPathname = window.location.pathname;
+    if (curPathname === '/') {
+        curPathname = 'index.html';
+    }
     const navHolder = document.getElementById("nav");
-    // console.log(navArray);
-    // console.log("curPathname", curPathname);
     let navLink;
 
     for (let i = 0; i < navArray.length; i++) {
         navLink = document.createElement("a");
         navLink.href = navArray[i].pathname;
-        if (curPathname === navArray[i].pathname) {
+        if (curPathname.includes(navArray[i].pathname)) {
             navLink.classList.add('--is-current');
         }
         navLink.innerText = navArray[i].name;
