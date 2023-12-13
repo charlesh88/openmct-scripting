@@ -1,9 +1,31 @@
+const INPUT_TYPE = "prl";
 const STEP_LABEL_STYLE = {
     bgColor: '#555',
     fgColor: '#ccc'
 }
 
 let globalArrUniquePaths = [];
+
+inputPrl.addEventListener("change", function(ev){
+    uploadFiles(ev.currentTarget.files, 'prl');
+}, false);
+
+function getConfigFromForm() {
+    // Get form values
+    const config = {};
+
+    config.rootName = document.getElementById('rootName').value;
+    config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
+    config.itemMargin = getFormNumericVal('itemMargin');
+
+    config.dlAlphas = {};
+    // config.dlAlphas.layoutStrategy = document.getElementById('alphaLayoutStrategy').value;
+    // config.dlAlphas.layoutStrategyNum = getFormNumericVal('alphaLayoutStrategyNum');
+    config.dlAlphas.itemW = getFormNumericVal('alphaLayoutItemWidth');
+    config.dlAlphas.itemH = getFormNumericVal('alphaLayoutItemHeight');
+
+    return config;
+}
 
 prlToDisplays = function (prlFilenames, prlContentArr) {
     // For each elem in prlContentArr, create a LAD Table and Display Layout

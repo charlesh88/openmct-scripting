@@ -5,7 +5,7 @@ body {
     color: #999;
     font-family: "IBM Plex Sans", Helvetica, sans serif;
     font-size: 0.8em;
-    margin: 10px;
+    margin: 0;
 }
 
 body > * + * {
@@ -19,6 +19,10 @@ a {
 p {
     display: block;
     padding: 4px 6px;
+}
+
+div {
+    box-sizing: border-box;
 }
 
 h1 {
@@ -36,7 +40,12 @@ h2, h3 {
     text-transform: uppercase;
 }
 
-h2 {
+ol, ul {
+    margin: 5px 0;
+    padding: 0 20px;
+}
+
+.--main h2 {
     padding: 4px 6px;
     margin: 2px 0;
     border-radius: 3px;
@@ -44,18 +53,41 @@ h2 {
     color: rgba(255, 255, 255, 0.8);
 }
 
-h3 {
-  font-weight: normal;
+.--sidebar {
+    /*background: rgba(255, 255, 255, 0.05);*/
+    /*border-radius: 3px;*/
+    padding: 5px;
 }
 
-input[type="text"], button, textarea, select, .output {
+.--sidebar h2 {
+    font-size: 1em;
+    margin-top: 20px;
+}
+
+.--sidebar h2:first-child {
+    margin-top: 0;
+}
+
+h3 {
+    font-weight: normal;
+}
+
+input[type="text"],
+input[type="number"],
+button,
+textarea,
+select,
+.output {
     border: 1px solid #333;
     border-radius: 3px;
     box-sizing: border-box;
     color: inherit;
 }
 
-input[type="text"], button, textarea {
+input[type="text"],
+input[type="number"],
+button,
+textarea {
     background: #222;
     appearance: none;
     padding: 5px 10px;
@@ -99,13 +131,31 @@ form {
     display: contents;
 }
 
+.page,
+.head {
+    padding: 0 20px;
+}
+
 .page {
     display: flex;
+    flex-direction: row;
+    /*position: absolute;*/
+    /*top: 0;*/
+    /*right: 0;*/
+    /*bottom: 0;*/
+    /*left: 0;*/
+    /*overflow: hidden;*/
+}
+
+.page-main {
+    display: flex;
     flex-direction: column;
-    padding: 0 10px;
-    position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
-    overflow: hidden;
+    flex: 1 1 70%;
+}
+
+.page-main + .page-main {
+    margin-left: 10px;
+    flex: 0 1 30%;
 }
 
 .page-section {
@@ -129,7 +179,7 @@ form {
 }
 
 .page-section.--can-shrink .--scrolls,
-.page-section.--expands .--scrolls{
+.page-section.--expands .--scrolls {
     overflow: auto;
 }
 
@@ -193,6 +243,7 @@ form {
 .c-file-input input[type="file"] {
     flex: 1 1 auto;
 }
+
 .c-file-input .c-btn {
     flex: 0 0 max-content;
 }
@@ -218,10 +269,47 @@ form {
     text-align: center;
 }
 
-.page-section + .page-section {
+.--main .page-section + .page-section {
     margin-top: 10px;
 }
 
 .--hidden {
     display: none !important;
+}
+
+.--callout {
+    color: #ffcc00;
+}
+
+/*************************************** NAV */
+.c-nav {
+    background-color: black;
+    display: flex;
+    padding: 7px;
+}
+
+.c-nav a {
+    /*background: rgba(255, 255, 255, 0.1);*/
+    border-radius: 2px;
+    color: inherit;
+    /*font-weight: bold;*/
+    padding: 4px 20px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.c-nav a.--is-current {
+    background: #555; /*rgba(255, 128, 0, 0.3);*/
+    color: #fff;
+    pointer-events: none;
+}
+
+.c-nav a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #eee;
+}
+
+.c-nav a + a {
+    /*border-left: 1px solid rgba(255, 255, 255, 0.2);*/
+    margin-left: 2px;
 }

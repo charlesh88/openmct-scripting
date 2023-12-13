@@ -1,3 +1,13 @@
+function initAlphasItemPlacementTracker() {
+    alphasItemPlacementTracker.placeIndex = 0;
+    alphasItemPlacementTracker.shiftIndex = 0;
+}
+
+function initWidgetsItemPlacementTracker() {
+    widgetsItemPlacementTracker.placeIndex = 0;
+    widgetsItemPlacementTracker.shiftIndex = 0;
+}
+
 // DISPLAY LAYOUT
 const DisplayLayout = function (args) {
     Obj.call(this, args.name, 'layout', true);
@@ -36,6 +46,19 @@ const DisplayLayout = function (args) {
 
         subObj.x = itemPos.x;
         subObj.y = itemPos.y;
+        this.configuration.items.push(subObj);
+
+        return response;
+    }
+
+    this.addSubObjectViewInPlace = function (args) {
+        const response = {};
+        const subObj = this.createBaseItem(args);
+        subObj.type = 'subobject-view';
+        subObj.identifier = createIdentifier(args.ident);
+        subObj.hasFrame = args.hasFrame;
+        subObj.x = args.x;
+        subObj.y = args.y;
         this.configuration.items.push(subObj);
 
         return response;
