@@ -42,3 +42,10 @@ const StackedPlot = function(name) {
         xAxis: {}
     }
 }
+
+const OverlayPlot = function(name) {
+    Obj.call(this, name, 'telemetry.plot.overlay', true);
+    this.configuration = {
+        series: [],
+    }
+}
