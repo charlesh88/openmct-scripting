@@ -12,6 +12,10 @@ const navArray = [
         "pathname": "index-csv-to-stacked-plot.html"
     },
     {
+        "name": "Conditional Graphics",
+        "pathname": "index-csv-conditional-graphics.html"
+    },
+    {
         "name": "Procedure Displays",
         "pathname": "index-gen-from-prl.html"
     },

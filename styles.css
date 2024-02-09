@@ -285,7 +285,7 @@ form {
 .c-nav {
     background-color: black;
     display: flex;
-    padding: 7px;
+    padding: 5px;
 }
 
 .c-nav a {
@@ -293,7 +293,7 @@ form {
     border-radius: 2px;
     color: inherit;
     /*font-weight: bold;*/
-    padding: 4px 20px;
+    padding: 2px 10px;
     text-decoration: none;
     text-transform: uppercase;
 }

@@ -18,7 +18,9 @@ function createStyleObj(args) {
      */
     let s = {};
     s.style = {};
+    s.style.output = (args && args.output) ? args.output : '';
     s.style.border = (args && args.border) ? args.border : '';
+    s.style.imageUrl = (args && args.imageUrl) ? args.imageUrl : '';
     s.style.isStyleInvisible = '';
     s.style.backgroundColor = (args && args.bgColor) ? args.bgColor : '';
     s.style.color = (args && args.fgColor) ? args.fgColor : '';

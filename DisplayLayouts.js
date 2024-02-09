@@ -126,6 +126,17 @@ const DisplayLayout = function (args) {
         this.configuration.items.push(subObj);
     }
 
+    this.addImageView = function (args) {
+        const subObj = this.createBaseItem(args);
+        subObj.x = args.x;
+        subObj.y = args.y;
+        subObj.width = args.width;
+        subObj.height = args.height;
+        subObj.url = args.url;
+        subObj.type = 'image-view';
+        this.configuration.items.push(subObj);
+    }
+
     this.addTelemetryView = function (args) {
         const subObj = this.createBaseItem(args);
         subObj.x = args.x;
