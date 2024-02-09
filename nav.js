@@ -8,6 +8,10 @@ const navArray = [
         "pathname": "index-csv-to-matrix.html"
     },
     {
+        "name": "Stacked Plot from CSV",
+        "pathname": "index-csv-to-stacked-plot.html"
+    },
+    {
         "name": "Procedure Displays",
         "pathname": "index-gen-from-prl.html"
     },
