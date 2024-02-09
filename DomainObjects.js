@@ -36,16 +36,43 @@ const TabsView = function(name) {
 
 const StackedPlot = function(name) {
     Obj.call(this, name, 'telemetry.plot.stacked', true);
-    this.configuration = {
-        series: [],
-        yAxis: {},
-        xAxis: {}
-    }
+    this.configuration = {};
+    this.configuration.series = [];
+
+    this.addToSeries = function(telemObj) {
+        let seriesObj = {};
+        seriesObj.identifier = createIdentifier(telemObj.DataSource, 'taxonomy');
+        seriesObj.series = {}; // Yes, this is right: there's a nested series node in series, for Stacked Plots only
+
+        if (telemObj.InterpolateMethod.length > 0) {
+            seriesObj.series.interpolate = telemObj.InterpolateMethod;
+        }
+
+        if (telemObj.ShowLimitLines.includes('TRUE')) {
+            seriesObj.series.limitLines = true;
+        }
+
+        this.configuration.series.push(seriesObj);
+    };
 }
 
 const OverlayPlot = function(name) {
     Obj.call(this, name, 'telemetry.plot.overlay', true);
-    this.configuration = {
-        series: [],
-    }
+    this.configuration = {};
+    this.configuration.series = [];
+
+    this.addToSeries = function(telemObj) {
+        let seriesObj = {};
+        seriesObj.identifier = createIdentifier(telemObj.DataSource, 'taxonomy');
+
+        if (telemObj.InterpolateMethod.length > 0) {
+            seriesObj.interpolate = telemObj.InterpolateMethod;
+        }
+
+        if (telemObj.ShowLimitLines.includes('TRUE')) {
+            seriesObj.limitLines = true;
+        }
+
+        this.configuration.series.push(seriesObj);
+    };
 }
