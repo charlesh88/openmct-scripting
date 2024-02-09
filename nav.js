@@ -1,14 +1,14 @@
 const navArray = [
     {
-        "name": "Displays from CSV",
+        "name": "Displays",
         "pathname": "index.html"
     },
     {
-        "name": "Matrix Layout from CSV",
+        "name": "Matrix Layout",
         "pathname": "index-csv-to-matrix.html"
     },
     {
-        "name": "Stacked Plot from CSV",
+        "name": "Stacked Plot",
         "pathname": "index-csv-to-stacked-plot.html"
     },
     {

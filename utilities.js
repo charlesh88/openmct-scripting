@@ -31,38 +31,29 @@ function createStyleObj(args) {
 
 function csvToArray(str, delimiter = ",") {
     // Based on https://sebhastian.com/javascript-csv-to-array/
+    console.log('csvToArray str',str);
+    outputMsg("csvToArray:");
+    outputMsg("Read in ".concat(str.length).concat(" chars"));
 
-    // Remove return chars
-    str = str.replaceAll('\r', '');
+    // Split the text into lines
+    const rows = str.split(/\r?\n/);
+    outputMsg("Parsed into ".concat(rows.length).concat(" lines"));
 
-    // Get headers: slice from start of text to the first \n index
-    // use split to create an array from string by delimiter
-    const headers = str.slice(0, str.indexOf('\n')).split(delimiter);
+    // Get headers from the first row
+    const headers = rows.shift().split(delimiter);
 
-    // slice from \n index + 1 to the end of the text
-    // use split to create an array of each csv value row
-    let rowStr = str.slice(str.indexOf('\n') + 1);
-
-    // Convert "/" in paths to "~". Doing this globally because paths can be in different fields.
-    rowStr = rowStr.replaceAll('/', '~');
-
-    // Encode all commas that are within double quote chunks with '|'
-    rowStr = rowStr.replace(/"[^"]+"/g, function (v) {
-        return v.replace(/,/g, '|');
-    });
-
-    // Split rowStr into an array of individual row strings
-    const rows = rowStr.split('\n');
-
-    // Map the rows
-    // split values from each row into an array
-    // use headers.reduce to create an object
-    // object properties derived from headers:values
-    // the object passed as an element of the array
+    // Map the rows: each row becomes an object with property names from the headers array
     const arr = rows.map(function (row) {
         const values = row.split(delimiter);
         const el = headers.reduce(function (object, header, index) {
+            // Convert "/" in paths to "~". Doing this globally because paths can be in different fields.
             object[header] = values[index]
+                .replaceAll('/', '~')
+                .replace(/"[^"]+"/g, function (v) {
+                    // Encode all commas that are within double quote chunks with '|'
+                    // then restore them after removing the double quotes below
+                    return v.replace(/,/g, '|');
+                })
                 .replaceAll('\"', '')
                 .replaceAll('|', ',');
             return object;
@@ -71,7 +62,7 @@ function csvToArray(str, delimiter = ",") {
     });
 
     // return the array
-    // console.log('csvToArray',arr);
+    console.log('csvToArray arr',arr);
     return arr;
 }
 
