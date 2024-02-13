@@ -52,6 +52,14 @@ const StackedPlot = function(name) {
             seriesObj.series.limitLines = true;
         }
 
+        if (telemObj.MarkerShape.length > 0) {
+            seriesObj.series.markerShape = telemObj.MarkerShape;
+        }
+
+        if (telemObj.MarkerSize.length > 0) {
+            seriesObj.series.markerSize = telemObj.MarkerSize;
+        }
+
         this.configuration.series.push(seriesObj);
     };
 }
@@ -71,6 +79,14 @@ const OverlayPlot = function(name) {
 
         if (telemObj.ShowLimitLines.includes('TRUE')) {
             seriesObj.limitLines = true;
+        }
+
+        if (telemObj.MarkerShape.length > 0) {
+            seriesObj.markerShape = telemObj.MarkerShape;
+        }
+
+        if (telemObj.MarkerSize.length > 0) {
+            seriesObj.markerSize = telemObj.MarkerSize;
         }
 
         this.configuration.series.push(seriesObj);
