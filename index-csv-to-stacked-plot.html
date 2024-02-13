@@ -10,7 +10,7 @@
 <body translate="no">
 <div class="c-nav" id="nav"></div>
 <div class="head">
-    <h1>Generate Open MCT Stacked Plot from CSV <span class="app-version">v3.2.1</span></h1>
+    <h1>Generate Open MCT Stacked Plot from CSV <span id="appVersion" class="app-version"></span></h1>
 </div>
 <div class="page">
     <div class="page-main --main">
@@ -19,10 +19,6 @@
                 <h2>Settings</h2>
                 <div class="c-config__label">Output Base Name</div>
                 <div class="c-config__value"><input type="text" id="rootName" value="Generated Stacked Plot"/></div>
-                <!--div class="c-config__label">Display Layout Grid [X,Y]</div>
-                <div class="c-config__value sm"><input type="text" id="layoutGrid" value="2,2"/></div>
-                <div class="c-config__label">Item Margin</div>
-                <div class="c-config__value sm"><input type="number" id="itemMargin" value="1"/></div-->
             </div>
             <div class="c-config">
                 <h2>CSV File</h2>
@@ -49,11 +45,11 @@
                 <li>Creates a single Stacked Plot that can contain nested Overlay Plots and singleton parameters, named using the input Root Name.
                 </li>
             </ul>
-            <h2>How to use</h2>
+            <!--h2>How to use</h2>
             <ol>
                 <li>Content TK
                 </li>
-            </ol>
+            </ol-->
         </div>
     </div>
 </div>
@@ -63,8 +59,8 @@
 <script src="utilities.js"></script>
 <script src="ui-elements.js"></script>
 <script src="main-csv-to-stacked-plot.js"></script>
-<script src="main.js"></script>
 <script src="nav.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
 
