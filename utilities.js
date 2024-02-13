@@ -31,24 +31,24 @@ function createStyleObj(args) {
 
 function csvToArray(str, delimiter = ",") {
     // Based on https://sebhastian.com/javascript-csv-to-array/
-    console.log('csvToArray str', str);
+    console.log(str);
     outputMsg("csvToArray:");
     outputMsg("Read in ".concat(str.length).concat(" chars"));
 
-    // Split the text into lines
-    const rows = str.split(/\r?\n/);
-    outputMsg("Split into ".concat(rows.length).concat(" rows including header"));
+    // Split the text into lines and remove empty rows
+    const rows = str.split(/\r?\n/)
+        .filter((row) => row.length > 0);
+    outputMsg("File split into ".concat(rows.length).concat(" rows including header"));
+    console.log(rows);
 
     // Get headers from the first row
     const headers = rows.shift().split(delimiter);
 
     // Map the rows: each row becomes an object with property names from the headers array
     const arr = rows.map(function (row) {
-        if (row.length > 0) {
-            const values = row.split(delimiter);
+        const values = row.split(delimiter);
+        if (values.length > 0) {
             const el = headers.reduce(function (object, header, index) {
-                // Convert "/" in paths to "~". Doing this globally because paths can be in different fields.
-
                 object[header] = values[index]
                     .replaceAll('/', '~')
                     .replace(/"[^"]+"/g, function (v) {
