@@ -8,6 +8,11 @@ function initWidgetsItemPlacementTracker() {
     widgetsItemPlacementTracker.shiftIndex = 0;
 }
 
+function displayLayoutConvertPxToGridUnits(gridUnit, px) {
+    // Expects all args to be numbers
+    return Math.round(px / gridUnit);
+}
+
 // DISPLAY LAYOUT
 const DisplayLayout = function (args) {
     Obj.call(this, args.name, 'layout', true);
