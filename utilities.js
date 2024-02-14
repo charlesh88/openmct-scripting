@@ -38,24 +38,28 @@ function csvToArray(str, delimiter = ",") {
     // Split the text into lines and remove empty rows
     const rows = str.split(/\r?\n/)
         .filter((row) => row.length > 0);
-    outputMsg("File split into ".concat(rows.length).concat(" rows including header"));
-    console.log(rows);
+    outputMsg("File split into ".concat(rows.length.toString()).concat(" rows including header"));
+    // console.log(rows);
 
     // Get headers from the first row
     const headers = rows.shift().split(delimiter);
 
     // Map the rows: each row becomes an object with property names from the headers array
     const arr = rows.map(function (row) {
+        // console.log(row.length, 'row pre-replace: ', row);
+        row = row.replace(/"[^"]+"/g, function (v) {
+            // Encode all commas that are within double quote chunks with '|'
+            // then restore them after removing the double quotes below
+            return v.replace(/,/g, '|');
+        })
+
+        // console.log(row.length, 'row post-replace: ', row);
         const values = row.split(delimiter);
+
         if (values.length > 0) {
             const el = headers.reduce(function (object, header, index) {
                 object[header] = values[index]
                     .replaceAll('/', '~')
-                    .replace(/"[^"]+"/g, function (v) {
-                        // Encode all commas that are within double quote chunks with '|'
-                        // then restore them after removing the double quotes below
-                        return v.replace(/,/g, '|');
-                    })
                     .replaceAll('\"', '')
                     .replaceAll('|', ',');
                 return object;

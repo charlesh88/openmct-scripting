@@ -42,23 +42,7 @@ const StackedPlot = function(name) {
     this.addToSeries = function(telemObj) {
         let seriesObj = {};
         seriesObj.identifier = createIdentifier(telemObj.DataSource, 'taxonomy');
-        seriesObj.series = {}; // Yes, this is right: there's a nested series node in series, for Stacked Plots only
-
-        if (telemObj.InterpolateMethod.length > 0) {
-            seriesObj.series.interpolate = telemObj.InterpolateMethod;
-        }
-
-        if (telemObj.ShowLimitLines.includes('TRUE')) {
-            seriesObj.series.limitLines = true;
-        }
-
-        if (telemObj.MarkerShape.length > 0) {
-            seriesObj.series.markerShape = telemObj.MarkerShape;
-        }
-
-        if (telemObj.MarkerSize.length > 0) {
-            seriesObj.series.markerSize = telemObj.MarkerSize;
-        }
+        seriesObj.series = plotSeriesProps(telemObj); // Yes, this is right: there's a nested series node in series, for Stacked Plots only
 
         this.configuration.series.push(seriesObj);
     };
@@ -70,25 +54,31 @@ const OverlayPlot = function(name) {
     this.configuration.series = [];
 
     this.addToSeries = function(telemObj) {
-        let seriesObj = {};
+        let seriesObj = plotSeriesProps(telemObj);
         seriesObj.identifier = createIdentifier(telemObj.DataSource, 'taxonomy');
-
-        if (telemObj.InterpolateMethod.length > 0) {
-            seriesObj.interpolate = telemObj.InterpolateMethod;
-        }
-
-        if (telemObj.ShowLimitLines.includes('TRUE')) {
-            seriesObj.limitLines = true;
-        }
-
-        if (telemObj.MarkerShape.length > 0) {
-            seriesObj.markerShape = telemObj.MarkerShape;
-        }
-
-        if (telemObj.MarkerSize.length > 0) {
-            seriesObj.markerSize = telemObj.MarkerSize;
-        }
 
         this.configuration.series.push(seriesObj);
     };
+}
+
+function plotSeriesProps(telemObj) {
+    let sObj = {};
+
+    if (telemObj.InterpolateMethod && telemObj.InterpolateMethod.length > 0) {
+        sObj.interpolate = telemObj.InterpolateMethod;
+    }
+
+    if (telemObj.ShowLimitLines && telemObj.ShowLimitLines.includes('TRUE')) {
+        sObj.limitLines = true;
+    }
+
+    if (telemObj.MarkerShape && telemObj.MarkerShape.length > 0) {
+        sObj.markerShape = telemObj.MarkerShape;
+    }
+
+    if (telemObj.MarkerSize && telemObj.MarkerSize.length > 0) {
+        sObj.markerSize = telemObj.MarkerSize;
+    }
+
+    return sObj;
 }
