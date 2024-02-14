@@ -33,10 +33,11 @@ function uploadFiles(files, fileType) {
         // Values will be an array that contains an item
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
+
         if (fileType.includes('prl')) {
-            prlToDisplays(filenames, values);
+            processInputPrls(filenames, values);
         } else if (fileType.includes('csv')) {
-            createOpenMCTJSONfromCSV(values[0]);
+            processInputCsvs(filenames, values);
         }
     });
 }

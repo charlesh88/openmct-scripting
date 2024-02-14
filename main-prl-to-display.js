@@ -27,7 +27,7 @@ function getConfigFromForm() {
     return config;
 }
 
-prlToDisplays = function (prlFilenames, prlContentArr) {
+processInputPrls = function (prlFilenames, prlContentArr) {
     // For each elem in prlContentArr, create a LAD Table and Display Layout
     // Put the layouts into a Tab View
     config = getConfigFromForm();

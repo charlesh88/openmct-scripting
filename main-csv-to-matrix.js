@@ -44,7 +44,6 @@ function uploadTelemetryFile(files) {
 }
 
 function parseCSVTelemetry(csv) {
-    // Pulls code from createOpenMCTJSONfromCSV
     telemetryObjects = csvToArray(csv);
 
     outputMsg('Telemetry CSV imported, '
