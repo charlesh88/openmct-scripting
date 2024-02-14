@@ -17,9 +17,28 @@ function createOpenMCTJSONfromCSV(csv) {
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
 
-    let stackedPlotObj = new StackedPlot(config.rootName);
+    // Create the root folder
+    let folderRoot = new Obj(config.rootName, 'folder', true);
+    root.addJson(folderRoot);
+    objJson.rootId = folderRoot.identifier.key;
+
+    // Create a folder for Overlay Plots
+    let folderOverlayPlots = new Obj('Overlay Plots', 'folder', true);
+    root.addJson(folderOverlayPlots);
+    folderRoot.addToComposition(folderOverlayPlots.identifier.key);
+    folderOverlayPlots.setLocation(folderRoot);
+
+    let stackedPlotObj = new StackedPlot(config.rootName.concat(' Stacked Plot'));
     root.addJson(stackedPlotObj);
-    objJson.rootId = stackedPlotObj.identifier.key;
+    folderRoot.addToComposition(stackedPlotObj.identifier.key);
+    stackedPlotObj.setLocation(folderRoot);
+
+
+    let flexLayoutObj = new FlexibleLayout(config.rootName.concat(' Flexible Layout'));
+    root.addJson(flexLayoutObj);
+    folderRoot.addToComposition(flexLayoutObj.identifier.key);
+    flexLayoutObj.setLocation(folderRoot);
+
 
     let curOverlayPlotName = '';
     let curOverlayPlotObj;
@@ -33,9 +52,13 @@ function createOpenMCTJSONfromCSV(csv) {
             if (curOverlayPlotName !== overlayPlotName) {
                 // Create a new overlayPlotObj
                 curOverlayPlotObj = new OverlayPlot(overlayPlotName);
-                // Add it to stackedPlotObj as curOverlayPlotObj
+                folderOverlayPlots.addToComposition(curOverlayPlotObj.identifier.key);
+                curOverlayPlotObj.setLocation(folderOverlayPlots);
+                // Add it to views as curOverlayPlotObj
                 root.addJson(curOverlayPlotObj);
                 stackedPlotObj.addToComposition(curOverlayPlotObj.identifier.key);
+                flexLayoutObj.addToComposition(curOverlayPlotObj.identifier.key);
+                flexLayoutObj.addFrame(curOverlayPlotObj.identifier.key);
                 // Set curOverlayPlotName to the new name
                 curOverlayPlotName = overlayPlotName;
             }
@@ -45,8 +68,12 @@ function createOpenMCTJSONfromCSV(csv) {
         } else {
             stackedPlotObj.addToComposition(telemObjDataSrc, 'taxonomy');
             stackedPlotObj.addToSeries(telemObj);
+            flexLayoutObj.addToComposition(telemObjDataSrc, 'taxonomy');
+            flexLayoutObj.addFrame(telemObjDataSrc, 'taxonomy');
         }
     }
+
+    flexLayoutObj.setFrameSizes();
 
     outputJSON();
 }
