@@ -11,12 +11,10 @@ function getConfigFromForm() {
 }
 
 function processInputCsvs(filenames, values) {
-    // console.log(filenames, values);
     config = getConfigFromForm();
     // Create an array to track Overlay Plot names
     let existingOverlayPlots = []; // Array of objects, with props name and obj
     let folders = {};
-
 
     // Create the root folder
     let folderRoot = new Obj(config.rootName, 'folder', true);
@@ -29,27 +27,37 @@ function processInputCsvs(filenames, values) {
     folderRoot.addToComposition(folderOverlayPlots.identifier.key);
     folderOverlayPlots.setLocation(folderRoot);
 
+    // Make a folder to hold Stacked Plots
+    let folderStackedPlots = new Obj('Stacked Plots', 'folder', true);
+    root.addJson(folderStackedPlots);
+    folderRoot.addToComposition(folderStackedPlots.identifier.key);
+    folderStackedPlots.setLocation(folderRoot);
+
+    // Make a folder to hold Flexible Layouts
+    let folderFlexLayouts = new Obj('Flexible Layouts', 'folder', true);
+    root.addJson(folderFlexLayouts);
+    folderRoot.addToComposition(folderFlexLayouts.identifier.key);
+    folderFlexLayouts.setLocation(folderRoot);
 
     for (let i = 0; i < filenames.length; i++) {
-        const plotObjectArr = csvToArray(values[i]);
-        const holderName = config.rootName.concat(' ')
-            .concat(filenames[i].split('.')[0]);
+        const csvObjArray = csvToArray(values[i]);
+        const holderName = filenames[i].split('.')[0];
 
         let stackedPlotObj = new StackedPlot('SP '.concat(holderName));
         root.addJson(stackedPlotObj);
-        folderRoot.addToComposition(stackedPlotObj.identifier.key);
-        stackedPlotObj.setLocation(folderRoot);
+        folderStackedPlots.addToComposition(stackedPlotObj.identifier.key);
+        stackedPlotObj.setLocation(folderStackedPlots);
 
         let flexLayoutObj = new FlexibleLayout('FL '.concat(holderName));
         root.addJson(flexLayoutObj);
-        folderRoot.addToComposition(flexLayoutObj.identifier.key);
-        flexLayoutObj.setLocation(folderRoot);
+        folderFlexLayouts.addToComposition(flexLayoutObj.identifier.key);
+        flexLayoutObj.setLocation(folderFlexLayouts);
 
         let existingOverlayPlot;
         let plotObj;
 
-        for (let i = 0; i < plotObjectArr.length; i++) {
-            const telemObj = plotObjectArr[i];
+        for (let i = 0; i < csvObjArray.length; i++) {
+            const telemObj = csvObjArray[i];
             const telemObjDataSrc = telemObj.DataSource;
             const overlayPlotName = telemObj.OverlayPlotName;
 
@@ -60,18 +68,14 @@ function processInputCsvs(filenames, values) {
                 if (existingOverlayPlot) {
                     // The overlay plot already exists
                     plotObj = existingOverlayPlot;
-                    // console.log(overlayPlotName, ' already exists');
                 } else {
                     // The overlay plot does not exist, create a new overlayPlotObj
-                    // console.log(overlayPlotName, ' does not exist, creating');
                     plotObj = new OverlayPlot(overlayPlotName);
                     folderOverlayPlots.addToComposition(plotObj.identifier.key);
                     plotObj.setLocation(folderOverlayPlots);
                     root.addJson(plotObj);
                     existingOverlayPlots.push(plotObj);
                 }
-
-                // console.log(stackedPlotObj.composition);
 
                 if (!stackedPlotObj.composition.find(e => e.key === plotObj.identifier.key)) {
                     // The plotObj hasn't been added yet to the holders
@@ -87,15 +91,16 @@ function processInputCsvs(filenames, values) {
                 }
             } else {
                 // An OP is not specified, just add the telem point
-                stackedPlotObj.addToComposition(telemObjDataSrc, 'taxonomy');
-                stackedPlotObj.addToSeries(telemObj);
-                flexLayoutObj.addToComposition(telemObjDataSrc, 'taxonomy');
-                flexLayoutObj.addFrame(telemObjDataSrc, 'taxonomy');
+                if (telemObjDataSrc && telemObjDataSrc.length > 0) {
+                    stackedPlotObj.addToComposition(telemObjDataSrc, 'taxonomy');
+                    stackedPlotObj.addToSeries(telemObj);
+                    flexLayoutObj.addToComposition(telemObjDataSrc, 'taxonomy');
+                    flexLayoutObj.addFrame(telemObjDataSrc, 'taxonomy');
+                }
             }
         }
 
         flexLayoutObj.setFrameSizes();
-
     }
     outputJSON();
 }
