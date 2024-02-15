@@ -1,6 +1,8 @@
 const INPUT_TYPE = "csv";
+root = objJson.openmct = new Container();
 
 inputCsv.addEventListener("change", function (ev) {
+    storeLocal(LOCALSTORE_BASE_NAME.concat('_STACKED-VIEW_BASE-NAME'), config.rootName);
     uploadFiles(ev.currentTarget.files, 'csv');
 }, false);
 

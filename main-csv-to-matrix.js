@@ -1,4 +1,5 @@
 const INPUT_TYPE = "csv";
+root = objJson.openmct = new Container();
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 let folderConditionWidgets;
 

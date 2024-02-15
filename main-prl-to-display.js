@@ -1,4 +1,5 @@
 const INPUT_TYPE = "prl";
+root = objJson.openmct = new Container();
 const STEP_LABEL_STYLE = {
     bgColor: '#555',
     fgColor: '#ccc'
