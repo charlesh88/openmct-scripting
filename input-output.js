@@ -1,4 +1,5 @@
 /************************************* https://ourcodeworld.com/articles/read/1438/how-to-read-multiple-files-at-once-using-the-filereader-class-in-javascript#google_vignette */
+/************************************************* INPUTS AND UPLOADING */
 function readFileAsText(file){
     return new Promise(function(resolve,reject){
         let fr = new FileReader();
@@ -33,10 +34,11 @@ function uploadFiles(files, fileType) {
         // Values will be an array that contains an item
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
+
         if (fileType.includes('prl')) {
-            prlToDisplays(filenames, values);
+            processInputPrls(filenames, values);
         } else if (fileType.includes('csv')) {
-            createOpenMCTJSONfromCSV(values[0]);
+            processInputCsvs(filenames, values);
         }
     });
 }
@@ -60,6 +62,7 @@ function uploadMatrixFile(files, fileType) {
     });
 }
 
+/************************************************* OUTPUTS AND DOWNLOADING */
 function outputJSON() {
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
@@ -114,4 +117,25 @@ downloadFile = function(file) {
 
 function outputMsg(msg) {
     outputMsgText.innerHTML = outputMsgText.innerHTML.concat("<br>".concat(msg));
+}
+
+/************************************************* LOCAL STORAGE */
+function storeLocal(key, value) {
+    // Example: { csv-to-stacked-view.base-name: string }
+    window.localStorage.setItem(key, value);
+}
+
+function loadLocal(key) {
+    return window.localStorage.getItem(key);
+}
+
+function checkLocalStorageExists() {
+    return window.localStorage.getItem(LOCAL_STORAGE_KEY);
+}
+storeBaseName = function() {
+    storeLocal('OPENMCT_SCRIPTING__BASENAME', config.rootName.value);
+}
+
+retrieveBaseName = function() {
+    storeLocal('OPENMCT_SCRIPTING__BASENAME', config.rootName.value);
 }

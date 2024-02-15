@@ -21,7 +21,7 @@ const navArray = [
     }
 ];
 
-function addNav() {
+addNav = function () {
     let curPathname = window.location.pathname;
     if (curPathname === '/') {
         curPathname = 'index.html';
@@ -39,5 +39,3 @@ function addNav() {
         navHolder.appendChild(navLink);
     }
 }
-
-document.body.onload = addNav();

@@ -111,3 +111,9 @@ const FlexibleLayout = function(name) {
         }
     }
 }
+
+const objJson = {};
+let root = objJson.openmct = new Container();
+let alphasItemPlacementTracker = {};
+let widgetsItemPlacementTracker = {};
+let folderRoot;

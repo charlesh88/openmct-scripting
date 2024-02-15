@@ -28,7 +28,11 @@ function getConfigFromForm() {
     return config;
 }
 
-function createOpenMCTJSONfromCSV(csv) {
+function processInputCsvs(filenames, values) {
+    // Will be a single file for this
+    processInputCsv(values[0]);
+}
+function processInputCsv(csv) {
     /*
     telemetryObjects: array of objects like this:
     [{

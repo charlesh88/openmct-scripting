@@ -1,4 +1,5 @@
 const INPUT_TYPE = "csv";
+root = objJson.openmct = new Container();
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 let folderConditionWidgets;
 
@@ -44,7 +45,6 @@ function uploadTelemetryFile(files) {
 }
 
 function parseCSVTelemetry(csv) {
-    // Pulls code from createOpenMCTJSONfromCSV
     telemetryObjects = csvToArray(csv);
 
     outputMsg('Telemetry CSV imported, '
