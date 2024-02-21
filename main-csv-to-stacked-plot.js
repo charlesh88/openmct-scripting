@@ -1,25 +1,25 @@
 const INPUT_TYPE = "csv";
-root = objJson.openmct = new Container();
+const OUTPUT_BASE_NAME_KEY = '_STACKED-VIEW_BASE_NAME';
 
 inputCsv.addEventListener("change", function (ev) {
-    storeLocal(LOCALSTORE_BASE_NAME.concat('_STACKED-VIEW_BASE-NAME'), config.rootName);
     uploadFiles(ev.currentTarget.files, 'csv');
 }, false);
 
 function getConfigFromForm() {
     // Get form values
-    config.rootName = document.getElementById('rootName').value;
+    config.outputBaseName = document.getElementById('output-base-name').value;
     return config;
 }
 
 function processInputCsvs(filenames, values) {
+    initDomainObjects();
     config = getConfigFromForm();
     // Create an array to track Overlay Plot names
     let existingOverlayPlots = []; // Array of objects, with props name and obj
     let folders = {};
 
     // Create the root folder
-    let folderRoot = new Obj(config.rootName, 'folder', true);
+    let folderRoot = new Obj(config.outputBaseName, 'folder', true);
     root.addJson(folderRoot);
     objJson.rootId = folderRoot.identifier.key;
 

@@ -18,7 +18,8 @@
             <div class="c-config">
                 <h2>Settings</h2>
                 <div class="c-config__label">Output Base Name</div>
-                <div class="c-config__value"><input type="text" id="rootName" value="Open MCT Displays from CSV"/></div>
+                <div class="c-config__value"><input type="text" id="output-base-name"
+                                                    value="Open MCT Displays from CSV"/></div>
                 <div class="c-config__label">Display Layout Grid [X,Y]</div>
                 <div class="c-config__value sm"><input type="text" id="layoutGrid" value="2,2"/></div>
 
@@ -64,8 +65,11 @@
 
         <div class="page-section c-config-holder">
             <div class="c-config">
-                <h2>Telemetry Input</h2>
-                <input class="upload-file-btn" type="file" id="inputCsv" accept=".csv"/>
+                <h2>Input</h2>
+                <div class="c-config__label">Telemetry CSV</div>
+                <div class="c-config__value">
+                    <input class="upload-file-btn" type="file" id="inputCsv" accept=".csv"/>
+                </div>
             </div>
         </div>
 
@@ -113,7 +117,8 @@
                     example</a>. Note that it must have a header row.
                 <li>TODO: Content here and example for the matrix layout CSV file.</li>
                 <li>Set parameters at left. The smaller the Layout Grid numbers are the closer you can place items
-                    with a margin, but width and heights will need to be adjusted accordingly. Using "Columns" will build
+                    with a margin, but width and heights will need to be adjusted accordingly. Using "Columns" will
+                    build
                     across first, "Rows" builds down first. For example, with a total of 16 items, using "Columns"
                     set to 2 will result in two columns of elements with 8 rows each.
                 </li>
@@ -129,6 +134,7 @@
     </div>
 </div>
 
+<script src="common.js"></script>
 <script src="input-output.js"></script>
 <script src="ConditionSetsAndWidgets.js"></script>
 <script src="DisplayLayouts.js"></script>

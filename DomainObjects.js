@@ -112,8 +112,12 @@ const FlexibleLayout = function(name) {
     }
 }
 
-const objJson = {};
-let root = objJson.openmct = new Container();
-let alphasItemPlacementTracker = {};
-let widgetsItemPlacementTracker = {};
-let folderRoot;
+let objJson, root, alphasItemPlacementTracker, widgetsItemPlacementTracker, folderRoot;
+
+initDomainObjects = function () {
+    objJson = {};
+    root = objJson.openmct = new Container();
+    alphasItemPlacementTracker = {};
+    widgetsItemPlacementTracker = {};
+    folderRoot = '';
+}
