@@ -1,23 +1,23 @@
 const navArray = [
     {
-        "name": "Displays",
-        "pathname": "index.html"
-    },
-    {
         "name": "Matrix Layout",
-        "pathname": "index-csv-to-matrix.html"
-    },
-    {
-        "name": "Stacked Views",
-        "pathname": "index-csv-to-stacked-plot.html"
+        "pathname": "index.html"
     },
     {
         "name": "Procedure Displays",
         "pathname": "index-gen-from-prl.html"
     },
     {
+        "name": "Stacked Views",
+        "pathname": "index-csv-to-stacked-plot.html"
+    },
+    {
         "name": "Extract Telemetry",
         "pathname": "index-telemetry-extract.html"
+    },
+    {
+        "name": "Legacy",
+        "pathname": "index-legacy-displays.html"
     }
 ];
 
