@@ -1,5 +1,5 @@
 const INPUT_TYPE = "prl";
-root = objJson.openmct = new Container();
+const OUTPUT_BASE_NAME_KEY = '_PRL_TO_DISPLAYS_BASE_NAME';
 const STEP_LABEL_STYLE = {
     bgColor: '#555',
     fgColor: '#ccc'
@@ -15,7 +15,7 @@ function getConfigFromForm() {
     // Get form values
     const config = {};
 
-    config.rootName = document.getElementById('rootName').value;
+    config.outputBaseName = document.getElementById('output-base-name').value;
     config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
     config.itemMargin = getFormNumericVal('itemMargin');
 
@@ -31,6 +31,7 @@ function getConfigFromForm() {
 processInputPrls = function (prlFilenames, prlContentArr) {
     // For each elem in prlContentArr, create a LAD Table and Display Layout
     // Put the layouts into a Tab View
+    initDomainObjects();
     config = getConfigFromForm();
     let root = objJson.openmct = new Container();
 
@@ -38,7 +39,7 @@ processInputPrls = function (prlFilenames, prlContentArr) {
     outputMsgText.innerHTML = '';
 
     // Create the root folder
-    let folderRoot = new Obj(config.rootName, 'folder', true);
+    let folderRoot = new Obj(config.outputBaseName, 'folder', true);
     root.addJson(folderRoot);
     objJson.rootId = folderRoot.identifier.key;
 

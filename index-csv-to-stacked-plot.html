@@ -10,7 +10,7 @@
 <body translate="no">
 <div class="c-nav" id="nav"></div>
 <div class="head">
-    <h1>Generate Open MCT Stacked Plot from CSV <span id="app-version" class="app-version"></span></h1>
+    <h1>Generate Open MCT Stacked Views from CSV <span id="app-version" class="app-version"></span></h1>
 </div>
 <div class="page">
     <div class="page-main --main">
@@ -18,7 +18,7 @@
             <div class="c-config">
                 <h2>Settings</h2>
                 <div class="c-config__label">Output Base Name</div>
-                <div class="c-config__value"><input type="text" id="rootName" value="Stacked Views"/></div>
+                <div class="c-config__value"><input type="text" id="output-base-name" value="Stacked Views"/></div>
             </div>
             <div class="c-config">
                 <h2>CSV Files</h2>
@@ -55,6 +55,7 @@
     </div>
 </div>
 
+<script src="common.js"></script>
 <script src="input-output.js"></script>
 <script src="DomainObjects.js"></script>
 <script src="utilities.js"></script>

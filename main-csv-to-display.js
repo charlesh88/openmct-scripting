@@ -1,5 +1,5 @@
 const INPUT_TYPE = "csv";
-
+const OUTPUT_BASE_NAME_KEY = '_DISPLAYS_BASE_NAME';
 inputCsv.addEventListener("change", function(ev){
     uploadFiles(ev.currentTarget.files, 'csv');
 }, false);
@@ -8,7 +8,7 @@ function getConfigFromForm() {
     // Get form values
     const config = {};
 
-    config.rootName = document.getElementById('rootName').value;
+    config.outputBaseName = document.getElementById('output-base-name').value;
     config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
     config.itemMargin = getFormNumericVal('itemMargin');
 
@@ -30,6 +30,7 @@ function getConfigFromForm() {
 
 function processInputCsvs(filenames, values) {
     // Will be a single file for this
+    initDomainObjects();
     processInputCsv(values[0]);
 }
 function processInputCsv(csv) {
@@ -52,7 +53,7 @@ function processInputCsv(csv) {
     config = getConfigFromForm();
 
     // Create the root folder
-    folderRoot = new Obj(config.rootName, 'folder', true);
+    folderRoot = new Obj(config.outputBaseName, 'folder', true);
     root.addJson(folderRoot);
     objJson.rootId = folderRoot.identifier.key;
 

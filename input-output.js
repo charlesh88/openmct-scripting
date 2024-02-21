@@ -76,7 +76,7 @@ function outputJSON() {
 }
 
 downloadJson = function () {
-    const filename = config.rootName
+    const filename = config.outputBaseName
         .concat(' - ')
         .concat(INPUT_TYPE.includes('csv')? downloadFilenames.csv : downloadFilenames.prl)
         .concat('.json');
@@ -89,7 +89,7 @@ downloadJson = function () {
 }
 
 downloadTelemList = function() {
-    const filename = 'Unique Telemetry List.csv';
+    const filename = config.outputBaseName.concat(' - Uniques.csv');
     const list = globalArrUniquePaths.join('\n');
     const file = new File([list], filename, { type: 'text/csv'});
     downloadFile(file);
@@ -97,8 +97,7 @@ downloadTelemList = function() {
 }
 
 downloadTelemAndRefsList = function() {
-    const filename = 'Telemetry and Refs.csv';
-
+    const filename = config.outputBaseName.concat(' - Telemetry and Refs.csv');
     const list = globalArrPathsAndRefs.join('\n');
     const file = new File([list], filename, { type: 'text/csv'});
     downloadFile(file);
@@ -121,21 +120,11 @@ function outputMsg(msg) {
 
 /************************************************* LOCAL STORAGE */
 function storeLocal(key, value) {
-    // Example: { csv-to-stacked-view.base-name: string }
+    // console.log('storeLocal', key, value);
     window.localStorage.setItem(key, value);
 }
 
 function loadLocal(key) {
+    // console.log('loadLocal', key);
     return window.localStorage.getItem(key);
-}
-
-function checkLocalStorageExists() {
-    return window.localStorage.getItem(LOCAL_STORAGE_KEY);
-}
-storeBaseName = function() {
-    storeLocal('OPENMCT_SCRIPTING__BASENAME', config.rootName.value);
-}
-
-retrieveBaseName = function() {
-    storeLocal('OPENMCT_SCRIPTING__BASENAME', config.rootName.value);
 }
