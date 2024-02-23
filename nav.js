@@ -1,15 +1,7 @@
 const navArray = [
     {
-        "name": "Displays",
-        "pathname": "index.html"
-    },
-    {
         "name": "Matrix Layout",
-        "pathname": "index-csv-to-matrix.html"
-    },
-    {
-        "name": "Stacked Plot",
-        "pathname": "index-csv-to-stacked-plot.html"
+        "pathname": "index.html"
     },
     {
         "name": "Conditional Graphics",
@@ -20,12 +12,20 @@ const navArray = [
         "pathname": "index-gen-from-prl.html"
     },
     {
+        "name": "Stacked Views",
+        "pathname": "index-csv-to-stacked-plot.html"
+    },
+    {
         "name": "Extract Telemetry",
         "pathname": "index-telemetry-extract.html"
+    },
+    {
+        "name": "Legacy",
+        "pathname": "index-legacy-displays.html"
     }
 ];
 
-function addNav() {
+addNav = function () {
     let curPathname = window.location.pathname;
     if (curPathname === '/') {
         curPathname = 'index.html';
@@ -43,5 +43,3 @@ function addNav() {
         navHolder.appendChild(navLink);
     }
 }
-
-document.body.onload = addNav();

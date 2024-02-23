@@ -4,6 +4,7 @@ const inputGCS = document.getElementById("inputGCS");
 const inputPrl = document.getElementById("inputPrl");
 const btnDownloadTelemList = document.getElementById("btnDownloadTelemList");
 // const checkboxFilterParameters = document.getElementById("checkboxFilterParameters");
+const OUTPUT_BASE_NAME_KEY = '_TELEM_EXTRACT_BASE_NAME';
 const btnDownloadTelemAndRefsList = document.getElementById("btnDownloadTelemAndRefsList");
 const outputMsgText = document.getElementById("outputMsg");
 const lineSepStr = '------------------------------------------------';
@@ -22,14 +23,23 @@ inputPrl.addEventListener("change", function(ev){
     uploadPrlFiles(ev.currentTarget.files);
 }, false);
 
-function reset() {
+function getConfigFromForm() {
+    // Get form values
+    const config = {};
+
+    config.outputBaseName = document.getElementById('output-base-name').value;
+
+    return config;
+}
+function resetTelemetryExtract() {
     globalArrUniquePaths = ['Unique Path'];
     globalArrPathsAndRefs = ['Path,Filename,Type'];
     outputMsgText.innerHTML = '';
 }
 
 function uploadGCSFiles(files) {
-    reset();
+    config = getConfigFromForm();
+    resetTelemetryExtract();
     let readers = [];
     let filenames = [];
 
@@ -49,7 +59,8 @@ function uploadGCSFiles(files) {
 }
 
 function uploadPrlFiles(files) {
-    reset();
+    config = getConfigFromForm();
+    resetTelemetryExtract();
     let readers = [];
     let filenames = [];
 

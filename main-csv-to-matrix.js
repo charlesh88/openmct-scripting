@@ -1,5 +1,6 @@
 const INPUT_TYPE = "csv";
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
+const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
 let folderConditionWidgets;
 
 inputCsv.addEventListener("change", function (ev) {
@@ -14,7 +15,7 @@ function getConfigFromForm() {
     // Get form values
     const config = {};
 
-    config.rootName = document.getElementById('rootName').value;
+    config.outputBaseName = document.getElementById('output-base-name').value;
     config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
     config.itemMargin = getFormNumericVal('itemMargin');
 
@@ -22,6 +23,7 @@ function getConfigFromForm() {
 }
 
 function uploadTelemetryFile(files) {
+    initDomainObjects();
     let readers = [];
     let filenames = [];
 
@@ -44,7 +46,9 @@ function uploadTelemetryFile(files) {
 }
 
 function parseCSVTelemetry(csv) {
-    // Pulls code from createOpenMCTJSONfromCSV
+    document.getElementById('inputCsv').toggleAttribute('disabled');
+    document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
+
     telemetryObjects = csvToArray(csv);
 
     outputMsg('Telemetry CSV imported, '
@@ -55,7 +59,7 @@ function parseCSVTelemetry(csv) {
     config = getConfigFromForm();
 
     // Create the root folder
-    folderRoot = new Obj(config.rootName, 'folder', true);
+    folderRoot = new Obj(config.outputBaseName, 'folder', true);
     root.addJson(folderRoot);
     objJson.rootId = folderRoot.identifier.key;
 
@@ -111,6 +115,7 @@ function parseCSVTelemetry(csv) {
 }
 
 function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
+    document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
     // console.log('createOpenMCTMatrixLayoutJSONfromCSV\n', csv);
     csv = csv.replaceAll('\r', '');
     csv = csv.replace(/"[^"]+"/g, function (v) {

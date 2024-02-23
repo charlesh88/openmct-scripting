@@ -10,7 +10,7 @@
 <body translate="no">
 <div class="c-nav" id="nav"></div>
 <div class="head">
-    <h1>Generate Open MCT Views from Pride Procedures <span class="app-version">v3.1.1</span></h1>
+    <h1>Generate Open MCT Views from Pride Procedures <span id="app-version" class="app-version"></span></h1>
 </div>
 <div class="page">
     <div class="page-main --main">
@@ -18,7 +18,7 @@
             <div class="c-config">
                 <h2>Settings</h2>
                 <div class="c-config__label">Output Base Name</div>
-                <div class="c-config__value"><input type="text" id="rootName" value="Open MCT Proc Displays"/></div>
+                <div class="c-config__value"><input type="text" id="output-base-name" value="Open MCT Proc Displays"/></div>
                 <div class="c-config__label">Display Layout Grid [X,Y]</div>
                 <div class="c-config__value sm"><input type="text" id="layoutGrid" value="2,2"/></div>
 
@@ -45,8 +45,8 @@
 
         <div class="page-section c-config-holder">
             <div class="c-config">
-                <h2>Telemetry Input</h2>
-                <div class="c-config__label">Input File(s)</div>
+                <h2>Inputs</h2>
+                <div class="c-config__label">Input PRL Files</div>
                 <div class="c-config__value">
                     <input class="upload-file-btn" type="file" id="inputPrl" accept=".prl" multiple/>
                 </div>
@@ -100,15 +100,16 @@
     </div>
 </div>
 
+<script src="common.js"></script>
 <script src="input-output.js"></script>
 <script src="DisplayLayouts.js"></script>
 <script src="DomainObjects.js"></script>
+<script src="main-prl-to-display.js"></script>
 <script src="utilities.js"></script>
 <script src="ui-elements.js"></script>
-<script src="main.js"></script>
 <script src="telemetry-extract-prl.js"></script>
-<script src="main-prl-to-display.js"></script>
 <script src="nav.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
 

@@ -74,7 +74,6 @@ h3 {
 
 input[type="text"],
 input[type="number"],
-button,
 textarea,
 select,
 .output {
@@ -86,7 +85,6 @@ select,
 
 input[type="text"],
 input[type="number"],
-button,
 textarea {
     background: #222;
     appearance: none;
@@ -109,8 +107,7 @@ input[type="submit"] {
     background-color: #666;
 }
 
-button[disabled],
-input[disabled] {
+button[disabled] {
     pointer-events: none;
     opacity: 0.2;
 }
@@ -120,11 +117,18 @@ select {
     padding: 4px;
 }
 
-button, .c-btn-run {
+button,
+.c-btn {
+    appearance: none;
     background: #ecb157;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    box-sizing: border-box;
     color: #222;
+    font-size: 1em;
     font-weight: 600;
-    padding: 5px 30px;
+    padding: 5px 20px;
+    text-decoration: none;
 }
 
 form {

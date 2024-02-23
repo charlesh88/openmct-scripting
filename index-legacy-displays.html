@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Open MCT Views Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body translate="no">
+<div class="c-nav" id="nav"></div>
+<div class="head">
+    <h1>Generate Open MCT Views from CSV <span id="app-version" class="app-version"></span></h1>
+</div>
+<div class="page">
+    <div class="page-main --main">
+        <div class="page-section c-config-holder">
+            <div class="c-config">
+                <h2>Settings</h2>
+                <div class="c-config__label">Output Base Name</div>
+                <div class="c-config__value"><input type="text" id="output-base-name"
+                                                    value="Open MCT Displays from CSV"/></div>
+                <div class="c-config__label">Display Layout Grid [X,Y]</div>
+                <div class="c-config__value sm"><input type="text" id="layoutGrid" value="2,2"/></div>
+
+                <div class="c-config__label">Item Margin</div>
+                <div class="c-config__value sm"><input type="number" id="itemMargin" value="1"/></div>
+            </div>
+            <div class="c-config" id="configFormSectionWidgets">
+                <h2>Widget Layout</h2>
+                <div class="c-config__value">
+                    <select id="widgetLayoutStrategy">
+                        <option value="columns">Columns</option>
+                        <option value="rows">Rows</option>
+                    </select>
+                </div>
+                <div class="c-config__value sm"><input type="number" id="widgetLayoutStrategyNum" value="3"/></div>
+
+                <div class="c-config__label">Item Width</div>
+                <div class="c-config__value sm"><input type="number" id="widgetLayoutItemWidth" value="150"/></div>
+
+                <div class="c-config__label">Item Height</div>
+                <div class="c-config__value sm"><input type="number" id="widgetLayoutItemHeight" value="15"/></div>
+            </div>
+            <div class="c-config">
+                <h2>Alpha Layout</h2>
+                <div class="c-config__value">
+                    <select id="alphaLayoutStrategy">
+                        <option value="columns">Columns</option>
+                        <option value="rows">Rows</option>
+                    </select>
+                </div>
+                <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="1"/></div>
+
+                <div class="c-config__label">Label Width</div>
+                <div class="c-config__value sm"><input type="number" id="alphaLayoutLabelWidth" value="150"/></div>
+
+                <div class="c-config__label">Item Width</div>
+                <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="150"/></div>
+
+                <div class="c-config__label">Item Height</div>
+                <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="10"/></div>
+            </div>
+        </div>
+
+        <div class="page-section c-config-holder">
+            <div class="c-config">
+                <h2>Input</h2>
+                <div class="c-config__label">Telemetry CSV</div>
+                <div class="c-config__value">
+                    <input class="upload-file-btn" type="file" id="inputCsv" accept=".csv"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-section">
+            <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
+        </div>
+
+        <div class="page-section --expands">
+            <h2>Output</h2>
+            <div id="output-stats" class="message"></div>
+            <div class="c-msg" id="outputMsg">
+            </div>
+        </div>
+    </div>
+
+    <div class="page-main --sidebar">
+        <div class="page-section --can-shrink" id="howCsv">
+            <h2>What this does</h2>
+            <ul>
+                <li>For each telemetry point in the input file, a Condition Set with a default up to 4 conditions
+                    that
+                    allow all the standard Open MCT value comparisons. Condition parameters and values are set in
+                    the
+                    input CSV file.
+                </li>
+                <li>For each Condition Set, a Condition Widget that uses the Condition Set for dynamic styling,
+                    based on
+                    colors and label text defined in the input file.
+                </li>
+                <li>A Display Layout that includes all the widgets in a grid layout defined by the settings below.
+                </li>
+                <li>A Display Layout that includes all the telemetry points in the input file as alphanumerics, in a
+                    grid layout defined by the settings below. Each alpha has a text label from the "name" column in
+                    the
+                    input file.
+                </li>
+                <li>A LAD Table that includes all the telemetry points in the input file.</li>
+                <li>Folders that hold the Condition Sets and Widgets.</li>
+                <li>A single folder that holds all of the above, named using your input Root Name.</li>
+            </ul>
+            <h2>How to use</h2>
+            <ol>
+                <li>Make a CSV file like <a target="_blank"
+                                            href="Open-MCT-Domain-Object-Scripting-example-file.csv">this
+                    example</a>. Note that it must have a header row.
+                <li>TODO: Content here and example for the matrix layout CSV file.</li>
+                <li>Set parameters at left. The smaller the Layout Grid numbers are the closer you can place items
+                    with a margin, but width and heights will need to be adjusted accordingly. Using "Columns" will
+                    build
+                    across first, "Rows" builds down first. For example, with a total of 16 items, using "Columns"
+                    set to 2 will result in two columns of elements with 8 rows each.
+                </li>
+                <li>Press the Telemetry "Choose File" button and select your telemetry CSV file.
+                </li>
+                <li>Optionally, press the Matrix Layout "Choose File" button and select a matrix layout CSV file.
+                </li>
+                <li>Press "DOWNLOAD" to download the generated JSON file.</li>
+                <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<script src="common.js"></script>
+<script src="input-output.js"></script>
+<script src="ConditionSetsAndWidgets.js"></script>
+<script src="DisplayLayouts.js"></script>
+<script src="DomainObjects.js"></script>
+<script src="utilities.js"></script>
+<script src="ui-elements.js"></script>
+<script src="main-csv-to-display.js"></script>
+<script src="nav.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
+
