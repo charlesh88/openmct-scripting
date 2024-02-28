@@ -76,25 +76,18 @@ function csvToArray(str, delimiter = ',') {
             // Isolate strings within double-quote blocks and encode all commas in there
             return v.replaceAll(',', ESC_CHARS.comma);
         })
-        // Convert all tildes to backslashes - TODO: change these to tildes at the time of path creation
-        // TEMP: don't do this right now!
-        //.replaceAll('~','/');
 
         const valuesArr = valuesStr.split(delimiter);
 
         if (valuesArr.length > 0) {
-            // Restore escaped characters
-            const valuesArrRestored = valuesArr.map(function (value) {
-                const valueRestored = value
-                    .replaceAll('\"', '')
-                    .replaceAll(ESC_CHARS.comma, ',')
-                    .replaceAll(ESC_CHARS.tilde, '~')
-                    .replaceAll('/', '~') // TEMP
-                    .replaceAll(ESC_CHARS.backslash, '/');
-                return valueRestored;
+            const valuesArrFormatted = valuesArr.map(function (value) {
+                return value
+                    .replaceAll('\"', '') // Kill double-quotes
+                    .replaceAll(ESC_CHARS.comma, ',') // Restore separator commas
+                    .replaceAll('/', '~'); // Convert any path / to ~
             })
 
-            return valuesArrRestored;
+            return valuesArrFormatted;
         }
     })
 

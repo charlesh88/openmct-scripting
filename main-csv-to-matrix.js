@@ -226,7 +226,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     itemH: rowH,
                     x: curX,
                     y: curY,
-                    text: cell.replaceAll(ESC_CHARS.escComma, ',')
+                    text: restoreEscChars(cell)
                 };
 
                 if (cellArgs && cellArgs.includes('_bg')) {

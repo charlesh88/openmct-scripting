@@ -77,6 +77,13 @@ function removeExtension(str) {
     return str.substring(0, str.lastIndexOf('.'));
 }
 
+function restoreEscChars(str) {
+    return str
+        .replaceAll(ESC_CHARS.escComma, ',')
+        .replaceAll(ESC_CHARS.tilde, '~')
+        .replaceAll(ESC_CHARS.backslash, '/');
+}
+
 function labelWidthFromChars(pxScale, charCnt) {
     // Calcs a label width to a scale from a character count
     const pxPerChar = 14;

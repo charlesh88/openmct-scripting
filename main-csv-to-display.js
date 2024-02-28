@@ -125,7 +125,7 @@ function processInputCsv(csv) {
                 itemW: config.dlAlphas.itemW,
                 itemH: config.dlAlphas.itemH,
                 ident: telemetryObject.dataSource,
-                text: telemetryObject.name,
+                text: restoreEscChars(telemetryObject.name),
                 layoutStrategy: config.dlAlphas.layoutStrategy,
                 layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                 placeIndex: alphasItemPlacementTracker.placeIndex,
@@ -143,7 +143,7 @@ function processInputCsv(csv) {
                     itemW: config.dlAlphas.labelW + config.itemMargin + dlAlphas.itemW,
                     itemH: config.dlAlphas.itemH,
                     ident: telemetryObject.dataSource,
-                    text: telemetryObject.name,
+                    text: restoreEscChars(telemetryObject.name),
                     layoutStrategy: config.dlAlphas.layoutStrategy,
                     layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                     placeIndex: alphasItemPlacementTracker.placeIndex,
@@ -345,7 +345,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     itemH: rowH,
                     x: curX,
                     y: curY,
-                    text: cell
+                    text: restoreEscChars(cell)
                 };
 
                 // console.log('args for', cell,'colW:',colW);
