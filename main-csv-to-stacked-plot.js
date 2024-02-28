@@ -42,7 +42,7 @@ function processInputCsvs(filenames, values) {
     folderFlexLayouts.setLocation(folderRoot);
 
     for (let i = 0; i < filenames.length; i++) {
-        const csvObjArray = csvToArray(values[i]);
+        const csvObjArray = csvToObjArray(values[i]);
         const holderName = filenames[i].split('.')[0];
 
         let stackedPlotObj = new StackedPlot('SP '.concat(holderName));
