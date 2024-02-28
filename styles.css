@@ -131,6 +131,10 @@ button,
     text-decoration: none;
 }
 
+button[class*='--minor'] {
+    background: #999;
+}
+
 form {
     display: contents;
 }

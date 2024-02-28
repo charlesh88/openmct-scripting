@@ -29,51 +29,6 @@ function createStyleObj(args) {
     return s;
 }
 
-function csvToArray(str, delimiter = ",") {
-    // Based on https://sebhastian.com/javascript-csv-to-array/
-    console.log(str);
-    outputMsg("csvToArray:");
-    outputMsg("Read in ".concat(str.length).concat(" chars"));
-
-    // Split the text into lines and remove empty rows
-    const rows = str.split(/\r?\n/)
-        .filter((row) => row.length > 0);
-    outputMsg("File split into ".concat(rows.length.toString()).concat(" rows including header"));
-    // console.log(rows);
-
-    // Get headers from the first row
-    const headers = rows.shift().split(delimiter);
-
-    // Map the rows: each row becomes an object with property names from the headers array
-    const arr = rows.map(function (row) {
-        // console.log(row.length, 'row pre-replace: ', row);
-        row = row.replace(/"[^"]+"/g, function (v) {
-            // Encode all commas that are within double quote chunks with '|'
-            // then restore them after removing the double quotes below
-            return v.replace(/,/g, '|');
-        })
-
-        // console.log(row.length, 'row post-replace: ', row);
-        const values = row.split(delimiter);
-
-        if (values.length > 0) {
-            const el = headers.reduce(function (object, header, index) {
-                object[header] = values[index]
-                    .replaceAll('/', '~')
-                    .replaceAll('\"', '')
-                    .replaceAll('|', ',');
-                return object;
-
-            }, {});
-            return el;
-        }
-    });
-
-    // return the array
-    console.log('csvToArray arr', arr);
-    return arr;
-}
-
 function getNamespace(source) {
     return (source.indexOf('~') != -1) ? 'taxonomy' : '';
 }

@@ -1,4 +1,3 @@
-/************************************* https://ourcodeworld.com/articles/read/1438/how-to-read-multiple-files-at-once-using-the-filereader-class-in-javascript#google_vignette */
 /************************************************* INPUTS AND UPLOADING */
 function readFileAsText(file){
     return new Promise(function(resolve,reject){
@@ -60,6 +59,63 @@ function uploadMatrixFile(files, fileType) {
     Promise.all(readers).then((values) => {
         createOpenMCTMatrixLayoutJSONfromCSV(values[0]);
     });
+}
+
+function csvToArray(str, delimiter = ',') {
+    // Break the csv into rows
+    const arrLines = str.split(/\r?\n/).filter((row) => row.length > 0);
+
+    const arrCleaned = arrLines.map(function (row) {
+        // Convert escaped characters like commas, backslashes and tildes
+        let valuesStr = row
+            .replaceAll('\\,', ESC_CHARS.escComma)
+            .replaceAll('\\~', ESC_CHARS.tilde)
+            .replaceAll('\\/', ESC_CHARS.backslash);
+
+        valuesStr = valuesStr.replace(/"[^"]+"/g, function (v) {
+            // Isolate strings within double-quote blocks and encode all commas in there
+            return v.replaceAll(',', ESC_CHARS.comma);
+        })
+        // Convert all tildes to backslashes - TODO: change these to tildes at the time of path creation
+        // TEMP: don't do this right now!
+        //.replaceAll('~','/');
+
+        const valuesArr = valuesStr.split(delimiter);
+
+        if (valuesArr.length > 0) {
+            // Restore escaped characters
+            const valuesArrRestored = valuesArr.map(function (value) {
+                const valueRestored = value
+                    .replaceAll('\"', '')
+                    .replaceAll(ESC_CHARS.comma, ',')
+                    .replaceAll(ESC_CHARS.tilde, '~')
+                    .replaceAll('/', '~') // TEMP
+                    .replaceAll(ESC_CHARS.backslash, '/');
+                return valueRestored;
+            })
+
+            return valuesArrRestored;
+        }
+    })
+
+    console.log('csvToArray', arrCleaned);
+
+    return arrCleaned;
+}
+
+function csvToObjArray(str) {
+    let arrBody = csvToArray(str);
+    const arrHeaders = arrBody.shift();
+    const objArr = arrBody.map(function (row) {
+        const obj = arrHeaders.reduce(function (object, header, index) {
+            object[header] = row[index];
+            return object;
+
+        }, {});
+        return obj;
+    })
+
+    return objArr;
 }
 
 /************************************************* OUTPUTS AND DOWNLOADING */
