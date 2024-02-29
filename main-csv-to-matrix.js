@@ -216,9 +216,9 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.alphaObjStyles;
                         dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = telemetryObject.csKey;
                     }
-                }
 
-                dlMatrix.addToComposition(cell, getNamespace(cell));
+                    dlMatrix.addToComposition(cell, getNamespace(cell));
+                }
             } else if (cell.length > 0) {
                 // Add as a text object
                 const args = {
