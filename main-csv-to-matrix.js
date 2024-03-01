@@ -126,6 +126,16 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     folderRoot.addToComposition(dlMatrix.identifier.key);
     dlMatrix.setLocation(folderRoot);
 
+    // Create a folder to hold Hyperlinks and add it to the root folder
+    let folderHyperlinks;
+
+    if (csv.includes('_link')) {
+        folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
+        root.addJson(folderHyperlinks);
+        folderRoot.addToComposition(folderHyperlinks.identifier.key);
+        folderHyperlinks.setLocation(folderRoot);
+    }
+
     const arrColWidths = rowArr[0];
     let curY = 0;
     let dlItem = {};
@@ -153,6 +163,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
             const argSeparator = ',';
             let cellArgs;
             let cellArgsArr = [];
+            let cellArgsObj = {};
 
             if (cell.includes(argSeparator)) {
                 cellArgs = cell.substring(cell.indexOf(argSeparator) + 1, cell.length);
@@ -161,25 +172,23 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
             }
 
             if (cellArgsArr.length > 0) {
-                console.log('cellArgs', cellArgs);
-
                 const spanArg = extractArg(cellArgsArr, '_span');
                 if (spanArg) {
-                    console.log('spanArg', spanArg);
+                    cellArgsObj.span = parseInt(spanArg);
                     // Span includes the current column, c
                     // Add widths from columns to be spanned to itemW
-                    for (let i = c + 1; i < (c + parseInt(spanArg)); i++) {
+                    for (let i = c + 1; i < (c + cellArgsObj.span); i++) {
                         itemW += parseInt(arrColWidths[i]) + config.itemMargin;
                     }
                 }
 
-                const linkArg = extractArg(cellArgsArr, '_link');
+                let linkArg = extractArg(cellArgsArr, '_link');
                 if (linkArg) {
-                    console.log('linkArg', linkArg);
+                    cellArgsObj.url = linkArg.replaceAll('~', '/');
                 }
             }
 
-            if (cell.startsWith("/")) {
+            if (cell.startsWith("~")) {
                 // If telem, get the corresponding telemetryObject
                 const telemetryObject = telemetryObjects.find(e => e.dataSource === cell);
 
@@ -187,7 +196,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     if (cellArgs.includes('_cw')) {
                         if (telemetryObject && telemetryObject.cs) {
                             // Create Condition Widget
-                            let cw = new ConditionWidget(telemetryObject.cs, telemetryObject);
+                            let cw = new ConditionWidget(telemetryObject.cs, telemetryObject, cellArgsObj);
                             root.addJson(cw);
                             folderConditionWidgets.addToComposition(cw.identifier.key);
                             cw.setLocation(folderConditionWidgets);
@@ -216,7 +225,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         itemH: rowH,
                         x: curX,
                         y: curY,
-                        ident: cell.replaceAll('/','~'),
+                        ident: cell.replaceAll('/', '~'),
                         alphaFormat: telemetryObject.alphaFormat,
                         alphaShowsUnit: telemetryObject.alphaShowsUnit
                     });
@@ -229,7 +238,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     dlMatrix.addToComposition(cell, getNamespace(cell));
                 }
             } else if (cell.length > 0) {
-                // Add as a text object
+                // Add as a text object or a Hyperlink button
                 const args = {
                     itemW: itemW,
                     itemH: rowH,
@@ -250,7 +259,33 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     args.fgColor = fgColorStr;
                 }
 
-                dlItem = dlMatrix.addTextView(args);
+                if (cellArgs && cellArgs.includes('_link')) {
+                    const linkName = restoreEscChars(args.text);
+                    let linkBtn = new HyperLink(linkName, {
+                        format: 'button',
+                        target: '_blank',
+                        url: cellArgsObj.url,
+                        label: linkName
+                    });
+                    root.addJson(linkBtn);
+                    folderHyperlinks.addToComposition(linkBtn.identifier.key);
+                    linkBtn.setLocation(folderHyperlinks);
+
+                    // Add Hyperlink to the layout
+                    dlMatrix.addSubObjectViewInPlace({
+                        itemW: itemW,
+                        itemH: rowH,
+                        x: curX,
+                        y: curY,
+                        ident: linkBtn.identifier.key,
+                        hasFrame: false
+                    });
+
+                    dlMatrix.addToComposition(linkBtn.identifier.key);
+
+                } else {
+                    dlItem = dlMatrix.addTextView(args);
+                }
             }
 
             curX += colW + ((c > 1) ? config.itemMargin : 0);
@@ -264,6 +299,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 }
 
 function extractArg(arr, argKey) {
+    // expects arr[argKey(value)]
     const argStr = arr.find(
         (elem) => elem.includes(argKey)
     );

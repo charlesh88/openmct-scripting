@@ -9,7 +9,7 @@ const Obj = function (name, type, hasComposition) {
     const id = createUUID();
     const datetime = 1661559456808;
 
-    this.name = name;
+    this.name = restoreEscChars(name);
     this.type = type;
     this.modified = datetime;
     this.location = null;
@@ -112,14 +112,12 @@ const FlexibleLayout = function(name) {
     }
 }
 
-const HyperLink = function(name, format = 'button', target = '_blank', url, label) {
+const HyperLink = function(name, argsObj) {
     Obj.call(this, name, 'hyperlink', false);
-    this.configuration = {
-        displayFormat: format,
-        linkTarget: target,
-        url: url,
-        displayText: (label)? label : name
-    };
+    this.displayFormat = argsObj.format;
+    this.linkTarget = argsObj.target;
+    this.url = argsObj.url;
+    this.displayText = argsObj.label;
 }
 
 let objJson, root, alphasItemPlacementTracker, widgetsItemPlacementTracker, folderRoot;

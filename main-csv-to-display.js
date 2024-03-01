@@ -296,9 +296,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 }
             }
 
-            // console.log('Row',r,'Cell',c,'colW',colW,'itemW',itemW);
-
-            if (cell.startsWith("/")) {
+            if (cell.startsWith("~")) {
                 // If telem, get the corresponding telemetryObject
                 // Use startsWith so the user can write a path that begins with a dash or other for telem that's
                 // not yet in the dictionary.
