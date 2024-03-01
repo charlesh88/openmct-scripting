@@ -152,25 +152,34 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
             const argSeparator = ',';
             let cellArgs;
+            let cellArgsArr = [];
 
             if (cell.includes(argSeparator)) {
                 cellArgs = cell.substring(cell.indexOf(argSeparator) + 1, cell.length);
                 cell = cell.substring(0, cell.indexOf(argSeparator)).replaceAll('"', '').trim();
+                cellArgsArr = cellArgs.split(argSeparator);
             }
 
-            if (cellArgs && cellArgs.includes('_span')) {
-                const start = cellArgs.indexOf('_span');
-                let spanNumStr = cellArgs.substring(start + 6);
-                const spanNum = parseInt(spanNumStr.substring(0, spanNumStr.indexOf(')')));
+            if (cellArgsArr.length > 0) {
+                console.log('cellArgs', cellArgs);
 
-                // Span includes the current column, c
-                // Add widths from columns to be spanned to itemW
-                for (let i = c + 1; i < (c + spanNum); i++) {
-                    itemW += parseInt(arrColWidths[i]) + config.itemMargin;
+                const spanArg = extractArg(cellArgsArr, '_span');
+                if (spanArg) {
+                    console.log('spanArg', spanArg);
+                    // Span includes the current column, c
+                    // Add widths from columns to be spanned to itemW
+                    for (let i = c + 1; i < (c + parseInt(spanArg)); i++) {
+                        itemW += parseInt(arrColWidths[i]) + config.itemMargin;
+                    }
+                }
+
+                const linkArg = extractArg(cellArgsArr, '_link');
+                if (linkArg) {
+                    console.log('linkArg', linkArg);
                 }
             }
 
-            if (cell.startsWith("~")) {
+            if (cell.startsWith("/")) {
                 // If telem, get the corresponding telemetryObject
                 const telemetryObject = telemetryObjects.find(e => e.dataSource === cell);
 
@@ -207,7 +216,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         itemH: rowH,
                         x: curX,
                         y: curY,
-                        ident: cell,
+                        ident: cell.replaceAll('/','~'),
                         alphaFormat: telemetryObject.alphaFormat,
                         alphaShowsUnit: telemetryObject.alphaShowsUnit
                     });
@@ -252,4 +261,18 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
     outputJSON();
     outputMsg('Matrix Layout generated');
+}
+
+function extractArg(arr, argKey) {
+    const argStr = arr.find(
+        (elem) => elem.includes(argKey)
+    );
+
+    if (argStr) {
+        return argStr
+            .substring(0,argStr.length - 1) // Get rid of last )
+            .split('(')[1]
+    }
+
+    return false;
 }

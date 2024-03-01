@@ -112,6 +112,16 @@ const FlexibleLayout = function(name) {
     }
 }
 
+const HyperLink = function(name, format = 'button', target = '_blank', url, label) {
+    Obj.call(this, name, 'hyperlink', false);
+    this.configuration = {
+        displayFormat: format,
+        linkTarget: target,
+        url: url,
+        displayText: (label)? label : name
+    };
+}
+
 let objJson, root, alphasItemPlacementTracker, widgetsItemPlacementTracker, folderRoot;
 
 initDomainObjects = function () {
