@@ -9,7 +9,7 @@ const Obj = function (name, type, hasComposition) {
     const id = createUUID();
     const datetime = 1661559456808;
 
-    this.name = name;
+    this.name = restoreEscChars(name);
     this.type = type;
     this.modified = datetime;
     this.location = null;
@@ -110,6 +110,14 @@ const FlexibleLayout = function(name) {
             this.configuration.containers[0].frames[i].size = frameSize;
         }
     }
+}
+
+const HyperLink = function(name, argsObj) {
+    Obj.call(this, name, 'hyperlink', false);
+    this.displayFormat = argsObj.format;
+    this.linkTarget = argsObj.target;
+    this.url = argsObj.url;
+    this.displayText = argsObj.label;
 }
 
 let objJson, root, alphasItemPlacementTracker, widgetsItemPlacementTracker, folderRoot;

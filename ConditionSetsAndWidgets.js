@@ -72,7 +72,8 @@ function createConditionCriteria(operation, input) {
 }
 
 // CONDITION WIDGETS
-const ConditionWidget = function (conditionSet, telemetryObject) {
+const ConditionWidget = function (conditionSet, telemetryObject, argsObj) {
+    // TODO: add argsObj.link to the widgets url property
     Obj.call(this, 'CW ' + telemetryObject.name, 'conditionWidget', false);
     this.configuration = {};
     let os = this.configuration.objectStyles = {};

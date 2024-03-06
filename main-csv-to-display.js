@@ -48,7 +48,7 @@ function processInputCsv(csv) {
     }]
     */
 
-    telemetryObjects = csvToArray(csv);
+    telemetryObjects = csvToObjArray(csv);
 
     config = getConfigFromForm();
 
@@ -125,7 +125,7 @@ function processInputCsv(csv) {
                 itemW: config.dlAlphas.itemW,
                 itemH: config.dlAlphas.itemH,
                 ident: telemetryObject.dataSource,
-                text: telemetryObject.name,
+                text: restoreEscChars(telemetryObject.name),
                 layoutStrategy: config.dlAlphas.layoutStrategy,
                 layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                 placeIndex: alphasItemPlacementTracker.placeIndex,
@@ -143,7 +143,7 @@ function processInputCsv(csv) {
                     itemW: config.dlAlphas.labelW + config.itemMargin + dlAlphas.itemW,
                     itemH: config.dlAlphas.itemH,
                     ident: telemetryObject.dataSource,
-                    text: telemetryObject.name,
+                    text: restoreEscChars(telemetryObject.name),
                     layoutStrategy: config.dlAlphas.layoutStrategy,
                     layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                     placeIndex: alphasItemPlacementTracker.placeIndex,
@@ -296,10 +296,10 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 }
             }
 
-            // console.log('Row',r,'Cell',c,'colW',colW,'itemW',itemW);
-
-            if (cell.includes("~")) {
+            if (cell.startsWith("~")) {
                 // If telem, get the corresponding telemetryObject
+                // Use startsWith so the user can write a path that begins with a dash or other for telem that's
+                // not yet in the dictionary.
                 const telemetryObject = telemetryObjects.find(e => e.dataSource === cell);
 
                 if (cellArgs) {
@@ -343,7 +343,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     itemH: rowH,
                     x: curX,
                     y: curY,
-                    text: cell
+                    text: restoreEscChars(cell)
                 };
 
                 // console.log('args for', cell,'colW:',colW);

@@ -1,4 +1,3 @@
-/************************************* https://ourcodeworld.com/articles/read/1438/how-to-read-multiple-files-at-once-using-the-filereader-class-in-javascript#google_vignette */
 /************************************************* INPUTS AND UPLOADING */
 function readFileAsText(file){
     return new Promise(function(resolve,reject){
@@ -60,6 +59,56 @@ function uploadMatrixFile(files, fileType) {
     Promise.all(readers).then((values) => {
         createOpenMCTMatrixLayoutJSONfromCSV(values[0]);
     });
+}
+
+function csvToArray(str, delimiter = ',') {
+    // Break the csv into rows
+    const arrLines = str.split(/\r?\n/).filter((row) => row.length > 0);
+
+    const arrCleaned = arrLines.map(function (row) {
+        // Convert escaped characters like commas, backslashes and tildes
+        let valuesStr = row
+            .replaceAll('\\,', ESC_CHARS.escComma)
+            .replaceAll('\\~', ESC_CHARS.tilde)
+            .replaceAll('\\/', ESC_CHARS.backslash);
+
+        valuesStr = valuesStr.replace(/"[^"]+"/g, function (v) {
+            // Isolate strings within double-quote blocks and encode all commas in there
+            return v.replaceAll(',', ESC_CHARS.comma);
+        })
+
+        const valuesArr = valuesStr.split(delimiter);
+
+        if (valuesArr.length > 0) {
+            const valuesArrFormatted = valuesArr.map(function (value) {
+                return value
+                    .replaceAll('\"', '') // Kill double-quotes
+                    .replaceAll(ESC_CHARS.comma, ',') // Restore separator commas
+                    .replaceAll('/', '~'); // Convert any path / to ~
+            })
+
+            return valuesArrFormatted;
+        }
+    })
+
+    console.log('csvToArray', arrCleaned);
+
+    return arrCleaned;
+}
+
+function csvToObjArray(str) {
+    let arrBody = csvToArray(str);
+    const arrHeaders = arrBody.shift();
+    const objArr = arrBody.map(function (row) {
+        const obj = arrHeaders.reduce(function (object, header, index) {
+            object[header] = row[index];
+            return object;
+
+        }, {});
+        return obj;
+    })
+
+    return objArr;
 }
 
 /************************************************* OUTPUTS AND DOWNLOADING */

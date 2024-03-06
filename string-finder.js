@@ -77,7 +77,7 @@ findMatches = function() {
 }
 
 replaceStrings = function() {
-    const replaceTable = csvToArray(replaceFileText);
+    const replaceTable = csvToObjArray(replaceFileText);
     const replaceOutput = document.getElementById("replace-output");
     let replaceCnt = 0;
 
