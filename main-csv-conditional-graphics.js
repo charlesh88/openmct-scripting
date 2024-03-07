@@ -1,23 +1,47 @@
 const INPUT_TYPE = "csv";
+const OUTPUT_BASE_NAME_KEY = '_CONDITIONAL_GRAPHICS_BASE_NAME';
 
 inputCsv.addEventListener("change", function (ev) {
-    uploadFiles(ev.currentTarget.files, 'csv');
+    uploadTelemetryFile(ev.currentTarget.files, 'csv');
 }, false);
 
 function getConfigFromForm() {
     // Get form values
     const config = {};
 
-    config.rootName = document.getElementById('rootName').value;
+    config.outputBaseName = document.getElementById('rootName').value;
     config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
     config.imageSize = document.getElementById('imageSize').value.split(',');
 
     return config;
 }
 
-function createOpenMCTJSONfromCSV(csv) {
+function uploadTelemetryFile(files) {
+    initDomainObjects();
+    let readers = [];
+    let filenames = [];
+
+    // Abort if there were no files selected
+    if (!files.length) return;
+
+    // Store promises in array
+    for (let i = 0; i < files.length; i++) {
+        filenames.push(files[i].name);
+        readers.push(readFileAsText(files[i]));
+    }
+
+    // Trigger Promises
+    Promise.all(readers).then((values) => {
+        // Values will be an array that contains an item
+        // with the text of every selected file
+        // ["File1 Content", "File2 Content" ... "FileN Content"]
+        parseCSVTelemetry(values[0]);
+    });
+}
+
+function parseCSVTelemetry(csv) {
     /*
-    condObjs: array of Condition objects with these properties:
+    arrCondObjs: array of Condition objects with these properties:
     [{
         imageId: string that defines unique images. Allows more than one image to be overlayed, with different Condition Sets for each
         desc: not used
@@ -34,18 +58,21 @@ function createOpenMCTJSONfromCSV(csv) {
     }]
     */
 
-    condObjs = csvToArray(csv);
+    // array of objects
+    arrCondObjs = csvToObjArray(csv);
+
+    console.log('arrCondObjs',arrCondObjs);
 
     config = getConfigFromForm();
 
     // Create the root folder
-    folderRoot = new Obj(config.rootName, 'folder', true);
+    folderRoot = new Obj(config.outputBaseName, 'folder', true);
     root.addJson(folderRoot);
     objJson.rootId = folderRoot.identifier.key;
 
     // Create a Display Layout for the conditional image and add it to the root folder
     let dlCondImage = new DisplayLayout({
-        'name': 'DL '.concat(config.rootName),
+        'name': 'DL '.concat(config.outputBaseName),
         'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
     });
     root.addJson(dlCondImage);
@@ -53,21 +80,25 @@ function createOpenMCTJSONfromCSV(csv) {
     dlCondImage.setLocation(folderRoot);
 
     outputMsg('Condition-driven Image CSV imported, '
-        .concat(condObjs.length.toString())
+        .concat(arrCondObjs.length.toString())
         .concat(' rows found')
     );
 
     let curImageId = '';
     let curImageView;
     let curConditionSet;
+    let curConditionSetDataSources = [];
+    let curDataSource;
 
-    for (const condObj of condObjs) {
-        const curIndex = condObjs.indexOf(condObj);
+    for (const condObj of arrCondObjs) {
+        const curIndex = arrCondObjs.indexOf(condObj);
 
-        // If telemObject dataSource includes "," then it's synthetic
+        // If telemObject dataSource includes "_swg()" then create a SWG and add it
         // Create the source, add it to the telemSource folder and to the composition
         // Update telemtryObject.dataSource to use the UUID of the created object
 
+        // dlItem holds elements in the dlCondImage layout
+        // These are either static images or images driven by conditions
         let dlItem = {};
 
         if (!condObj.condDataSource.length > 0) {
@@ -79,13 +110,22 @@ function createOpenMCTJSONfromCSV(csv) {
                         y: 0,
                         width: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[0]), parseInt(config.imageSize[0])),
                         height: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[1]), parseInt(config.imageSize[1])),
-                        url: condObj.imageUrl;
+                        url: condObj.imageUrl
                     }
                 )
             }
             curImageId = condObj.imageId;
         } else {
-            // There is a datasource, so add as a Condition
+            // There is a datasource
+            // If it's a telem path, see if it's in curConditionSetDataSources by path
+            //   If it is, use condObj.DataSourceToEval (this | any | all) to determine how to add it to the Condition
+            //   If not, do above and push onto condObj.DataSourceToEval
+            // If not a telem path, it's a SWG
+            //   See if it's in curConditionSetDataSources by name
+            //      If it is, add it as a ref into the Condition by ID
+            //      If it's not, create the SWG and do all the things, get an ID back
+            //          Add it
+            //
             if (curImageId !== condObj.imageId) {
                 // Make a new Condition Set
 
@@ -103,7 +143,7 @@ function createOpenMCTJSONfromCSV(csv) {
             const conditionsArr = cs.conditionsToArr(condObj);
             cs.addConditions(condObj, conditionsArr);
 
-            condObjs[curIndex].csKey = cs.identifier.key;
+            arrCondObjs[curIndex].csKey = cs.identifier.key;
 
             // Add a "styles" collection for Conditional styling in dlAlpha.objectStyles[dlItem.id]
             if (condObj.alphaUsesCond === 'TRUE') {
@@ -118,7 +158,7 @@ function createOpenMCTJSONfromCSV(csv) {
                     dlAlphas.configuration.objectStyles[dlItem.id].styles.push(alphaCondStyleObj);
                     dlAlphas.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(cs.identifier.key);
                 }
-                condObjs[curIndex].alphaObjStyles = dlAlphas.configuration.objectStyles[dlItem.id].styles;
+                arrCondObjs[curIndex].alphaObjStyles = dlAlphas.configuration.objectStyles[dlItem.id].styles;
             }
 
             root.addJson(cs);
@@ -131,7 +171,7 @@ function createOpenMCTJSONfromCSV(csv) {
             folderConditionWidgets.addToComposition(cw.identifier.key);
             cw.setLocation(folderConditionWidgets);
 
-            condObjs[curIndex].cwKey = cw.identifier.key;
+            arrCondObjs[curIndex].cwKey = cw.identifier.key;
 
             // Add Widget to Widgets Display Layout
             dlCondImage.addToComposition(cw.identifier.key);
@@ -170,7 +210,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         return values;
     });
 
-    // console.log('condObjs', condObjs);
+    // console.log('arrCondObjs', arrCondObjs);
 
     // Create a layout for the matrix and add it to the root folder
     let dlMatrix = new DisplayLayout({
@@ -238,7 +278,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
             if (cell.includes("~")) {
                 // If telem, get the corresponding condObj
-                const condObj = condObjs.find(e => e.dataSource === cell);
+                const condObj = arrCondObjs.find(e => e.dataSource === cell);
 
                 if (cellArgs) {
                     if (cellArgs.includes('_cw')) {

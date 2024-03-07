@@ -120,6 +120,22 @@ const HyperLink = function(name, argsObj) {
     this.displayText = argsObj.label;
 }
 
+const SineWaveGenerator = function (name, argsObj) {
+    Obj.call(this, name, 'generator', false);
+    this.telemetry = {
+        "period": argsObj.period,
+        "amplitude": argsObj.amplitude,
+        "offset": argsObj.offset,
+        "dataRateInHz": argsObj.dataRateInHz,
+        "phase": argsObj.phase,
+        "randomness": argsObj.randomness,
+        "loadDelay": argsObj.loadDelay,
+        "infinityValues": argsObj.infinityValues,
+        "exceedFloat32": argsObj.exceedFloat32,
+        "staleness": argsObj.staleness
+    }
+}
+
 let objJson, root, alphasItemPlacementTracker, widgetsItemPlacementTracker, folderRoot;
 
 initDomainObjects = function () {
