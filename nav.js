@@ -16,6 +16,10 @@ const navArray = [
         "pathname": "index-telemetry-extract.html"
     },
     {
+        "name": "Ingest MDB",
+        "pathname": "index-mdb.html"
+    },
+    {
         "name": "Legacy",
         "pathname": "index-legacy-displays.html"
     }

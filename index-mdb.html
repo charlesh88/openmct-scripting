@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Open MCT Views Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body translate="no">
+<div class="c-nav" id="nav"></div>
+<div class="head">
+    <h1>Ingest MDB <span id="app-version" class="app-version"></span></h1>
+</div>
+<div class="page">
+    <div class="page-main --main">
+        <div class="page-section c-config-holder">
+            <div class="c-config">
+                <h2>Settings</h2>
+                <div class="c-config__label">Output Base Name</div>
+                <div class="c-config__value"><input type="text" id="output-base-name"
+                                                    value="MDB Extract"/></div>
+            </div>
+            <div class="c-config">
+                <h2>Inputs</h2>
+                <div class="c-config__label">MDB Directory</div>
+                <div class="c-config__value">
+                    <input class="upload-file-btn" type="file" id="inputXML" webkitdirectory multiple />
+                </div>
+            </div>
+        </div>
+
+        <div class="page-section">
+            <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD</button>
+        </div>
+
+        <div class="page-section --expands">
+            <h2>Output</h2>
+            <div id="output-stats" class="message"></div>
+            <div class="c-msg" id="outputMsg">
+            </div>
+        </div>
+    </div>
+
+    <div class="page-main --sidebar">
+        <div class="page-section --can-shrink" id="howCsv">
+            <h2>What this does</h2>
+            <ul>
+                <li>Content TK
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script src="common.js"></script>
+<script src="input-output.js"></script>
+<script src="ConditionSetsAndWidgets.js"></script>
+<script src="DisplayLayouts.js"></script>
+<script src="DomainObjects.js"></script>
+<script src="utilities.js"></script>
+<script src="ui-elements.js"></script>
+<script src="main-mdb.js"></script>
+<script src="nav.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
+
