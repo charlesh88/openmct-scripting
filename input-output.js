@@ -138,7 +138,7 @@ downloadJson = function () {
 }
 
 downloadTelemList = function() {
-    const filename = config.outputBaseName.concat(' - Uniques.csv');
+    const filename = config.outputBaseName.concat('.csv');
     const list = globalArrUniquePaths.join('\n');
     const file = new File([list], filename, { type: 'text/csv'});
     downloadFile(file);
@@ -169,8 +169,13 @@ function outputMsg(msg) {
 
 /************************************************* LOCAL STORAGE */
 function storeLocal(key, value) {
-    // console.log('storeLocal', key, value);
-    window.localStorage.setItem(key, value);
+    try {
+        window.localStorage.setItem(key, value);
+        window.localStorage.getItem(key);
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 function loadLocal(key) {

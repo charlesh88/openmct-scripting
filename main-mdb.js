@@ -1,3 +1,7 @@
+/* TODOs
+- Add type per parameter if possible
+*/
+
 const OUTPUT_BASE_NAME_KEY = '_MDB_BASE_NAME';
 const lineSepStr = '------------------------------------------------';
 let globalArrUniquePaths = [];
@@ -29,9 +33,10 @@ function ingestXMLFiles(event) {
         readers.push(readFileAsText(file));
     }
 
+    outputMsg('Valid files found to process:');
     // Trigger Promises
     Promise.all(readers).then((values) => {
-        // Values will be an array that contains an item
+        // values will be an array that contains an item
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
         processInputXMLs(filePaths, values);
@@ -39,7 +44,6 @@ function ingestXMLFiles(event) {
 }
 
 processInputXMLs = function (filePaths, fileContentArr) {
-    let arrPathsAndParams = [];
     let xmlFileCntr = 0;
 
     for (let i = 0; i < fileContentArr.length; i++) {
@@ -60,16 +64,25 @@ processInputXMLs = function (filePaths, fileContentArr) {
         if (filePath.includes('.xml') && !filePath.includes('.idea')) {
             xmlFileCntr++;
             outputMsg(filePath);
-            arrPathsAndParams = arrPathsAndParams.concat(processInputXML(fileContent, pathRoot));
+            globalArrUniquePaths = globalArrUniquePaths.concat(processInputXML(fileContent, pathRoot));
         }
     }
-    arrPathsAndParams.sort();
-    outputMsg(arrPathsAndParams.length.toString()
+    // globalArrUniquePaths.sort();
+    globalArrUniquePaths.sort((a, b) => {
+        return a[0].localeCompare(b[0]);
+    });
+    globalArrUniquePaths = ([['Path', 'Data Type']]).concat(globalArrUniquePaths);
+    outputMsg(globalArrUniquePaths.length.toString()
         .concat(' paths found in ')
         .concat(xmlFileCntr)
         .concat(' files.')
     );
-    console.log('arrPathsAndParams', arrPathsAndParams);
+    console.log('globalArrUniquePaths', globalArrUniquePaths);
+    config.outputBaseName = document.getElementById('output-base-name').value;
+    if (!storeLocal(LOCALSTORE_MDB_EXTRACT, JSON.stringify(globalArrUniquePaths))) {
+       alert('Not enough room in localstorage to store extracted mdb data.');
+    }
+    btnDownloadTelemList.removeAttribute('disabled');
 }
 
 /******************** CHATGPT START */
@@ -81,6 +94,7 @@ function processInputXML(xmlString, pathRoot) {
         const namedNodes = [
             'SpaceSystem',
             'AggregateParameterType',
+            'EnumeratedParameterType',
             'Member',
             'Parameter'
         ];
@@ -93,6 +107,7 @@ function processInputXML(xmlString, pathRoot) {
                 ];*/
 
         const endNodes = [
+            'EnumeratedParameterType',
             'Member',
             'Parameter'
         ];
@@ -107,7 +122,8 @@ function processInputXML(xmlString, pathRoot) {
         }
 
         if (addToPath && endNodes.includes(nodeName)) {
-            paths.push(currentPath);
+            const nodeAttrType = node.getAttribute('typeRef');
+            paths.push([currentPath, nodeAttrType]);
         }
 
         // Recursively traverse child nodes
