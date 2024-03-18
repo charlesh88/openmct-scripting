@@ -16,6 +16,10 @@ const navArray = [
         "pathname": "index-telemetry-extract.html"
     },
     {
+        "name": "Find / Replace",
+        "pathname": "index-find-replace.html"
+    },
+    {
         "name": "Legacy",
         "pathname": "index-legacy-displays.html"
     }
