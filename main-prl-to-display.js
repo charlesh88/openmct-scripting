@@ -7,6 +7,9 @@ const STEP_LABEL_STYLE = {
 
 let globalArrUniquePaths = [];
 
+storeOutputBaseName();
+loadLocalSettings();
+
 inputPrl.addEventListener("change", function(ev){
     uploadFiles(ev.currentTarget.files, 'prl');
 }, false);
