@@ -1,0 +1,342 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
+
+body {
+  background: #222;
+  color: #999;
+  font-family: "IBM Plex Sans", Helvetica, sans serif;
+  font-size: 0.8em;
+  margin: 0;
+}
+
+body > * + * {
+  margin-top: 10px;
+}
+
+a {
+  color: #ff8000;
+}
+
+p {
+  display: block;
+}
+
+div {
+  box-sizing: border-box;
+}
+
+h1 {
+  color: white;
+  font-size: 1.5em;
+}
+
+.app-version {
+  font-weight: 100;
+  opacity: 0.3;
+}
+
+h2, h3 {
+  font-size: inherit;
+  text-transform: uppercase;
+}
+
+ol, ul {
+  margin: 5px 0;
+  padding: 0 20px;
+}
+
+.--main h2 {
+  padding: 4px 6px;
+  margin: 2px 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.--sidebar {
+  padding: 5px;
+
+  h2 {
+    font-size: 1em;
+    margin-top: 20px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+}
+
+h3 {
+  font-weight: normal;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+select,
+.output {
+  border: 1px solid #333;
+  border-radius: 3px;
+  box-sizing: border-box;
+  color: inherit;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+  background: #222;
+  appearance: none;
+  padding: 5px 10px;
+}
+
+input[type="text"] {
+  width: 200px;
+}
+
+button,
+input[type="file"],
+input[type="submit"] {
+  cursor: pointer;
+  width: max-content;
+}
+
+button,
+input[type="submit"] {
+  background-color: #666;
+}
+
+button[disabled] {
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+select {
+  background: #444;
+  padding: 4px;
+}
+
+button,
+.c-btn {
+  appearance: none;
+  background: #ecb157;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  color: #222;
+  font-size: 1em;
+  font-weight: 600;
+  padding: 5px 20px;
+  text-decoration: none;
+}
+
+button[class*='--minor'] {
+  background: #999;
+}
+
+form {
+  display: contents;
+}
+
+.page,
+.head {
+  padding: 0 20px;
+}
+
+.page {
+  display: flex;
+  flex-direction: row;
+}
+
+.page-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 70%;
+}
+
+.page-main + .page-main {
+  margin-left: 10px;
+  flex: 0 1 30%;
+}
+
+.page-section {
+  flex: 0 0 auto;
+}
+
+.page-section.--can-shrink,
+.page-section.--expands {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.page-section.--can-shrink {
+  flex: 0 1 auto;
+  min-height: 15vh;
+}
+
+.page-section.--expands {
+  flex: 2 1 auto;
+}
+
+.page-section.--can-shrink .--scrolls,
+.page-section.--expands .--scrolls {
+  overflow: auto;
+}
+
+.page-section.--min-content {
+  min-height: min-content !important;
+}
+
+.c-btn-run {
+  background: #ff8000;
+}
+
+.sm input {
+  width: 75px;
+}
+
+[class*='-holder'] {
+  display: flex;
+}
+
+[class*='-holder'] > * {
+  flex: 1 1 50%;
+}
+
+[class*='-holder'] > * + * {
+  margin-left: 10px;
+}
+
+.c-how {
+  overflow: auto;
+  padding: 0 10px;
+}
+
+.c-msg {
+  line-height: 120%;
+  overflow: auto;
+}
+
+.c-msg p {
+  margin: 5px 0;
+}
+
+.c-msg__table {
+  border-collapse: collapse;
+  border-spacing: 1px;
+  width: 100%;
+}
+.c-msg__table thead td {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.c-msg__table tbody td {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  overflow-wrap: anywhere;
+  padding: 3px 1px;
+}
+
+.c-msg__grid {
+  display: grid;
+  gap: 1px;
+
+  div {
+    padding: 2px 4px;
+  }
+
+  div.bdy {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    overflow-wrap: anywhere;
+  }
+
+  div.hdr {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.c-config {
+  align-items: center;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  grid-column-gap: 5px;
+  grid-row-gap: 5px;
+  height: min-content;
+}
+
+.c-config h2 {
+  grid-column: span 2;
+}
+
+.c-config__label {
+  padding: 5px 0;
+}
+
+.c-file-input {
+  align-items: center;
+  display: flex;
+}
+
+.c-file-input input[type="file"] {
+  flex: 1 1 auto;
+}
+
+.c-file-input .c-btn {
+  flex: 0 0 max-content;
+}
+
+.output, .message {
+  padding: 10px;
+}
+
+.output {
+  background: rgba(255, 255, 255, 0.1);
+  min-height: 1em;
+  max-height: 10em;
+  overflow: auto;
+  word-break: break-all;
+}
+
+.page-section--centered {
+  text-align: center;
+}
+
+.--main .page-section + .page-section {
+  margin-top: 10px;
+}
+
+.--hidden {
+  display: none !important;
+}
+
+.--callout {
+  color: #ffcc00;
+}
+
+/*************************************** NAV */
+.c-nav {
+  background-color: black;
+  display: flex;
+  padding: 7px;
+}
+
+.c-nav a {
+  border-radius: 2px;
+  color: inherit;
+  padding: 4px 20px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.c-nav a.--is-current {
+  background: #555;
+  color: #fff;
+  pointer-events: none;
+}
+
+.c-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #eee;
+}
+
+.c-nav a + a {
+  margin-left: 2px;
+}

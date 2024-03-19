@@ -3,6 +3,8 @@ const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
 let folderConditionWidgets;
 
+storeOutputBaseName();
+loadLocalSettings();
 inputCsv.addEventListener("change", function (ev) {
     uploadTelemetryFile(ev.currentTarget.files);
 }, false);
