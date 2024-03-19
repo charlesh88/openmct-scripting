@@ -1,38 +1,27 @@
 const INPUT_TYPE = "csv";
-const inputCsv = document.getElementById("inputJson");
-// const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
-let folderConditionWidgets;
+const inputJson = document.getElementById("inputJson");
+const inputCsv = document.getElementById("inputCsv");
+let jsonFileName;
+let jsonSrc;
+let jsonReplaced;
 
 inputJson.addEventListener("change", function (ev) {
-    uploadTelemetryFile(ev.currentTarget.files);
+    uploadJsonSrc(ev.currentTarget.files);
 }, false);
 
 inputCsv.addEventListener("change", function (ev) {
-    uploadMatrixFile(ev.currentTarget.files, 'csv');
+    uploadFRCsv(ev.currentTarget.files);
 }, false);
 
-function getConfigFromForm() {
-    // Get form values
-    const config = {};
-
-    // config.outputBaseName = document.getElementById('output-base-name').value;
-    config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
-    config.itemMargin = getFormNumericVal('itemMargin');
-
-    return config;
-}
-
-function uploadTelemetryFile(files) {
-    initDomainObjects();
+function uploadJsonSrc(files) {
     let readers = [];
-    let filenames = [];
 
     // Abort if there were no files selected
     if (!files.length) return;
 
     // Store promises in array
     for (let i = 0; i < files.length; i++) {
-        filenames.push(files[i].name);
+        jsonFileName = (files[i].name);
         readers.push(readFileAsText(files[i]));
     }
 
@@ -41,274 +30,77 @@ function uploadTelemetryFile(files) {
         // Values will be an array that contains an item
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
-        parseCSVTelemetry(values[0]);
+        readJsonSrc(values[0]);
     });
 }
 
-function parseCSVTelemetry(csv) {
-    document.getElementById('inputJson').toggleAttribute('disabled');
-    document.getElementById('inputCsv').toggleAttribute('disabled');
+function uploadFRCsv(files) {
+    let readers = [];
 
-    telemetryObjects = csvToObjArray(csv);
+    // Abort if there were no files selected
+    if (!files.length) return;
 
-    outputMsg('Telemetry CSV imported, '
-        .concat(telemetryObjects.length.toString())
-        .concat(' rows found')
-    );
+    // Store promises in array
+    readers.push(readFileAsText(files[0]));
 
-    config = getConfigFromForm();
-
-    // Create the root folder
-    folderRoot = new Obj(config.outputBaseName, 'folder', true);
-    root.addJson(folderRoot);
-    objJson.rootId = folderRoot.identifier.key;
-
-    // Create a folder to hold Condition Sets and add it to the root folder
-    let folderConditionSets = new Obj('Condition Sets', 'folder', true);
-    root.addJson(folderConditionSets);
-    folderRoot.addToComposition(folderConditionSets.identifier.key);
-    folderConditionSets.setLocation(folderRoot);
-
-    // Create a folder to hold Condition Widgets and add it to the root folder
-    folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
-    root.addJson(folderConditionWidgets);
-    folderRoot.addToComposition(folderConditionWidgets.identifier.key);
-    folderConditionWidgets.setLocation(folderRoot);
-
-    for (const telemetryObject of telemetryObjects) {
-        const curIndex = telemetryObjects.indexOf(telemetryObject);
-        const isTelemetry = telemetryObject.dataSource.length > 0;
-
-        // Add conditionals
-        if (telemetryObject.cond1.length > 0) {
-            let cs = new ConditionSet(telemetryObject);
-
-            const conditionsArr = cs.conditionsToArr(telemetryObject);
-            cs.addConditions(telemetryObject, conditionsArr);
-
-            telemetryObjects[curIndex].csKey = cs.identifier.key;
-            telemetryObjects[curIndex].cs = cs;
-
-            // Add a "styles" collection for Conditional styling in the matrix layout
-            if (telemetryObject.alphaUsesCond === 'TRUE') {
-                telemetryObjects[curIndex].alphaObjStyles = [];
-
-                for (const cond of cs.configuration.conditionCollection) {
-                    const args = {
-                        border: ALPHA_BORDER,
-                        bgColor: cond.bgColor,
-                        fgColor: cond.fgColor,
-                        id: cond.id
-                    }
-                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj(args));
-                }
-            }
-
-            root.addJson(cs);
-            folderConditionSets.addToComposition(cs.identifier.key);
-            cs.setLocation(folderConditionSets);
-        }
-    }
-}
-
-function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
-    document.getElementById('inputCsv').toggleAttribute('disabled');
-
-    const rowArr = csvToArray(csv);
-
-    // Create a layout for the matrix and add it to the root folder
-    let dlMatrix = new DisplayLayout({
-        'name': 'DL Matrix',
-        'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
-        'itemMargin': config.itemMargin
+    // Trigger Promises
+    Promise.all(readers).then((values) => {
+        // Values will be an array that contains an item
+        // with the text of every selected file
+        // ["File1 Content", "File2 Content" ... "FileN Content"]
+        parseFindReplaceCsv(values[0]);
     });
-    root.addJson(dlMatrix);
-    folderRoot.addToComposition(dlMatrix.identifier.key);
-    dlMatrix.setLocation(folderRoot);
-
-    // Create a folder to hold Hyperlinks and add it to the root folder
-    let folderHyperlinks;
-
-    if (csv.includes('_link')) {
-        folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
-        root.addJson(folderHyperlinks);
-        folderRoot.addToComposition(folderHyperlinks.identifier.key);
-        folderHyperlinks.setLocation(folderRoot);
-    }
-
-    const arrColWidths = rowArr[0];
-    let curY = 0;
-    let dlItem = {};
-
-    outputMsg('Matrix Layout started: '
-        .concat(arrColWidths.length.toString())
-        .concat(' columns and ')
-        .concat(rowArr.length.toString())
-        .concat(' rows')
-    );
-
-    // Iterate through telemetry collection
-    for (let r = 1; r < rowArr.length; r++) {
-        const row = rowArr[r];
-        const rowH = parseInt(row[0]);
-        let curX = 0;
-
-        // Iterate through row cells
-        for (let c = 1; c < row.length; c++) {
-            // Process each cell in the matrix
-            let cell = row[c].trim();
-            let colW = parseInt(arrColWidths[c]);
-            let itemW = colW;
-
-            const argSeparator = ',';
-            let cellArgs;
-            let cellArgsArr = [];
-            let cellArgsObj = {};
-
-            if (cell.includes(argSeparator)) {
-                cellArgs = cell.substring(cell.indexOf(argSeparator) + 1, cell.length);
-                cell = cell.substring(0, cell.indexOf(argSeparator)).replaceAll('"', '').trim();
-                cellArgsArr = cellArgs.split(argSeparator);
-            }
-
-            if (cellArgsArr.length > 0) {
-                const spanArg = extractArg(cellArgsArr, '_span');
-                if (spanArg) {
-                    cellArgsObj.span = parseInt(spanArg);
-                    // Span includes the current column, c
-                    // Add widths from columns to be spanned to itemW
-                    for (let i = c + 1; i < (c + cellArgsObj.span); i++) {
-                        itemW += parseInt(arrColWidths[i]) + config.itemMargin;
-                    }
-                }
-
-                let linkArg = extractArg(cellArgsArr, '_link');
-                if (linkArg) {
-                    cellArgsObj.url = linkArg.replaceAll('~', '/');
-                }
-            }
-
-            if (cell.startsWith("~")) {
-                // If telem, get the corresponding telemetryObject
-                const telemetryObject = telemetryObjects.find(e => e.dataSource === cell);
-
-                if (cellArgs) {
-                    if (cellArgs.includes('_cw')) {
-                        if (telemetryObject && telemetryObject.cs) {
-                            // Create Condition Widget
-                            let cw = new ConditionWidget(telemetryObject.cs, telemetryObject, cellArgsObj);
-                            root.addJson(cw);
-                            folderConditionWidgets.addToComposition(cw.identifier.key);
-                            cw.setLocation(folderConditionWidgets);
-
-                            // Add Condition Widget to the layout
-                            dlMatrix.addSubObjectViewInPlace({
-                                itemW: itemW,
-                                itemH: rowH,
-                                x: curX,
-                                y: curY,
-                                ident: cw.identifier.key,
-                                hasFrame: false
-                            });
-
-                            dlMatrix.addToComposition(cw.identifier.key);
-                        } else {
-                            // The matrix file wanted a Condition Widget, but there wasn't a corresponding telemetry
-                            // end point in the telemetry CSV file
-                            outputMsg(cell.concat(' designated to display as a Condition Widget, but no corresponding entry was found in the telemetry CSV'));
-                        }
-                    }
-                } else {
-                    // Add as a telemetry view (alphanumeric)
-                    dlItem = dlMatrix.addTelemetryView({
-                        itemW: itemW,
-                        itemH: rowH,
-                        x: curX,
-                        y: curY,
-                        ident: cell.replaceAll('/', '~'),
-                        alphaFormat: telemetryObject.alphaFormat,
-                        alphaShowsUnit: telemetryObject.alphaShowsUnit
-                    });
-
-                    if (telemetryObject.alphaObjStyles) {
-                        dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.alphaObjStyles;
-                        dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = telemetryObject.csKey;
-                    }
-
-                    dlMatrix.addToComposition(cell, getNamespace(cell));
-                }
-            } else if (cell.length > 0) {
-                // Add as a text object or a Hyperlink button
-                const args = {
-                    itemW: itemW,
-                    itemH: rowH,
-                    x: curX,
-                    y: curY,
-                    text: restoreEscChars(cell)
-                };
-
-                if (cellArgs && cellArgs.includes('_bg')) {
-                    const start = cellArgs.indexOf('_bg');
-                    const bgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.bgColor = bgColorStr;
-                }
-
-                if (cellArgs && cellArgs.includes('_fg')) {
-                    const start = cellArgs.indexOf('_fg');
-                    const fgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.fgColor = fgColorStr;
-                }
-
-                if (cellArgs && cellArgs.includes('_link')) {
-                    const linkName = restoreEscChars(args.text);
-                    let linkBtn = new HyperLink(linkName, {
-                        format: 'button',
-                        target: '_blank',
-                        url: cellArgsObj.url,
-                        label: linkName
-                    });
-                    root.addJson(linkBtn);
-                    folderHyperlinks.addToComposition(linkBtn.identifier.key);
-                    linkBtn.setLocation(folderHyperlinks);
-
-                    // Add Hyperlink to the layout
-                    dlMatrix.addSubObjectViewInPlace({
-                        itemW: itemW,
-                        itemH: rowH,
-                        x: curX,
-                        y: curY,
-                        ident: linkBtn.identifier.key,
-                        hasFrame: false
-                    });
-
-                    dlMatrix.addToComposition(linkBtn.identifier.key);
-
-                } else {
-                    dlItem = dlMatrix.addTextView(args);
-                }
-            }
-
-            curX += colW + ((c > 1) ? config.itemMargin : 0);
-        }
-
-        curY += rowH + config.itemMargin;
-    }
-
-    outputJSON();
-    outputMsg('Matrix Layout generated');
 }
 
-function extractArg(arr, argKey) {
-    // expects arr[argKey(value)]
-    const argStr = arr.find(
-        (elem) => elem.includes(argKey)
+function readJsonSrc(json) {
+    inputJson.toggleAttribute('disabled'); // Toggle to disabled
+    inputCsv.toggleAttribute('disabled'); // Toggle to not disabled
+
+    jsonSrc = json;
+    // console.log(jsonSrc);
+
+    outputMsg('Open MCT JSON imported '
+        .concat(jsonSrc.length.toString())
+        .concat(' chars.')
     );
+}
 
-    if (argStr) {
-        return argStr
-            .substring(0,argStr.length - 1) // Get rid of last )
-            .split('(')[1]
+function parseFindReplaceCsv(csv) {
+    const arrFR = csvToArray(csv);
+    outputMsg('Find replace CSV imported '
+        .concat(arrFR.length)
+        .concat(' rows.'));
+
+    jsonReplaced = jsonSrc;
+    // Row [0] is a header row, skip it
+
+    let arrOutputTable = [[
+        'Found',
+        'Search',
+        'Replace'
+    ]];
+
+    for (let i = 1; i < arrFR.length; i++) {
+        const findStr = arrFR[i][0].replaceAll(ESC_CHARS.backslash, '/');
+        const replaceStr = arrFR[i][1];
+        const foundCnt = countInstances(jsonReplaced, findStr);
+
+        arrOutputTable.push([
+            foundCnt,
+            findStr,
+            replaceStr
+        ]);
+
+        jsonReplaced = jsonReplaced.replaceAll(findStr, replaceStr);
     }
+    outputMsgAdd(htmlGridFromArray(arrOutputTable));
+    btnDownloadJson.removeAttribute('disabled');
+}
 
-    return false;
+function countInstances(mainString, searchString) {
+    return (mainString.split(searchString).length - 1);
+}
+
+function downloadReplaced() {
+    downloadFile(new File([jsonReplaced], jsonFileName, { type: 'text/json'}));
 }

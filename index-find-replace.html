@@ -28,7 +28,7 @@
         </div>
 
         <div class="page-section">
-            <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
+            <button id="btnDownloadJson" onclick="downloadReplaced();" disabled>DOWNLOAD</button>
             <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
         </div>
 
@@ -44,48 +44,17 @@
         <div class="page-section --can-shrink" id="howCsv">
             <h2>What this does</h2>
             <ul>
-                <li>For each parameter in the Telemetry input file, a Condition Set with a default of up to 4 conditions
-                    that allow all the standard Open MCT value comparisons. Condition parameters and values are set in
-                    the input CSV file.
+                <li>Allows bulk replacement of strings within an Open MCT JSON export file.
                 </li>
-                <li>A Display Layout based on the Matrix Layout CSV. This CSV can set telemetry to be displayed as an
-                    alphanumeric or a Condition Widget; each will use Conditional Styling as defined in the Telemetry
-                    input CSV.
-                </li>
-                <li>Folders that hold the Condition Sets and Widgets.</li>
-                <li>A single folder that holds all of the above, named using the input Root Name.</li>
             </ul>
             <h2>How to use</h2>
-            <ol>
-                <li>Make a Telemetry input file CSV file like
-                    <a target="_blank" href="Open-MCT-Domain-Object-Scripting-example-file.csv">
-                        this example</a>. Note that it must have a header row.
-                <li class="--callout">TODO: Content here and example for the matrix layout CSV file.</li>
-                <li>Set parameters. The smaller the Layout Grid numbers are the closer you can place items
-                    with a margin, but width and heights will need to be adjusted accordingly. Using "Columns" will
-                    build
-                    across first, "Rows" builds down first. For example, with a total of 16 items, using "Columns"
-                    set to 2 will result in two columns of elements with 8 rows each.
-                </li>
-                <li>Press the Telemetry "Choose File" button and select your telemetry CSV file. The file will be loaded
-                    and processed.
-                </li>
-                <li>Press the Matrix Layout "Choose File" button and select a matrix layout CSV file. You must choose a
-                    Telemetry input first.
-                </li>
-                <li>Once both files have been loaded, press "DOWNLOAD" to download the generated JSON file.</li>
-                <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.
-                </li>
-            </ol>
+
         </div>
     </div>
 </div>
 
 <script src="common.js"></script>
 <script src="input-output.js"></script>
-<script src="ConditionSetsAndWidgets.js"></script>
-<script src="DisplayLayouts.js"></script>
-<script src="DomainObjects.js"></script>
 <script src="utilities.js"></script>
 <script src="ui-elements.js"></script>
 <script src="main-find-replace.js"></script>
