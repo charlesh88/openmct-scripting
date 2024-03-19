@@ -11,6 +11,9 @@ const lineSepStr = '------------------------------------------------';
 let globalArrUniquePaths = [];
 let globalArrPathsAndRefs = [];
 
+storeOutputBaseName();
+loadLocalSettings();
+
 inputType.addEventListener("change", function(ev){
     toggleHiddenClass([inputGCS, inputPrl]);
 }, false);
