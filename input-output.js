@@ -111,6 +111,34 @@ function csvToObjArray(str) {
     return objArr;
 }
 
+function arrayToCSVSimple(arr) {
+    let csvString = '';
+
+    // Loop through each row in the array
+    arr.forEach(function(row) {
+        // Join the row array elements with commas
+        csvString += row.join(',') + '\n';
+    });
+
+    return csvString;
+}
+
+function arrayToCSV(arrays) {
+    let csv = '';
+    arrays.forEach((row) => {
+        let rowCSV = row.map((value) => {
+            if (typeof value === 'string' && value.includes(',')) {
+                // If the value contains a comma, enclose it in double quotes
+                return `"${value.replace(/"/g, '""')}"`; // Escape double quotes by doubling them
+            } else {
+                return value;
+            }
+        }).join(',');
+        csv += rowCSV + '\n';
+    });
+    return csv;
+}
+
 /************************************************* OUTPUTS AND DOWNLOADING */
 function outputJSON() {
     let outputJSON = JSON.stringify(objJson, null, 4);

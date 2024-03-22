@@ -20,6 +20,10 @@ const navArray = [
         "pathname": "index-find-replace.html"
     },
     {
+        "name": "JSON CSV Convert",
+        "pathname": "index-json-to-csv-to-json.html"
+    },
+    {
         "name": "Legacy",
         "pathname": "index-legacy-displays.html"
     }
