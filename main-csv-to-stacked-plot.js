@@ -1,6 +1,8 @@
 const INPUT_TYPE = "csv";
 const OUTPUT_BASE_NAME_KEY = '_STACKED-VIEW_BASE_NAME';
 
+storeOutputBaseName();
+loadLocalSettings();
 inputCsv.addEventListener("change", function (ev) {
     uploadFiles(ev.currentTarget.files, 'csv');
 }, false);

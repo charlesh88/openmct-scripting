@@ -1,5 +1,8 @@
 const INPUT_TYPE = "csv";
 const OUTPUT_BASE_NAME_KEY = '_DISPLAYS_BASE_NAME';
+
+storeOutputBaseName();
+loadLocalSettings();
 inputCsv.addEventListener("change", function(ev){
     uploadFiles(ev.currentTarget.files, 'csv');
 }, false);

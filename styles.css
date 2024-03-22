@@ -215,15 +215,53 @@ form {
     margin-left: 10px;
 }
 
-.c-how,
-.c-msg {
+.c-how {
     /*max-height: 20vh;*/
     overflow: auto;
     padding: 0 10px;
 }
 
 .c-msg {
-    line-height: 150%;
+    line-height: 120%;
+    overflow: auto;
+}
+
+.c-msg p {
+    margin-bottom: 5px;
+    padding: 0;
+}
+
+.c-msg__table {
+    border-collapse: collapse;
+    border-spacing: 1px;
+    width: 100%;
+}
+.c-msg__table thead td {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.c-msg__table tbody td {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    overflow-wrap: anywhere;
+    padding: 3px 1px;
+}
+
+.c-msg__grid {
+    display: grid;
+    gap: 1px;
+
+    div {
+        padding: 2px 4px;
+    }
+
+    div.bdy {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        overflow-wrap: anywhere;
+    }
+
+    div.hdr {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
 }
 
 .c-config {

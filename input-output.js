@@ -1,13 +1,13 @@
 /************************************************* INPUTS AND UPLOADING */
-function readFileAsText(file){
-    return new Promise(function(resolve,reject){
+function readFileAsText(file) {
+    return new Promise(function (resolve, reject) {
         let fr = new FileReader();
 
-        fr.onload = function(){
+        fr.onload = function () {
             resolve(fr.result);
         };
 
-        fr.onerror = function(){
+        fr.onerror = function () {
             reject(fr);
         };
 
@@ -20,10 +20,10 @@ function uploadFiles(files, fileType) {
     let filenames = [];
 
     // Abort if there were no files selected
-    if(!files.length) return;
+    if (!files.length) return;
 
     // Store promises in array
-    for(let i = 0;i < files.length;i++){
+    for (let i = 0; i < files.length; i++) {
         filenames.push(files[i].name);
         readers.push(readFileAsText(files[i]));
     }
@@ -47,10 +47,10 @@ function uploadMatrixFile(files, fileType) {
     let filenames = [];
 
     // Abort if there were no files selected
-    if(!files.length) return;
+    if (!files.length) return;
 
     // Store promises in array
-    for(let i = 0;i < files.length;i++){
+    for (let i = 0; i < files.length; i++) {
         filenames.push(files[i].name);
         readers.push(readFileAsText(files[i]));
     }
@@ -127,7 +127,7 @@ function outputJSON() {
 downloadJson = function () {
     const filename = config.outputBaseName
         .concat(' - ')
-        .concat(INPUT_TYPE.includes('csv')? downloadFilenames.csv : downloadFilenames.prl)
+        .concat(INPUT_TYPE.includes('csv') ? downloadFilenames.csv : downloadFilenames.prl)
         .concat('.json');
     const strJson = JSON.stringify(objJson, null, 4);
     const file = new File([strJson], filename, {
@@ -137,23 +137,23 @@ downloadJson = function () {
     downloadFile(file);
 }
 
-downloadTelemList = function() {
+downloadTelemList = function () {
     const filename = config.outputBaseName.concat(' - Uniques.csv');
     const list = globalArrUniquePaths.join('\n');
-    const file = new File([list], filename, { type: 'text/csv'});
+    const file = new File([list], filename, {type: 'text/csv'});
     downloadFile(file);
     return false;
 }
 
-downloadTelemAndRefsList = function() {
+downloadTelemAndRefsList = function () {
     const filename = config.outputBaseName.concat(' - Telemetry and Refs.csv');
     const list = globalArrPathsAndRefs.join('\n');
-    const file = new File([list], filename, { type: 'text/csv'});
+    const file = new File([list], filename, {type: 'text/csv'});
     downloadFile(file);
     return false;
 }
 
-downloadFile = function(file) {
+downloadFile = function (file) {
     const link = document.createElement('a');
     link.setAttribute('download', file.name);
     const url = URL.createObjectURL(file);
@@ -164,7 +164,78 @@ downloadFile = function(file) {
 }
 
 function outputMsg(msg) {
-    outputMsgText.innerHTML = outputMsgText.innerHTML.concat("<br>".concat(msg));
+    outputMsgAdd('<p>'.concat(msg).concat('</p>'));
+}
+
+function outputMsgAdd(str) {
+    outputMsgText.innerHTML += str;
+}
+
+function outputTable(rowArray = [], startTable = false, endTable = false) {
+    console.log('rA', rowArray, rowArray.length);
+    if (startTable) {
+        outputMsgAdd('<table>');
+    }
+
+    if (rowArray.length > 0) {
+        let rowStr = '<table><tr><td>Some text in a td</td><td>Some text in a td</td><td>Some text in a td</td></tr></table>';
+
+        // for (let i = 0; i < rowArray.length; i++) {
+        //     rowStr = rowStr.concat('<td>'.concat(rowArray[i]).concat('</td>'));
+        // }
+        // rowStr = rowStr.concat('</tr>');
+        outputMsgAdd(rowStr);
+    }
+
+    if (endTable) {
+        outputMsgAdd('</table>');
+    }
+}
+
+function htmlTableFromArray(arr) {
+    // arr is a multidimensional grid
+    let tableStr = '<table class="c-msg__table">';
+    for (let i = 0; i < arr.length; i++) {
+        let rowStr = (i === 0) ? '<thead><tr>' : '<tr>';
+        const row = arr[i];
+        for (let j = 0; j < row.length; j++) {
+            rowStr = rowStr
+                .concat('<td>')
+                .concat(row[j])
+                .concat('</td>');
+        }
+        rowStr = rowStr.concat((i === 0) ? '</tr></thead>' : '</tr>');
+        tableStr = tableStr.concat(rowStr);
+    }
+
+    tableStr = tableStr.concat('</table>');
+
+    return tableStr;
+}
+
+function htmlGridFromArray(arr) {
+    // arr is a multidimensional grid
+    let gridStr = '<div class="c-msg__grid" '
+        .concat(' style="grid-template-columns: repeat(')
+        .concat(arr[0].length)
+        .concat(', max-content);"')
+        .concat('>');
+    for (let i = 0; i < arr.length; i++) {
+        const cellClass = (i === 0) ? '<div class="hdr">' : '<div class="bdy">'
+        const row = arr[i];
+        let rowStr = '';
+        for (let j = 0; j < row.length; j++) {
+            rowStr = rowStr
+                .concat(cellClass)
+                .concat(row[j])
+                .concat('</div>');
+        }
+        gridStr = gridStr.concat(rowStr);
+    }
+
+    gridStr = gridStr.concat('</div>');
+
+    return gridStr;
 }
 
 /************************************************* LOCAL STORAGE */
@@ -176,4 +247,16 @@ function storeLocal(key, value) {
 function loadLocal(key) {
     // console.log('loadLocal', key);
     return window.localStorage.getItem(key);
+}
+
+function loadLocalSettings() {
+    const retrievedOutputBaseName = loadLocal(LOCALSTORE_BASE_NAME.concat(OUTPUT_BASE_NAME_KEY));
+    document.getElementById('output-base-name').value = (retrievedOutputBaseName) ? retrievedOutputBaseName : 'Open MCT Scripting';
+}
+
+function storeOutputBaseName() {
+    document.getElementById('output-base-name').addEventListener("blur", function (ev) {
+        storeLocal(LOCALSTORE_BASE_NAME.concat(OUTPUT_BASE_NAME_KEY), document.getElementById('output-base-name').value);
+    }, false);
+
 }
