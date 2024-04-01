@@ -139,7 +139,12 @@ const DisplayLayout = function (args) {
         subObj.height = args.height;
         subObj.url = args.url;
         subObj.type = 'image-view';
+        this.configuration.objectStyles[subObj.id] = {};
+        this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj(args);
+        this.configuration.objectStyles[subObj.id].styles = [];
         this.configuration.items.push(subObj);
+
+        this.addConditionalStyle()
     }
 
     this.addTelemetryView = function (args) {

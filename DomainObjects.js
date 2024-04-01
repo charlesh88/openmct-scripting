@@ -7,7 +7,7 @@ const Container = function () {
 
 const Obj = function (name, type, hasComposition) {
     const id = createUUID();
-    const datetime = 1661559456808;
+    const datetime = getCurrentTimeEpoch();
 
     this.name = restoreEscChars(name);
     this.type = type;
@@ -27,33 +27,76 @@ const Obj = function (name, type, hasComposition) {
     this.setLocation = function (location) {
         this.location = location.identifier.key;
     }
+
+    this.addConditionalStyle = function(condArgs) {
+        console.log('condArgs',condArgs);
+        if (!this.styles) {
+            this.styles = [];
+        }
+        this.styles.push(createStyleObj(condArgs));
+    }
 }
 
-const TabsView = function(name) {
+function createStyleObj(args) {
+    if (!args) {
+        console.log('createStyleObj error: No args provided.');
+        return null;
+    }
+
+    /*
+    args = {
+        border: 1px solid #666666,
+        bgColor: #ff0000,
+        fgColor: #ffffff,
+        id (sets a related condition id)
+    }
+     */
+
+    let obj = {};
+    obj.style = {};
+    obj.style.output = (args.output) ? args.output : '';
+    obj.style.border = (args.border) ? args.border : '';
+    obj.style.imageUrl = (args.imageUrl) ? args.imageUrl : '';
+    obj.style.isStyleInvisible = (args.isStyleInvisible) ? args.isStyleInvisible : '';
+    obj.style.backgroundColor = (args.bgColor) ? args.bgColor : '';
+    obj.style.color = (args.fgColor) ? args.fgColor : '';
+    if (args.conditionId) {
+        // Used within a styles array for conditional styling
+        obj.conditionId = args.conditionId;
+    }
+
+    return obj;
+}
+
+function getNamespace(source) {
+    return (source.indexOf('~') != -1) ? 'taxonomy' : '';
+}
+
+const TabsView = function (name) {
     Obj.call(this, name, 'tabs', true);
     this.keep_alive = true;
 }
 
-const StackedPlot = function(name) {
+const StackedPlot = function (name) {
     Obj.call(this, name, 'telemetry.plot.stacked', true);
     this.configuration = {};
     this.configuration.series = [];
 
-    this.addToSeries = function(telemObj) {
+    this.addToSeries = function (telemObj) {
         let seriesObj = {};
         seriesObj.identifier = createIdentifier(telemObj.DataSource, 'taxonomy');
-        seriesObj.series = plotSeriesProps(telemObj); // Yes, this is right: there's a nested series node in series, for Stacked Plots only
+        seriesObj.series = plotSeriesProps(telemObj); // Yes, this is right: there'obj a nested series node in series, for Stacked Plots only
 
         this.configuration.series.push(seriesObj);
     };
 }
 
-const OverlayPlot = function(name) {
+const OverlayPlot = function (name) {
     Obj.call(this, name, 'telemetry.plot.overlay', true);
     this.configuration = {};
     this.configuration.series = [];
 
-    this.addToSeries = function(telemObj) {
+    this.addToSeries = function (telemObj) {
         let seriesObj = plotSeriesProps(telemObj);
         seriesObj.identifier = createIdentifier(telemObj.DataSource, 'taxonomy');
 
@@ -83,7 +126,7 @@ function plotSeriesProps(telemObj) {
     return sObj;
 }
 
-const FlexibleLayout = function(name) {
+const FlexibleLayout = function (name) {
     // Creates a columns layout with a single container
     Obj.call(this, name, 'flexible-layout', true);
     this.configuration = {};
@@ -94,7 +137,7 @@ const FlexibleLayout = function(name) {
     this.configuration.containers[0].frames = [];
     this.configuration.rowsLayout = false;
 
-    this.addFrame = function(key, namespace) {
+    this.addFrame = function (key, namespace) {
         this.configuration.containers[0].frames.push({
             id: createUUID(),
             domainObjectIdentifier: createIdentifier(key, namespace),
@@ -102,7 +145,7 @@ const FlexibleLayout = function(name) {
         });
     }
 
-    this.setFrameSizes = function() {
+    this.setFrameSizes = function () {
         // Call after loop that populates the flex layout
         // Get the number of frames and divide into 100
         const frameSize = Math.floor(100 / this.configuration.containers[0].frames.length);
@@ -112,7 +155,7 @@ const FlexibleLayout = function(name) {
     }
 }
 
-const HyperLink = function(name, argsObj) {
+const HyperLink = function (name, argsObj) {
     Obj.call(this, name, 'hyperlink', false);
     this.displayFormat = argsObj.format;
     this.linkTarget = argsObj.target;
@@ -123,16 +166,16 @@ const HyperLink = function(name, argsObj) {
 const SineWaveGenerator = function (name, argsObj) {
     Obj.call(this, name, 'generator', false);
     this.telemetry = {
-        "period": argsObj.period,
-        "amplitude": argsObj.amplitude,
-        "offset": argsObj.offset,
-        "dataRateInHz": argsObj.dataRateInHz,
-        "phase": argsObj.phase,
-        "randomness": argsObj.randomness,
-        "loadDelay": argsObj.loadDelay,
-        "infinityValues": argsObj.infinityValues,
-        "exceedFloat32": argsObj.exceedFloat32,
-        "staleness": argsObj.staleness
+        "period": argsObj.period ? argsObj.period : 10,
+        "amplitude": argsObj.amplitude ? argsObj.amplitude : 1,
+        "offset": argsObj.offset ? argsObj.offset : 0,
+        "dataRateInHz": argsObj.dataRateInHz ? argsObj.dataRateInHz : 1,
+        "phase": argsObj.phase ? argsObj.phase : 0,
+        "randomness": argsObj.randomness ? argsObj.randomness : 0,
+        "loadDelay": argsObj.loadDelay ? argsObj.loadDelay : 0,
+        "infinityValues": argsObj.infinityValues ? argsObj.infinityValues : false,
+        "exceedFloat32": argsObj.exceedFloat32 ? argsObj.exceedFloat32 : false,
+        "staleness": argsObj.staleness ? argsObj.staleness : false
     }
 }
 
@@ -144,4 +187,23 @@ initDomainObjects = function () {
     alphasItemPlacementTracker = {};
     widgetsItemPlacementTracker = {};
     folderRoot = '';
+}
+
+function findInComposition(domainObjToSearch, objToFind) {
+    // objToFind can be a string or a domain object
+    haystackKeys = [];
+    if (Array.isArray(domainObjToSearch.composition) && domainObjToSearch.composition.length > 0) {
+        for (let i = 0; i < domainObjToSearch.composition.length; i++) {
+            haystackKeys.push(domainObjToSearch.composition[0].key);
+        }
+    }
+
+    console.log('findInComposition domainObjToSearch', domainObjToSearch.composition, haystackKeys, objToFind, haystackKeys.includes(needleKey));
+    try {
+        const needleKey = Object.keys(objToFind).length > 0 ? Object.keys(objToFind)[0] : objToFind;
+        return haystackKeys.includes(needleKey);
+    } catch (er) {
+        console.log('objectInComposition er', er);
+        return null;
+    }
 }

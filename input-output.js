@@ -70,7 +70,8 @@ function csvToArray(str, delimiter = ',') {
         let valuesStr = row
             .replaceAll('\\,', ESC_CHARS.escComma)
             .replaceAll('\\~', ESC_CHARS.tilde)
-            .replaceAll('\\/', ESC_CHARS.backslash);
+            .replaceAll('\\/', ESC_CHARS.backslash)
+            .replaceAll('""',ESC_CHARS.doublequotes); //Escape double-double quotes
 
         valuesStr = valuesStr.replace(/"[^"]+"/g, function (v) {
             // Isolate strings within double-quote blocks and encode all commas in there
@@ -82,9 +83,10 @@ function csvToArray(str, delimiter = ',') {
         if (valuesArr.length > 0) {
             const valuesArrFormatted = valuesArr.map(function (value) {
                 return value
-                    .replaceAll('\"', '') // Kill double-quotes
+                    .replaceAll('\"', '') // Kill all remaining double-quotes
                     .replaceAll(ESC_CHARS.comma, ',') // Restore separator commas
-                    .replaceAll('/', '~'); // Convert any path / to ~
+                    .replaceAll('/', '~') // Convert any path / to ~
+                    .replaceAll(ESC_CHARS.doublequotes, '\"'); // Restore escaped double-double quotes
             })
 
             return valuesArrFormatted;
@@ -113,6 +115,7 @@ function csvToObjArray(str) {
 
 /************************************************* OUTPUTS AND DOWNLOADING */
 function outputJSON() {
+    console.log('outputJSON', objJson);
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
     outputStatsDisplay.innerHTML =
@@ -125,8 +128,8 @@ function outputJSON() {
 }
 
 downloadJson = function () {
-    const filename = config.outputBaseName
-        .concat(' - ')
+    const filename = document.getElementById('output-base-name').value
+        .concat(' ')
         .concat(INPUT_TYPE.includes('csv') ? downloadFilenames.csv : downloadFilenames.prl)
         .concat('.json');
     const strJson = JSON.stringify(objJson, null, 4);

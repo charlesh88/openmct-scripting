@@ -9,7 +9,7 @@ function getConfigFromForm() {
     // Get form values
     const config = {};
 
-    config.outputBaseName = document.getElementById('rootName').value;
+    config.outputBaseName = document.getElementById('output-base-name').value;
     config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
     config.imageSize = document.getElementById('imageSize').value.split(',');
 
@@ -41,11 +41,11 @@ function uploadTelemetryFile(files) {
 
 function parseCSVTelemetry(csv) {
     /*
-    arrCondObjs: array of Condition objects with these properties:
+    arrRowObjs: array of Condition objects with these properties:
     [{
         imageId: string that defines unique images. Allows more than one image to be overlayed, with different Condition Sets for each
         desc: not used
-        condDataSource: full path to datasource
+        datasSource: full path to datasource
         dataSourceToEval: this | any | all TODO: make sure Condition Set creator can properly add a discrete telem point
         condEvaluator: equalTo, notEqualTo, between, etc.
         condVals: either single string or number, or comma-sepped same
@@ -59,9 +59,9 @@ function parseCSVTelemetry(csv) {
     */
 
     // array of objects
-    arrCondObjs = csvToObjArray(csv);
+    arrRowObjs = csvToObjArray(csv);
 
-    console.log('arrCondObjs',arrCondObjs);
+    console.log('arrRowObjs', arrRowObjs);
 
     config = getConfigFromForm();
 
@@ -80,270 +80,132 @@ function parseCSVTelemetry(csv) {
     dlCondImage.setLocation(folderRoot);
 
     outputMsg('Condition-driven Image CSV imported, '
-        .concat(arrCondObjs.length.toString())
+        .concat(arrRowObjs.length.toString())
         .concat(' rows found')
     );
 
     let curImageId = '';
     let curImageView;
+
     let curConditionSet;
-    let curConditionSetDataSources = [];
-    let curDataSource;
+    let dataSourceNames = [];
+    let dataSourceObjs = []; // Not sure this is needed
+    let curDataSourceId;
+    let imageViewNames = [];
+    let imageViewObjs = []; // Tracks created image view objects, keyed by name
 
-    for (const condObj of arrCondObjs) {
-        const curIndex = arrCondObjs.indexOf(condObj);
+    for (const rowObj of arrRowObjs) {
+        let curDataSourceName;
+        let curImageViewObj;
+        let addDataSourceToConditionSet = false;
 
-        // If telemObject dataSource includes "_swg()" then create a SWG and add it
-        // Create the source, add it to the telemSource folder and to the composition
-        // Update telemtryObject.dataSource to use the UUID of the created object
-
-        // dlItem holds elements in the dlCondImage layout
-        // These are either static images or images driven by conditions
-        let dlItem = {};
-
-        if (!condObj.condDataSource.length > 0) {
-            // If no datasource, add a standalone image view that is NOT conditionally styled
-            if (condObj.imageUrl.length > 0) {
-                dlItem = dlCondImage.addImageView(
-                    {
-                        x: 0,
-                        y: 0,
-                        width: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[0]), parseInt(config.imageSize[0])),
-                        height: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[1]), parseInt(config.imageSize[1])),
-                        url: condObj.imageUrl
-                    }
-                )
-            }
-            curImageId = condObj.imageId;
+        if (imageViewNames.includes(rowObj.name)) {
+            // We've already created this imageview object, retrieve and make that the current one.
+            curImageViewObj = imageViewObjs[rowObj.name];
         } else {
-            // There is a datasource
-            // If it's a telem path, see if it's in curConditionSetDataSources by path
-            //   If it is, use condObj.DataSourceToEval (this | any | all) to determine how to add it to the Condition
-            //   If not, do above and push onto condObj.DataSourceToEval
-            // If not a telem path, it's a SWG
-            //   See if it's in curConditionSetDataSources by name
-            //      If it is, add it as a ref into the Condition by ID
-            //      If it's not, create the SWG and do all the things, get an ID back
-            //          Add it
-            //
-            if (curImageId !== condObj.imageId) {
-                // Make a new Condition Set
-
-            } else {
-                // Just add a new Condition to the current Condition Set for the current image view.
-            }
-        }
-
-
-
-        // Add conditionals
-        if (condObj.cond1.length > 0) {
-            let cs = new ConditionSet(condObj);
-
-            const conditionsArr = cs.conditionsToArr(condObj);
-            cs.addConditions(condObj, conditionsArr);
-
-            arrCondObjs[curIndex].csKey = cs.identifier.key;
-
-            // Add a "styles" collection for Conditional styling in dlAlpha.objectStyles[dlItem.id]
-            if (condObj.alphaUsesCond === 'TRUE') {
-                for (const cond of cs.configuration.conditionCollection) {
-                    const args = {
-                        border: ALPHA_BORDER,
-                        bgColor: cond.bgColor,
-                        fgColor: cond.fgColor,
-                        id: cond.id
-                    }
-                    const alphaCondStyleObj = createStyleObj(args);
-                    dlAlphas.configuration.objectStyles[dlItem.id].styles.push(alphaCondStyleObj);
-                    dlAlphas.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(cs.identifier.key);
+            // Create a new image view and add it to dlCondImage composition.
+            curImageViewObj = dlCondImage.addImageView(
+                {
+                    x: 0,
+                    y: 0,
+                    width: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[0]), parseInt(config.imageSize[0])),
+                    height: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[1]), parseInt(config.imageSize[1])),
+                    url: rowObj.imageUrl.replaceAll('~','/')
                 }
-                arrCondObjs[curIndex].alphaObjStyles = dlAlphas.configuration.objectStyles[dlItem.id].styles;
+            );
+            imageViewNames.push(rowObj.name);
+        }
+
+        /***************************** DATASOURCE */
+        if (rowObj.dataSource) {
+            // Either a parameter path or a SWG.
+            // Create an SWG and get back an object, or use the path to create an object.
+            // Set the object to be the current data source and provide it to the condition set below.
+
+            if (rowObj.dataSource.includes('~')) {
+                // It's a parameter
+                curDataSourceName = curDataSourceId = rowObj.dataSource;
+                rowObj.metadata = 'value';
+                if (!dataSourceNames.includes(curDataSourceName)) {
+                    dataSourceNames.push(curDataSourceName);
+                    addDataSourceToConditionSet = true;
+                }
+            } else { // It's a SWG
+                // Convert string value to JSON obj {"Scripted SWG": {"period": 10, "amplitude": 1, "offset": 0, "dataRateInHz": 1}}
+                const dataSourceObj = JSON.parse(rowObj.dataSource);
+
+                // See if this SWG is already in the composition; create if not.
+                curDataSourceName = Object.keys(dataSourceObj)[0];
+                const dataSourcePropsObj = dataSourceObj[curDataSourceName];
+                rowObj.metadata = dataSourcePropsObj.metadata;
+
+                if (!dataSourceNames.includes(curDataSourceName)) {
+                    let swgObj = new SineWaveGenerator(curDataSourceName, {
+                        'period': dataSourcePropsObj.period,
+                        'amplitude': dataSourcePropsObj.amplitude,
+                        'dataRateInHz': dataSourcePropsObj.dataRateInHz,
+                        'offset': dataSourcePropsObj.offset
+                    })
+
+                    console.log('created SWG', swgObj);
+
+                    curDataSourceId = swgObj.identifier.key;
+                    root.addJson(swgObj);
+                    folderRoot.addToComposition(curDataSourceId);
+                    swgObj.setLocation(folderRoot);
+                    dataSourceNames.push(curDataSourceName);
+                    addDataSourceToConditionSet = true;
+                }
             }
 
-            root.addJson(cs);
-            folderConditionSets.addToComposition(cs.identifier.key);
-            cs.setLocation(folderConditionSets);
 
-            // Create Condition Widget
-            let cw = new ConditionWidget(cs, condObj, conditionsArr);
-            root.addJson(cw);
-            folderConditionWidgets.addToComposition(cw.identifier.key);
-            cw.setLocation(folderConditionWidgets);
-
-            arrCondObjs[curIndex].cwKey = cw.identifier.key;
-
-            // Add Widget to Widgets Display Layout
-            dlCondImage.addToComposition(cw.identifier.key);
-
-            const widget = dlCondImage.addSubObjectView({
-                index: curIndex,
-                ident: cw.identifier.key,
-                itemW: config.dlCondImage.itemW,
-                itemH: config.dlCondImage.itemH,
-                hasFrame: false,
-                layoutStrategy: config.dlCondImage.layoutStrategy,
-                layoutStrategyNum: config.dlCondImage.layoutStrategyNum,
-                placeIndex: widgetsItemPlacementTracker.placeIndex,
-                shiftIndex: widgetsItemPlacementTracker.shiftIndex
-            });
-
-            widgetsItemPlacementTracker.placeIndex = widget.placeIndex;
-            widgetsItemPlacementTracker.shiftIndex = widget.shiftIndex;
         }
+
+        /***************************** CONDITION SET */
+        if (rowObj.operation) {
+            // If condition props are defined for this row, create a condition and add it by ID as part of a styles obj
+            // i.e. rowObj.conditionId
+            if (!curConditionSet) {
+                // Make a Condition Set using the provided parameters
+                curConditionSet = new ConditionSet({
+                    'name': 'CS '.concat(config.outputBaseName),
+                    'dataSource': curDataSourceId
+                });
+
+                // Add the CS to folderRoot compositions
+                // Set location of the CS to folderRoot
+                // console.log('created Condition Set', curConditionSet.identifier.key);
+                root.addJson(curConditionSet);
+                folderRoot.addToComposition(curConditionSet.identifier.key);
+                curConditionSet.setLocation(folderRoot);
+
+                // The datasource has already been added to the CS, don't add it again
+                addDataSourceToConditionSet = false;
+            }
+
+            if (addDataSourceToConditionSet) {
+                // If addDataSourceToConditionSet then add to the curConditionSet's composition
+                curConditionSet.addToComposition(curDataSourceId);
+            }
+
+            // Create a new condition and add it to curConditionSet
+            const curCondition = createConditionFromObj(rowObj);
+            curConditionSet.configuration.conditionCollection.push(curCondition);
+
+            /***************************** CONDITIONAL STYLING */
+            // Add a style object to the current image view
+            console.log(curImageViewObj);
+            curImageViewObj.configuration.objectStylesitems[curCondition.id].styles.push(createStyleObj(curCondition));
+
+
+
+        }
+
+        imageViewObjs.push(curImageViewObj);
     }
+
+    console.log(curConditionSet, curConditionSet.configuration.conditionCollection);
+    console.log(dlCondImage);
 
     outputJSON();
-}
-
-function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
-    // console.log('createOpenMCTMatrixLayoutJSONfromCSV\n', csv);
-    csv = csv.replaceAll('\r', '');
-    csv = csv.replace(/"[^"]+"/g, function (v) {
-        // Encode all commas that are within double quote chunks with |
-        return v.replace(/,/g, '|');
-    });
-
-    const rows = csv.split('\n');
-    const rowArr = rows.map(function (row) {
-        const values = row.split(',');
-        return values;
-    });
-
-    // console.log('arrCondObjs', arrCondObjs);
-
-    // Create a layout for the matrix and add it to the root folder
-    let dlMatrix = new DisplayLayout({
-        'name': 'DL Matrix',
-        'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
-        'itemMargin': config.itemMargin
-    });
-    root.addJson(dlMatrix);
-    folderRoot.addToComposition(dlMatrix.identifier.key);
-    dlMatrix.setLocation(folderRoot);
-
-    const arrColWidths = rowArr[0];
-    let curY = 0;
-    let dlItem = {};
-
-    outputMsg('Matrix Layout started: '
-        .concat(arrColWidths.length.toString())
-        .concat(' columns and ')
-        .concat(rowArr.length.toString())
-        .concat(' rows')
-    );
-
-    // Iterate through telemetry collection
-    for (let r = 1; r < rowArr.length; r++) {
-        const row = rowArr[r];
-        const rowH = parseInt(row[0]);
-        let curX = 0;
-
-        // Iterate through row cells
-        for (let c = 1; c < row.length; c++) {
-            // Process each cell in the matrix
-            let cell = row[c].trim();
-            let colW = parseInt(arrColWidths[c]);
-            let itemW = colW;
-
-            /*
-                Look for converted commas, and if present, strip out and handle args
-                - If a | followed by "_xx", display as:
-                - _cw: Condition Widget
-                - _op: Overlay Plot (NOT IMPLEMENTED)
-             */
-
-            const argSeparator = '|';
-            let cellArgs;
-
-            if (cell.includes(argSeparator)) {
-                cellArgs = cell.substring(cell.indexOf(argSeparator) + 1, cell.length);
-                cell = cell.substring(0, cell.indexOf(argSeparator)).replaceAll('"', '').trim();
-            }
-
-            if (cellArgs && cellArgs.includes('_span')) {
-                const start = cellArgs.indexOf('_span');
-                let spanNumStr = cellArgs.substring(start + 6);
-                const spanNum = parseInt(spanNumStr.substring(0, spanNumStr.indexOf(')')));
-
-                // Span includes the current column, c
-                // Add widths from columns to be spanned to itemW
-                for (let i = c + 1; i < (c + spanNum); i++) {
-                    itemW += parseInt(arrColWidths[i]) + config.itemMargin;
-                    // console.log('...incrementing itemW',itemW);
-                }
-            }
-
-            // console.log('Row',r,'Cell',c,'colW',colW,'itemW',itemW);
-
-            if (cell.includes("~")) {
-                // If telem, get the corresponding condObj
-                const condObj = arrCondObjs.find(e => e.dataSource === cell);
-
-                if (cellArgs) {
-                    if (cellArgs.includes('_cw')) {
-                        // Add previously created Condition Widget
-                        dlMatrix.addSubObjectViewInPlace({
-                            itemW: itemW,
-                            itemH: rowH,
-                            x: curX,
-                            y: curY,
-                            ident: condObj.cwKey,
-                            hasFrame: false
-                        });
-
-                        dlMatrix.addToComposition(condObj.cwKey);
-                    }
-                } else {
-                    // Add as a telemetry view (alphanumeric)
-                    dlItem = dlMatrix.addTelemetryView({
-                        itemW: itemW,
-                        itemH: rowH,
-                        x: curX,
-                        y: curY,
-                        ident: cell,
-                        alphaFormat: condObj.alphaFormat,
-                        alphaShowsUnit: condObj.alphaShowsUnit
-                    });
-
-                    if (condObj.alphaObjStyles) {
-                        dlMatrix.configuration.objectStyles[dlItem.id].styles = condObj.alphaObjStyles;
-                        dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = condObj.csKey;
-                    }
-                }
-
-                dlMatrix.addToComposition(cell, getNamespace(cell));
-            } else if (cell.length > 0) {
-                const args = {
-                    itemW: itemW,
-                    itemH: rowH,
-                    x: curX,
-                    y: curY,
-                    text: cell
-                };
-
-                // console.log('args for', cell,'colW:',colW);
-
-                if (cellArgs && cellArgs.includes('_bg')) {
-                    const start = cellArgs.indexOf('_bg');
-                    const bgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.bgColor = bgColorStr;
-                }
-
-                if (cellArgs && cellArgs.includes('_fg')) {
-                    const start = cellArgs.indexOf('_fg');
-                    const fgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.fgColor = fgColorStr;
-                }
-
-                dlItem = dlMatrix.addTextView(args);
-            }
-
-            curX += colW + ((c > 1) ? config.itemMargin : 0);
-        }
-
-        curY += rowH + config.itemMargin;
-    }
-
-    outputMsg('Matrix Layout generated');
 }

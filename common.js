@@ -5,6 +5,7 @@ const ESC_CHARS = {
     'comma': '$C',
     'escComma': '$EC',
     'tilde': '$T',
-    'backslash': '$BS'
+    'backslash': '$BS',
+    'doublequotes': '$DDQ'
 }
 let config = {};

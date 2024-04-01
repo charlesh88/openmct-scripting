@@ -1,11 +1,11 @@
 // CONDITION SETS AND CONDITIONS
 const ConditionSet = function (telemetryObject) {
-    Obj.call(this, 'CS ' + telemetryObject.name, 'conditionSet', true);
+    Obj.call(this, telemetryObject.name, 'conditionSet', true);
     this.configuration = {};
     this.configuration.conditionTestData = [];
     this.configuration.conditionCollection = [];
 
-    this.composition.push(createIdentifier(telemetryObject.dataSource, 'taxonomy'));
+    this.composition.push(createIdentifier(telemetryObject.dataSource, telemetryObject.dataSource.includes('~') ? 'taxonomy' : ''));
 
     this.addConditions = function (telemetryObject, conditionsArr) {
         for (let i = 1; i < conditionsArr.length; i++) {
@@ -44,6 +44,15 @@ const ConditionSet = function (telemetryObject) {
 }
 
 function createConditionFromArr(name, isDefault, arr) {
+    /* arr:
+    0: desc
+    1: bgColor
+    2: fgColor
+    3: trigger [any | all]
+    4: operation (between, greaterThan, etc.)
+    5: input (value | ###,###)
+    6: metadata ('' | 'sin')
+    */
     let o = {};
     o.isDefault = isDefault;
     o.id = createUUID();
@@ -54,19 +63,87 @@ function createConditionFromArr(name, isDefault, arr) {
     c.name = name;
     c.output = arr[0];
     c.trigger = (!isDefault) ? arr[3] : 'all';
-    c.criteria = (!isDefault) ? [createConditionCriteria(arr[4], arr[5])] : [];
+    c.criteria = (!isDefault) ? [createConditionCriteria(arr[4], arr[5], arr[6])] : [];
     c.summary = c.name + ' was scripted';
 
     return o;
 }
 
-function createConditionCriteria(operation, input) {
+function createConditionFromObj(argsObj) {
     let o = {};
+    o.isDefault = argsObj.isDefault ? argsObj.isDefault : false;
+    o.id = argsObj.id ? argsObj.id : createUUID();
+    o.bgColor = argsObj.bgColor ? argsObj.bgColor : '';
+    o.fgColor = argsObj.fgColor ? argsObj.fgColor : '';
+
+    let c = o.configuration = {};
+    c.name = argsObj.name ? argsObj.name : 'Unnamed Condition';
+    c.output = argsObj.output ? argsObj.output : '';
+    c.trigger = argsObj.outptriggerut ? argsObj.trigger : 'all';
+    c.criteria = (!argsObj.isDefault) ? [createConditionCriteriaFromObj(argsObj)] : [];
+    c.summary = c.name + ' was scripted';
+
+    return o;
+}
+
+function createConditionCriteria(operation, input, metadata) {
+    let o = {};
+    isNumericOp = function(operation) {
+        const arrNumericOperations = [
+                'than',
+                'equal',
+                'between',
+                'enumvalue'
+            ];
+        return arrNumericOperations.includes(operation.toLowerCase());
+    }
+
+    let arrInput = [];
+
+    if (input.includes(',')) {
+        arrInput = input.split(',').map(num => parseFloat(num));
+    } else if (isNumericOp(operation)) {
+        arrInput.push(parseFloat(input));
+    } else {
+        arrInput.push(input);
+    }
+
     o.id = createUUID();
     o.telemetry = 'any';
     o.operation = operation;
-    o.input = [input];
-    o.metadata = 'value';
+    o.input = arrInput;
+    o.metadata = metadata ? metadata : 'value';
+
+    return o;
+}
+
+function createConditionCriteriaFromObj(argsObj, operation, input, metadata) {
+    let o = {};
+    isNumericOp = function(op) {
+        const arrNumericOperations = [
+            'than',
+            'equal',
+            'between',
+            'enumvalue'
+        ];
+        return arrNumericOperations.includes(op.toLowerCase());
+    }
+
+    let arrInput = [];
+
+    if (argsObj.input.includes(',')) {
+        arrInput = argsObj.input.split(',').map(num => parseFloat(num));
+    } else if (isNumericOp(argsObj.operation)) {
+        arrInput.push(parseFloat(argsObj.input));
+    } else {
+        arrInput.push(argsObj.input);
+    }
+
+    o.id = createUUID();
+    o.telemetry = 'any';
+    o.operation = argsObj.operation;
+    o.input = arrInput;
+    o.metadata = argsObj.metadata ? argsObj.metadata : 'value';
 
     return o;
 }

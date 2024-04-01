@@ -7,34 +7,6 @@ function createIdentifier(id, namespace) {
     return o;
 }
 
-function createStyleObj(args) {
-    /*
-    args = {
-        border: 1px solid #666666,
-        bgColor: #ff0000,
-        fgColor: #ffffff,
-        id (sets a related condition id)
-    }
-     */
-    let s = {};
-    s.style = {};
-    s.style.output = (args && args.output) ? args.output : '';
-    s.style.border = (args && args.border) ? args.border : '';
-    s.style.imageUrl = (args && args.imageUrl) ? args.imageUrl : '';
-    s.style.isStyleInvisible = '';
-    s.style.backgroundColor = (args && args.bgColor) ? args.bgColor : '';
-    s.style.color = (args && args.fgColor) ? args.fgColor : '';
-    if (args && args.id) {
-        s.conditionId = args.id;
-    }
-
-    return s;
-}
-
-function getNamespace(source) {
-    return (source.indexOf('~') != -1) ? 'taxonomy' : '';
-}
-
 function createUUID() {
     var dt = new Date().getTime();
     var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -118,4 +90,8 @@ function escForCsv(str) {
     o = o.replace(/;;/g, ',');
 
     return o;
+}
+
+function getCurrentTimeEpoch() {
+    return Math.floor(Date.now() / 1000); // Convert milliseconds to seconds
 }
