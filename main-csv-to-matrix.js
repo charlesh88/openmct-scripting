@@ -77,9 +77,16 @@ function parseCSVTelemetry(csv) {
     folderRoot.addToComposition(folderConditionWidgets.identifier.key);
     folderConditionWidgets.setLocation(folderRoot);
 
+    // Create a LAD Table
+    let LadTable = new Obj('LAD Table', 'LadTable', true);
+    root.addJson(LadTable);
+    folderRoot.addToComposition(LadTable.identifier.key);
+    LadTable.setLocation(folderRoot);
+
     for (const telemetryObject of telemetryObjects) {
         const curIndex = telemetryObjects.indexOf(telemetryObject);
-        const isTelemetry = telemetryObject.dataSource.length > 0;
+
+        LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
 
         // Add conditionals
         if (telemetryObject.cond1.length > 0) {
