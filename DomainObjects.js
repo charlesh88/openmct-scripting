@@ -27,14 +27,6 @@ const Obj = function (name, type, hasComposition) {
     this.setLocation = function (location) {
         this.location = location.identifier.key;
     }
-
-    this.addConditionalStyle = function(condArgs) {
-        console.log('condArgs',condArgs);
-        if (!this.styles) {
-            this.styles = [];
-        }
-        this.styles.push(createStyleObj(condArgs));
-    }
 }
 
 function createStyleObj(args) {
@@ -43,20 +35,11 @@ function createStyleObj(args) {
         return null;
     }
 
-    /*
-    args = {
-        border: 1px solid #666666,
-        bgColor: #ff0000,
-        fgColor: #ffffff,
-        id (sets a related condition id)
-    }
-     */
-
     let obj = {};
     obj.style = {};
     obj.style.output = (args.output) ? args.output : '';
     obj.style.border = (args.border) ? args.border : '';
-    obj.style.imageUrl = (args.imageUrl) ? args.imageUrl : '';
+    obj.style.imageUrl = (args.url) ? args.url : '';
     obj.style.isStyleInvisible = (args.isStyleInvisible) ? args.isStyleInvisible : '';
     obj.style.backgroundColor = (args.bgColor) ? args.bgColor : '';
     obj.style.color = (args.fgColor) ? args.fgColor : '';

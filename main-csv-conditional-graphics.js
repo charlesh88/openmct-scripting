@@ -61,8 +61,6 @@ function parseCSVTelemetry(csv) {
     // array of objects
     arrRowObjs = csvToObjArray(csv);
 
-    console.log('arrRowObjs', arrRowObjs);
-
     config = getConfigFromForm();
 
     // Create the root folder
@@ -84,20 +82,21 @@ function parseCSVTelemetry(csv) {
         .concat(' rows found')
     );
 
-    let curImageId = '';
-    let curImageView;
-
     let curConditionSet;
     let dataSourceNames = [];
-    let dataSourceObjs = []; // Not sure this is needed
     let curDataSourceId;
     let imageViewNames = [];
-    let imageViewObjs = []; // Tracks created image view objects, keyed by name
+    let imageViewObjs = {}; // Tracks created image view objects, keyed by name
 
     for (const rowObj of arrRowObjs) {
         let curDataSourceName;
         let curImageViewObj;
         let addDataSourceToConditionSet = false;
+
+        rowObj.url = rowObj.imageUrl.replaceAll('~','/');
+        console.log('rowObj', rowObj);
+
+        // console.log('imageViewNames', imageViewNames, 'rowObj', rowObj);
 
         if (imageViewNames.includes(rowObj.name)) {
             // We've already created this imageview object, retrieve and make that the current one.
@@ -110,11 +109,14 @@ function parseCSVTelemetry(csv) {
                     y: 0,
                     width: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[0]), parseInt(config.imageSize[0])),
                     height: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[1]), parseInt(config.imageSize[1])),
-                    url: rowObj.imageUrl.replaceAll('~','/')
+                    url: rowObj.url
                 }
             );
             imageViewNames.push(rowObj.name);
+            imageViewObjs[rowObj.name] = curImageViewObj;
         }
+
+        console.log('curImageViewObj', curImageViewObj.id, curImageViewObj);
 
         /***************************** DATASOURCE */
         if (rowObj.dataSource) {
@@ -194,18 +196,16 @@ function parseCSVTelemetry(csv) {
 
             /***************************** CONDITIONAL STYLING */
             // Add a style object to the current image view
-            console.log(curImageViewObj);
-            curImageViewObj.configuration.objectStylesitems[curCondition.id].styles.push(createStyleObj(curCondition));
 
-
-
+            let conditionStyleObj = createStyleObj(rowObj);
+            conditionStyleObj.conditionId = curCondition.id
+            // console.log('adding conditional styling', rowObj, conditionStyleObj);
+            dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
         }
-
-        imageViewObjs.push(curImageViewObj);
     }
 
-    console.log(curConditionSet, curConditionSet.configuration.conditionCollection);
-    console.log(dlCondImage);
+    // console.log(curConditionSet, curConditionSet.configuration.conditionCollection);
+    // console.log(dlCondImage);
 
     outputJSON();
 }

@@ -144,7 +144,7 @@ const DisplayLayout = function (args) {
         this.configuration.objectStyles[subObj.id].styles = [];
         this.configuration.items.push(subObj);
 
-        this.addConditionalStyle()
+        return subObj;
     }
 
     this.addTelemetryView = function (args) {
