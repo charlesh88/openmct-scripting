@@ -25,25 +25,52 @@ const ConditionSet = function (telemetryObject) {
     }
 
     this.conditionsToArr = function (telemetryObject) {
+        const totalConditions = 10;
         let cArr = [];
-        // Unpack default condition
-        // Output string, bg, fg
-        cArr.push(telemetryObject.condDefault.split(","));
 
-        // Unpack conditions 1 - 4
+        // Unpack conditions 1 - 10
         // Output string, bg, fg, criteria, value
-        for (let i = 4; i > 0; i--) {
+        for (let i = 1; i < totalConditions; i++) {
             const cCond = telemetryObject['cond' + i.toString()];
-            if (cCond.length > 0) {
+            if (cCond && cCond.length > 0) {
                 cArr.push(cCond.split(","));
             }
         }
 
+        // Unpack default condition
+        cArr.push(telemetryObject.condDefault.split(","));
+
+        // console.log('cArr', cArr);
         return cArr;
     }
 }
 
 function createConditionFromArr(name, isDefault, arr) {
+    const numericOps = [
+        'equalTo',
+        'greaterThan',
+        'lessThan',
+        'greaterThanOrEq',
+        'lessThanOrEq',
+        'between',
+        'notBetween',
+        'enumValueIs',
+        'enumValueIsNot'
+    ]
+    const operation = arr[4];
+    let arrInput = [];
+
+    if (numericOps.includes(operation)) {
+        arrInput = arr.length > 6 ? [
+            parseFloat(arr[5]),
+            parseFloat(arr[6])
+        ] : [parseFloat(arr[5])];
+
+        console.log('Its a numeric op: ', arrInput);
+    } else {
+        arrInput = [operation];
+    }
+
     let o = {};
     o.isDefault = isDefault;
     o.id = createUUID();
@@ -54,18 +81,20 @@ function createConditionFromArr(name, isDefault, arr) {
     c.name = name;
     c.output = arr[0];
     c.trigger = (!isDefault) ? arr[3] : 'all';
-    c.criteria = (!isDefault) ? [createConditionCriteria(arr[4], arr[5])] : [];
+    c.criteria = (!isDefault) ? [createConditionCriteria(operation, arrInput)] : [];
     c.summary = c.name + ' was scripted';
+
+    console.log('createConditionFromArr', o);
 
     return o;
 }
 
-function createConditionCriteria(operation, input) {
+function createConditionCriteria(operation, arrInput) {
     let o = {};
     o.id = createUUID();
     o.telemetry = 'any';
     o.operation = operation;
-    o.input = [input];
+    o.input = arrInput;
     o.metadata = 'value';
 
     return o;
