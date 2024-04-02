@@ -91,7 +91,7 @@ function csvToArray(str, delimiter = ',') {
         }
     })
 
-    console.log('csvToArray', arrCleaned);
+    // console.log('csvToArray', arrCleaned);
 
     return arrCleaned;
 }
@@ -172,7 +172,7 @@ function outputMsgAdd(str) {
 }
 
 function outputTable(rowArray = [], startTable = false, endTable = false) {
-    console.log('rA', rowArray, rowArray.length);
+    // console.log('rA', rowArray, rowArray.length);
     if (startTable) {
         outputMsgAdd('<table>');
     }
