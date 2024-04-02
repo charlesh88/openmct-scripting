@@ -8,7 +8,7 @@ const ConditionSet = function (telemetryObject) {
     this.composition.push(createIdentifier(telemetryObject.dataSource, 'taxonomy'));
 
     this.addConditions = function (telemetryObject, conditionsArr) {
-        for (let i = 1; i < conditionsArr.length; i++) {
+        for (let i = 0; i < conditionsArr.length - 1; i++) {
             this.configuration.conditionCollection.push(createConditionFromArr(
                 'Condition ' + i.toString(),
                 false,
@@ -16,16 +16,17 @@ const ConditionSet = function (telemetryObject) {
             ));
         }
 
-        // Default condition
+        // Default condition, will be last
         this.configuration.conditionCollection.push(createConditionFromArr(
             'Default',
             true,
-            conditionsArr[0]
+            conditionsArr[conditionsArr.length - 1]
         ));
     }
 
     this.conditionsToArr = function (telemetryObject) {
         const totalConditions = 10;
+        // console.log('telemetryObject',telemetryObject);
         let cArr = [];
 
         // Unpack conditions 1 - 10
@@ -33,6 +34,7 @@ const ConditionSet = function (telemetryObject) {
         for (let i = 1; i < totalConditions; i++) {
             const cCond = telemetryObject['cond' + i.toString()];
             if (cCond && cCond.length > 0) {
+                console.log('cCond', cCond);
                 cArr.push(cCond.split(","));
             }
         }
@@ -40,7 +42,7 @@ const ConditionSet = function (telemetryObject) {
         // Unpack default condition
         cArr.push(telemetryObject.condDefault.split(","));
 
-        // console.log('cArr', cArr);
+        console.log('cArr', cArr);
         return cArr;
     }
 }
