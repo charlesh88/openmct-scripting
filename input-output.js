@@ -126,8 +126,6 @@ function outputJSON() {
 
 downloadJson = function () {
     const filename = config.outputBaseName
-        .concat(' - ')
-        .concat(INPUT_TYPE.includes('csv') ? downloadFilenames.csv : downloadFilenames.prl)
         .concat('.json');
     const strJson = JSON.stringify(objJson, null, 4);
     const file = new File([strJson], filename, {
