@@ -91,7 +91,7 @@ function csvToArray(str, delimiter = ',') {
         }
     })
 
-    console.log('csvToArray', arrCleaned);
+    // console.log('csvToArray', arrCleaned);
 
     return arrCleaned;
 }
@@ -125,12 +125,9 @@ function outputJSON() {
 }
 
 downloadJson = function () {
-    const filename = config.outputBaseName
-        .concat(' - ')
-        .concat(INPUT_TYPE.includes('csv') ? downloadFilenames.csv : downloadFilenames.prl)
-        .concat('.json');
+    const filename = (config.outputBaseName.length > 0) ? config.outputBaseName : 'Scripted Open MCT';
     const strJson = JSON.stringify(objJson, null, 4);
-    const file = new File([strJson], filename, {
+    const file = new File([strJson], filename.concat('.json'), {
         type: 'text/json',
     })
 
@@ -172,7 +169,7 @@ function outputMsgAdd(str) {
 }
 
 function outputTable(rowArray = [], startTable = false, endTable = false) {
-    console.log('rA', rowArray, rowArray.length);
+    // console.log('rA', rowArray, rowArray.length);
     if (startTable) {
         outputMsgAdd('<table>');
     }

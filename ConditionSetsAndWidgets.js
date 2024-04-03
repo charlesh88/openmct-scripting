@@ -48,6 +48,18 @@ const ConditionSet = function (telemetryObject) {
 }
 
 function createConditionFromArr(name, isDefault, arr) {
+    /*
+    arr indexes:
+    0: output string
+    1: bgColor
+    2: fgColor
+    3: trigger
+    4: operation
+    5: input value 1 (OPTIONAL)
+    6: input value 2 (OPTIONAL)
+     */
+
+
     const numericOps = [
         'equalTo',
         'greaterThan',
@@ -68,9 +80,10 @@ function createConditionFromArr(name, isDefault, arr) {
             parseFloat(arr[6])
         ] : [parseFloat(arr[5])];
 
-        console.log('Its a numeric op: ', arrInput);
+    } else if (arr.length > 5) {
+        arrInput = [arr[5]];
     } else {
-        arrInput = [operation];
+        arrInput = [];
     }
 
     let o = {};
@@ -86,7 +99,7 @@ function createConditionFromArr(name, isDefault, arr) {
     c.criteria = (!isDefault) ? [createConditionCriteria(operation, arrInput)] : [];
     c.summary = c.name + ' was scripted';
 
-    console.log('createConditionFromArr', o);
+    // console.log('createConditionFromArr', o);
 
     return o;
 }
