@@ -94,13 +94,13 @@ function parseCSVTelemetry(csv) {
         let addDataSourceToConditionSet = false;
 
         rowObj.url = rowObj.imageUrl.replaceAll('~','/');
-        console.log('rowObj', rowObj);
 
-        // console.log('imageViewNames', imageViewNames, 'rowObj', rowObj);
+        console.log(imageViewNames, rowObj);
 
-        if (imageViewNames.includes(rowObj.name)) {
+        /***************************** IMAGE VIEW */
+        if (imageViewNames.includes(rowObj.imageViewName)) {
             // We've already created this imageview object, retrieve and make that the current one.
-            curImageViewObj = imageViewObjs[rowObj.name];
+            curImageViewObj = imageViewObjs[rowObj.imageViewName];
         } else {
             // Create a new image view and add it to dlCondImage composition.
             curImageViewObj = dlCondImage.addImageView(
@@ -112,11 +112,9 @@ function parseCSVTelemetry(csv) {
                     url: rowObj.url
                 }
             );
-            imageViewNames.push(rowObj.name);
-            imageViewObjs[rowObj.name] = curImageViewObj;
+            imageViewNames.push(rowObj.imageViewName);
+            imageViewObjs[rowObj.imageViewName] = curImageViewObj;
         }
-
-        console.log('curImageViewObj', curImageViewObj.id, curImageViewObj);
 
         /***************************** DATASOURCE */
         if (rowObj.dataSource) {
@@ -149,8 +147,6 @@ function parseCSVTelemetry(csv) {
                         'offset': dataSourcePropsObj.offset
                     })
 
-                    console.log('created SWG', swgObj);
-
                     curDataSourceId = swgObj.identifier.key;
                     root.addJson(swgObj);
                     folderRoot.addToComposition(curDataSourceId);
@@ -176,13 +172,15 @@ function parseCSVTelemetry(csv) {
 
                 // Add the CS to folderRoot compositions
                 // Set location of the CS to folderRoot
-                // console.log('created Condition Set', curConditionSet.identifier.key);
                 root.addJson(curConditionSet);
                 folderRoot.addToComposition(curConditionSet.identifier.key);
                 curConditionSet.setLocation(folderRoot);
 
                 // The datasource has already been added to the CS, don't add it again
                 addDataSourceToConditionSet = false;
+
+                // Add the conditionSetIdentifier to the current image view's objectStyles collection
+                dlCondImage.configuration.objectStyles[curImageViewObj.id].conditionSetIdentifier = createIdentifier(curConditionSet.identifier.key);
             }
 
             if (addDataSourceToConditionSet) {
@@ -199,13 +197,9 @@ function parseCSVTelemetry(csv) {
 
             let conditionStyleObj = createStyleObj(rowObj);
             conditionStyleObj.conditionId = curCondition.id
-            // console.log('adding conditional styling', rowObj, conditionStyleObj);
             dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
         }
     }
-
-    // console.log(curConditionSet, curConditionSet.configuration.conditionCollection);
-    // console.log(dlCondImage);
 
     outputJSON();
 }

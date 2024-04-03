@@ -93,8 +93,6 @@ function csvToArray(str, delimiter = ',') {
         }
     })
 
-    console.log('csvToArray', arrCleaned);
-
     return arrCleaned;
 }
 
@@ -115,7 +113,6 @@ function csvToObjArray(str) {
 
 /************************************************* OUTPUTS AND DOWNLOADING */
 function outputJSON() {
-    console.log('outputJSON', objJson);
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
     outputStatsDisplay.innerHTML =
@@ -175,7 +172,6 @@ function outputMsgAdd(str) {
 }
 
 function outputTable(rowArray = [], startTable = false, endTable = false) {
-    console.log('rA', rowArray, rowArray.length);
     if (startTable) {
         outputMsgAdd('<table>');
     }
@@ -243,12 +239,10 @@ function htmlGridFromArray(arr) {
 
 /************************************************* LOCAL STORAGE */
 function storeLocal(key, value) {
-    // console.log('storeLocal', key, value);
     window.localStorage.setItem(key, value);
 }
 
 function loadLocal(key) {
-    // console.log('loadLocal', key);
     return window.localStorage.getItem(key);
 }
 

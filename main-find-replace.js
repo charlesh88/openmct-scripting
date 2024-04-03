@@ -57,7 +57,6 @@ function readJsonSrc(json) {
     inputCsv.toggleAttribute('disabled'); // Toggle to not disabled
 
     jsonSrc = json;
-    // console.log(jsonSrc);
 
     outputMsg('Open MCT JSON imported '
         .concat(jsonSrc.length.toString())

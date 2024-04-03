@@ -31,7 +31,6 @@ const Obj = function (name, type, hasComposition) {
 
 function createStyleObj(args) {
     if (!args) {
-        console.log('createStyleObj error: No args provided.');
         return null;
     }
 
