@@ -144,7 +144,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
     // Create a layout for the matrix and add it to the root folder
     let dlMatrix = new DisplayLayout({
-        'name': 'DL Matrix',
+        'name': 'DL '.concat(config.outputBaseName),
         'layoutGrid': gridDimensions,
         'itemMargin': itemMargin
     });
