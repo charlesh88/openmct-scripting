@@ -84,18 +84,16 @@ function parseCSVTelemetry(csv) {
 
     let curConditionSet;
     let dataSources = [];
-    let curDataSourceId;
+    let dataSourceObj = {};
     let imageViewNames = [];
     let imageViewObjs = {}; // Tracks created image view objects, keyed by name
 
     for (const rowObj of arrRowObjs) {
-        let curDataSourceName;
+        // let curDataSourceName;
         let curImageViewObj;
         let addDataSourceToConditionSet = false;
 
         rowObj.url = rowObj.imageUrl.replaceAll('~', '/');
-
-        console.log(imageViewNames, rowObj);
 
         /***************************** IMAGE VIEW */
         if (imageViewNames.includes(rowObj.imageViewName)) {
@@ -118,58 +116,47 @@ function parseCSVTelemetry(csv) {
 
         /***************************** DATASOURCE */
         if (rowObj.dataSource) {
-            // Either a parameter path, SWG definition or the name of a SWG.
-            // Create an SWG and get back an object, or use the path to create an object.
-            // Set the object to be the current data source and provide it to the condition set below.
-            let dataSourceObj;
-
             if (rowObj.dataSource.includes('~')) {
                 // It's a parameter
-                curDataSourceName = curDataSourceId = rowObj.dataSource;
-                rowObj.metadata = 'value';
-
-                if (!dataSources.includes(curDataSourceName)) {
-                    console.log('dataSources !included '.concat(curDataSourceName));
-                    dataSources.push(curDataSourceName);
+                dataSourceObj.type = 'parameter';
+                dataSourceObj.name = rowObj.dataSource;
+                dataSourceObj.metadata = rowObj.metadata = 'value';
+                if (!dataSources.includes(dataSourceObj.name)) {
+                    dataSourceObj.id = dataSourceObj.name;
+                    dataSources[dataSourceObj.name] = dataSourceObj;
+                    addDataSourceToConditionSet = true;
+                }
+            } else if (rowObj.dataSource.includes('{')) {
+                // It's a new SWG
+                dataSourceObj.type = 'swg';
+                const o = JSON.parse(rowObj.dataSource);
+                dataSourceObj.name = Object.keys(o)[0];
+                dataSourceObj.props = o[dataSourceObj.name];
+                dataSourceObj.metadata = rowObj.metadata = dataSourceObj.props.metadata;
+                if (!dataSources.includes(dataSourceObj.name)) {
+                    const swgObj = new SineWaveGenerator(dataSourceObj.name, {
+                        'period': dataSourceObj.props.period,
+                        'amplitude': dataSourceObj.props.amplitude,
+                        'dataRateInHz': dataSourceObj.props.dataRateInHz,
+                        'offset': dataSourceObj.props.offset
+                    })
+                    dataSourceObj.id = swgObj.identifier.key;
+                    root.addJson(swgObj);
+                    folderRoot.addToComposition(swgObj.identifier.key);
+                    swgObj.setLocation(folderRoot);
+                    dataSources[dataSourceObj.name] = dataSourceObj;
                     addDataSourceToConditionSet = true;
                 }
             } else {
-                // It's a SWG or a named ref to a SWG
-                if (rowObj.dataSource.includes('{')) {
-                    // It's a SWG definition
-                    dataSourceObj = JSON.parse(rowObj.dataSource);
-                    curDataSourceName = Object.keys(dataSourceObj)[0];
-
-                    const dataSourcePropsObj = dataSourceObj[curDataSourceName];
-
-                    let swgObj = new SineWaveGenerator(curDataSourceName, {
-                        'period': dataSourcePropsObj.period,
-                        'amplitude': dataSourcePropsObj.amplitude,
-                        'dataRateInHz': dataSourcePropsObj.dataRateInHz,
-                        'offset': dataSourcePropsObj.offset
-                    })
-
-                    curDataSourceId = swgObj.identifier.key;
-                    root.addJson(swgObj);
-                    folderRoot.addToComposition(curDataSourceId);
-                    swgObj.setLocation(folderRoot);
-
-                    rowObj.metadata = dataSourcePropsObj.metadata;
-
-                    dataSources[curDataSourceName] = {
-                        'id': curDataSourceId,
-                        'metadata': dataSourcePropsObj.metadata
-                    };
-                    addDataSourceToConditionSet = true;
-
-
-                } else {
-                    // It's a SWG ref, assume it has been created, get its ID and metadata
-                    dataSourceObj = dataSources[rowObj.dataSource];
-                    curDataSourceName = rowObj.dataSource;
-                    curDataSourceId = dataSourceObj.id;
+                // It's a SWG reference, assume it has been created
+                if (Object.keys(dataSources).includes(rowObj.dataSource)) {
+                    dataSourceObj = dataSources[rowObj.dataSource]; // This should retrieve name, id, metadata, and props for an SWG
+                    dataSourceObj.type = 'swg';
                     rowObj.metadata = dataSourceObj.metadata;
-
+                } else {
+                    console.log('Reference for '
+                        .concat(rowObj.dataSource)
+                        .concat(' has not been created.'));
                 }
             }
         }
@@ -182,7 +169,7 @@ function parseCSVTelemetry(csv) {
                 // Make a Condition Set using the provided parameters
                 curConditionSet = new ConditionSet({
                     'name': 'CS '.concat(config.outputBaseName),
-                    'dataSource': curDataSourceId
+                    'dataSource': dataSourceObj.id
                 });
 
                 // Add the CS to folderRoot compositions
@@ -200,7 +187,7 @@ function parseCSVTelemetry(csv) {
 
             if (addDataSourceToConditionSet) {
                 // If addDataSourceToConditionSet then add to the curConditionSet's composition
-                curConditionSet.addToComposition(curDataSourceId);
+                curConditionSet.addToComposition(dataSourceObj.id);
             }
 
             // Create a new condition and add it to curConditionSet
@@ -208,8 +195,7 @@ function parseCSVTelemetry(csv) {
             curConditionSet.configuration.conditionCollection.push(curCondition);
 
             /***************************** CONDITIONAL STYLING */
-                // Add a style object to the current image view
-
+            // Add a style object to the current image view
             let conditionStyleObj = createStyleObj(rowObj);
             conditionStyleObj.conditionId = curCondition.id
             dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
