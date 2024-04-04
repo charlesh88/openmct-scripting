@@ -83,7 +83,7 @@ function parseCSVTelemetry(csv) {
     );
 
     let curConditionSet;
-    let dataSourceNames = [];
+    let dataSources = [];
     let curDataSourceId;
     let imageViewNames = [];
     let imageViewObjs = {}; // Tracks created image view objects, keyed by name
@@ -93,7 +93,7 @@ function parseCSVTelemetry(csv) {
         let curImageViewObj;
         let addDataSourceToConditionSet = false;
 
-        rowObj.url = rowObj.imageUrl.replaceAll('~','/');
+        rowObj.url = rowObj.imageUrl.replaceAll('~', '/');
 
         console.log(imageViewNames, rowObj);
 
@@ -118,28 +118,30 @@ function parseCSVTelemetry(csv) {
 
         /***************************** DATASOURCE */
         if (rowObj.dataSource) {
-            // Either a parameter path or a SWG.
+            // Either a parameter path, SWG definition or the name of a SWG.
             // Create an SWG and get back an object, or use the path to create an object.
             // Set the object to be the current data source and provide it to the condition set below.
+            let dataSourceObj;
 
             if (rowObj.dataSource.includes('~')) {
                 // It's a parameter
                 curDataSourceName = curDataSourceId = rowObj.dataSource;
                 rowObj.metadata = 'value';
-                if (!dataSourceNames.includes(curDataSourceName)) {
-                    dataSourceNames.push(curDataSourceName);
+
+                if (!dataSources.includes(curDataSourceName)) {
+                    console.log('dataSources !included '.concat(curDataSourceName));
+                    dataSources.push(curDataSourceName);
                     addDataSourceToConditionSet = true;
                 }
-            } else { // It's a SWG
-                // Convert string value to JSON obj {"Scripted SWG": {"period": 10, "amplitude": 1, "offset": 0, "dataRateInHz": 1}}
-                const dataSourceObj = JSON.parse(rowObj.dataSource);
+            } else {
+                // It's a SWG or a named ref to a SWG
+                if (rowObj.dataSource.includes('{')) {
+                    // It's a SWG definition
+                    dataSourceObj = JSON.parse(rowObj.dataSource);
+                    curDataSourceName = Object.keys(dataSourceObj)[0];
 
-                // See if this SWG is already in the composition; create if not.
-                curDataSourceName = Object.keys(dataSourceObj)[0];
-                const dataSourcePropsObj = dataSourceObj[curDataSourceName];
-                rowObj.metadata = dataSourcePropsObj.metadata;
+                    const dataSourcePropsObj = dataSourceObj[curDataSourceName];
 
-                if (!dataSourceNames.includes(curDataSourceName)) {
                     let swgObj = new SineWaveGenerator(curDataSourceName, {
                         'period': dataSourcePropsObj.period,
                         'amplitude': dataSourcePropsObj.amplitude,
@@ -151,12 +153,25 @@ function parseCSVTelemetry(csv) {
                     root.addJson(swgObj);
                     folderRoot.addToComposition(curDataSourceId);
                     swgObj.setLocation(folderRoot);
-                    dataSourceNames.push(curDataSourceName);
+
+                    rowObj.metadata = dataSourcePropsObj.metadata;
+
+                    dataSources[curDataSourceName] = {
+                        'id': curDataSourceId,
+                        'metadata': dataSourcePropsObj.metadata
+                    };
                     addDataSourceToConditionSet = true;
+
+
+                } else {
+                    // It's a SWG ref, assume it has been created, get its ID and metadata
+                    dataSourceObj = dataSources[rowObj.dataSource];
+                    curDataSourceName = rowObj.dataSource;
+                    curDataSourceId = dataSourceObj.id;
+                    rowObj.metadata = dataSourceObj.metadata;
+
                 }
             }
-
-
         }
 
         /***************************** CONDITION SET */
@@ -193,13 +208,15 @@ function parseCSVTelemetry(csv) {
             curConditionSet.configuration.conditionCollection.push(curCondition);
 
             /***************************** CONDITIONAL STYLING */
-            // Add a style object to the current image view
+                // Add a style object to the current image view
 
             let conditionStyleObj = createStyleObj(rowObj);
             conditionStyleObj.conditionId = curCondition.id
             dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
         }
     }
+
+    console.log('dataSources', dataSources);
 
     outputJSON();
 }
