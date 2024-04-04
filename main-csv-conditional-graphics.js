@@ -43,24 +43,21 @@ function parseCSVTelemetry(csv) {
     /*
     arrRowObjs: array of Condition objects with these properties:
     [{
-        imageId: string that defines unique images. Allows more than one image to be overlayed, with different Condition Sets for each
-        desc: not used
-        datasSource: full path to datasource
-        dataSourceToEval: this | any | all TODO: make sure Condition Set creator can properly add a discrete telem point
-        condEvaluator: equalTo, notEqualTo, between, etc.
-        condVals: either single string or number, or comma-sepped same
-        condOutputString: output string for a given Condition
+        imageViewName: string that defines unique images. Allows more than one image to be overlayed, with different Condition Sets for each
+        datasSource: full path to datasource, SWG object or SWG name reference
+        idDefault: is this condition a default, boolean
+        operator: equalTo, notEqualTo, between, etc.
+        input: either single string or number, or comma-sepped same
+        output: output string for a given Condition
         colorBg
         colorFg
         colorBorder
         imageUrl
-        condWidgetUsesOutputAsLabel: boolean
     }]
     */
 
     // array of objects
     arrRowObjs = csvToObjArray(csv);
-
     config = getConfigFromForm();
 
     // Create the root folder
@@ -82,21 +79,19 @@ function parseCSVTelemetry(csv) {
         .concat(' rows found')
     );
 
-    let curConditionSet;
+    let imageViewObjs = {}; // Tracks created image view objects, keyed by name
     let dataSources = [];
     let dataSourceObj = {};
-    let imageViewNames = [];
-    let imageViewObjs = {}; // Tracks created image view objects, keyed by name
+    let curConditionSet;
 
     for (const rowObj of arrRowObjs) {
-        // let curDataSourceName;
         let curImageViewObj;
         let addDataSourceToConditionSet = false;
 
         rowObj.url = rowObj.imageUrl.replaceAll('~', '/');
 
         /***************************** IMAGE VIEW */
-        if (imageViewNames.includes(rowObj.imageViewName)) {
+        if (Object.keys(imageViewObjs).includes(rowObj.imageViewName)) {
             // We've already created this imageview object, retrieve and make that the current one.
             curImageViewObj = imageViewObjs[rowObj.imageViewName];
         } else {
@@ -110,7 +105,6 @@ function parseCSVTelemetry(csv) {
                     url: rowObj.url
                 }
             );
-            imageViewNames.push(rowObj.imageViewName);
             imageViewObjs[rowObj.imageViewName] = curImageViewObj;
         }
 
@@ -148,7 +142,7 @@ function parseCSVTelemetry(csv) {
                     addDataSourceToConditionSet = true;
                 }
             } else {
-                // It's a SWG reference, assume it has been created
+                // It's a SWG reference, assume it has been created - but check anyway
                 if (Object.keys(dataSources).includes(rowObj.dataSource)) {
                     dataSourceObj = dataSources[rowObj.dataSource]; // This should retrieve name, id, metadata, and props for an SWG
                     dataSourceObj.type = 'swg';
@@ -172,8 +166,7 @@ function parseCSVTelemetry(csv) {
                     'dataSource': dataSourceObj.id
                 });
 
-                // Add the CS to folderRoot compositions
-                // Set location of the CS to folderRoot
+                // Add the CS to folderRoot compositions and set its location to folderRoot
                 root.addJson(curConditionSet);
                 folderRoot.addToComposition(curConditionSet.identifier.key);
                 curConditionSet.setLocation(folderRoot);
@@ -201,7 +194,7 @@ function parseCSVTelemetry(csv) {
             dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
         }
     }
-
+    console.log('imageViewObjs', imageViewObjs);
     console.log('dataSources', dataSources);
 
     outputJSON();
