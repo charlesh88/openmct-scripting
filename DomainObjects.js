@@ -39,7 +39,8 @@ function createStyleObj(args) {
     obj.style.output = (args.output) ? args.output : '';
     obj.style.border = (args.border) ? args.border : '';
     obj.style.imageUrl = (args.url) ? args.url : '';
-    obj.style.isStyleInvisible = (args.isStyleInvisible) ? args.isStyleInvisible : '';
+    // Yes, this is really how it was done.
+    obj.style.isStyleInvisible = (args.isStyleInvisible) ? 'is-style-invisible' : '';
     obj.style.backgroundColor = (args.bgColor) ? args.bgColor : '';
     obj.style.color = (args.fgColor) ? args.fgColor : '';
     if (args.conditionId) {

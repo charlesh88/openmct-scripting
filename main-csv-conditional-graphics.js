@@ -1,6 +1,8 @@
 const INPUT_TYPE = "csv";
 const OUTPUT_BASE_NAME_KEY = '_CONDITIONAL_GRAPHICS_BASE_NAME';
 
+storeOutputBaseName();
+loadLocalSettings();
 inputCsv.addEventListener("change", function (ev) {
     uploadTelemetryFile(ev.currentTarget.files, 'csv');
 }, false);
@@ -41,7 +43,7 @@ function uploadTelemetryFile(files) {
 
 function parseCSVTelemetry(csv) {
     /*
-    arrRowObjs: array of Condition objects with these properties:
+    rowObjs: array of Condition objects with these properties:
     [{
         imageViewName: string that defines unique images. Allows more than one image to be overlayed, with different Condition Sets for each
         datasSource: full path to datasource, SWG object or SWG name reference
@@ -49,15 +51,15 @@ function parseCSVTelemetry(csv) {
         operator: equalTo, notEqualTo, between, etc.
         input: either single string or number, or comma-sepped same
         output: output string for a given Condition
-        colorBg
-        colorFg
-        colorBorder
+        bgColor
+        fgColor
+        border
         imageUrl
     }]
     */
 
     // array of objects
-    arrRowObjs = csvToObjArray(csv);
+    rowObjs = csvToObjArray(csv);
     config = getConfigFromForm();
 
     // Create the root folder
@@ -75,7 +77,7 @@ function parseCSVTelemetry(csv) {
     dlCondImage.setLocation(folderRoot);
 
     outputMsg('Condition-driven Image CSV imported, '
-        .concat(arrRowObjs.length.toString())
+        .concat(rowObjs.length.toString())
         .concat(' rows found')
     );
 
@@ -84,7 +86,7 @@ function parseCSVTelemetry(csv) {
     let dataSourceObj = {};
     let curConditionSet;
 
-    for (const rowObj of arrRowObjs) {
+    for (const rowObj of rowObjs) {
         let curImageViewObj;
         let addDataSourceToConditionSet = false;
 
@@ -102,6 +104,9 @@ function parseCSVTelemetry(csv) {
                     y: 0,
                     width: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[0]), parseInt(config.imageSize[0])),
                     height: displayLayoutConvertPxToGridUnits(parseInt(config.layoutGrid[1]), parseInt(config.imageSize[1])),
+                    bgColor: rowObj.bgColor,
+                    fgColor: rowObj.fgColor,
+                    border: rowObj.border,
                     url: rowObj.url
                 }
             );
@@ -194,6 +199,7 @@ function parseCSVTelemetry(csv) {
             dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
         }
     }
+    console.log('rowObjs', rowObjs);
     console.log('imageViewObjs', imageViewObjs);
     console.log('dataSources', dataSources);
 
