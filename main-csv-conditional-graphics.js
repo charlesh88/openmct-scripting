@@ -120,7 +120,7 @@ function parseCSVTelemetry(csv) {
                 dataSourceObj.type = 'parameter';
                 dataSourceObj.name = rowObj.dataSource;
                 dataSourceObj.metadata = rowObj.metadata = 'value';
-                if (!dataSources.includes(dataSourceObj.name)) {
+                if (!Object.keys(dataSources).includes(dataSourceObj.name)) {
                     dataSourceObj.id = dataSourceObj.name;
                     dataSources[dataSourceObj.name] = dataSourceObj;
                     addDataSourceToConditionSet = true;
