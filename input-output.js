@@ -125,12 +125,9 @@ function outputJSON() {
 }
 
 downloadJson = function () {
-    const filename = document.getElementById('output-base-name').value
-        .concat(' ')
-        .concat(INPUT_TYPE.includes('csv') ? downloadFilenames.csv : downloadFilenames.prl)
-        .concat('.json');
+    const filename = (config.outputBaseName.length > 0) ? config.outputBaseName : 'Scripted Open MCT';
     const strJson = JSON.stringify(objJson, null, 4);
-    const file = new File([strJson], filename, {
+    const file = new File([strJson], filename.concat('.json'), {
         type: 'text/json',
     })
 

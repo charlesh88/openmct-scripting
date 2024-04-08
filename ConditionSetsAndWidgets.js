@@ -1,14 +1,14 @@
 // CONDITION SETS AND CONDITIONS
 const ConditionSet = function (telemetryObject) {
-    Obj.call(this, telemetryObject.name, 'conditionSet', true);
+    Obj.call(this, 'CS ' + telemetryObject.name, 'conditionSet', true);
     this.configuration = {};
     this.configuration.conditionTestData = [];
     this.configuration.conditionCollection = [];
 
-    this.composition.push(createIdentifier(telemetryObject.dataSource, telemetryObject.dataSource.includes('~') ? 'taxonomy' : ''));
+    this.composition.push(createIdentifier(telemetryObject.dataSource, 'taxonomy'));
 
     this.addConditions = function (telemetryObject, conditionsArr) {
-        for (let i = 1; i < conditionsArr.length; i++) {
+        for (let i = 0; i < conditionsArr.length - 1; i++) {
             this.configuration.conditionCollection.push(createConditionFromArr(
                 'Condition ' + i.toString(),
                 false,
@@ -16,43 +16,76 @@ const ConditionSet = function (telemetryObject) {
             ));
         }
 
-        // Default condition
+        // Default condition, will be last
         this.configuration.conditionCollection.push(createConditionFromArr(
             'Default',
             true,
-            conditionsArr[0]
+            conditionsArr[conditionsArr.length - 1]
         ));
     }
 
     this.conditionsToArr = function (telemetryObject) {
+        const totalConditions = 10;
+        // console.log('telemetryObject',telemetryObject);
         let cArr = [];
-        // Unpack default condition
-        // Output string, bg, fg
-        cArr.push(telemetryObject.condDefault.split(","));
 
-        // Unpack conditions 1 - 4
+        // Unpack conditions 1 - 10
         // Output string, bg, fg, criteria, value
-        for (let i = 4; i > 0; i--) {
+        for (let i = 1; i < totalConditions; i++) {
             const cCond = telemetryObject['cond' + i.toString()];
-            if (cCond.length > 0) {
+            if (cCond && cCond.length > 0) {
+                console.log('cCond', cCond);
                 cArr.push(cCond.split(","));
             }
         }
 
+        // Unpack default condition
+        cArr.push(telemetryObject.condDefault.split(","));
+
+        console.log('cArr', cArr);
         return cArr;
     }
 }
 
 function createConditionFromArr(name, isDefault, arr) {
-    /* arr:
-    0: desc
+    /*
+    arr indexes:
+    0: output string
     1: bgColor
     2: fgColor
-    3: trigger [any | all]
-    4: operation (between, greaterThan, etc.)
-    5: input (value | ###,###)
-    6: metadata ('' | 'sin')
-    */
+    3: trigger
+    4: operation
+    5: input value 1 (OPTIONAL)
+    6: input value 2 (OPTIONAL)
+     */
+
+
+    const numericOps = [
+        'equalTo',
+        'greaterThan',
+        'lessThan',
+        'greaterThanOrEq',
+        'lessThanOrEq',
+        'between',
+        'notBetween',
+        'enumValueIs',
+        'enumValueIsNot'
+    ]
+    const operation = arr[4];
+    let arrInput = [];
+
+    if (numericOps.includes(operation)) {
+        arrInput = arr.length > 6 ? [
+            parseFloat(arr[5]),
+            parseFloat(arr[6])
+        ] : [parseFloat(arr[5])];
+
+    } else if (arr.length > 5) {
+        arrInput = [arr[5]];
+    } else {
+        arrInput = [];
+    }
+
     let o = {};
     o.isDefault = isDefault;
     o.id = createUUID();
@@ -63,8 +96,10 @@ function createConditionFromArr(name, isDefault, arr) {
     c.name = name;
     c.output = arr[0];
     c.trigger = (!isDefault) ? arr[3] : 'all';
-    c.criteria = (!isDefault) ? [createConditionCriteria(arr[4], arr[5], arr[6])] : [];
+    c.criteria = (!isDefault) ? [createConditionCriteria(operation, arrInput)] : [];
     c.summary = c.name + ' was scripted';
+
+    // console.log('createConditionFromArr', o);
 
     return o;
 }
@@ -86,7 +121,7 @@ function createConditionFromObj(argsObj) {
     return o;
 }
 
-function createConditionCriteria(operation, input, metadata) {
+function createConditionCriteria(operation, input) {
     let o = {};
     isNumericOp = function(operation) {
         const arrNumericOperations = [
