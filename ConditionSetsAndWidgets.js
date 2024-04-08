@@ -1,11 +1,14 @@
 // CONDITION SETS AND CONDITIONS
 const ConditionSet = function (telemetryObject) {
-    Obj.call(this, 'CS ' + telemetryObject.name, 'conditionSet', true);
+    Obj.call(this, telemetryObject.name, 'conditionSet', true);
     this.configuration = {};
     this.configuration.conditionTestData = [];
     this.configuration.conditionCollection = [];
 
-    this.composition.push(createIdentifier(telemetryObject.dataSource, 'taxonomy'));
+    this.composition.push(createIdentifier(
+        telemetryObject.dataSource,
+        telemetryObject.dataSource.includes('~')? 'taxonomy' : ''
+    ));
 
     this.addConditions = function (telemetryObject, conditionsArr) {
         for (let i = 0; i < conditionsArr.length - 1; i++) {
@@ -42,7 +45,6 @@ const ConditionSet = function (telemetryObject) {
         // Unpack default condition
         cArr.push(telemetryObject.condDefault.split(","));
 
-        console.log('cArr', cArr);
         return cArr;
     }
 }
