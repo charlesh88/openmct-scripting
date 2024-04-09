@@ -22,10 +22,6 @@ const navArray = [
     {
         "name": "Find / Replace",
         "pathname": "index-find-replace.html"
-    },
-    {
-        "name": "Legacy",
-        "pathname": "index-legacy-displays.html"
     }
 ];
 
