@@ -90,8 +90,8 @@ function parseCSVTelemetry(csv) {
         if (telemetryObject.cond1.length > 0) {
             let cs = new ConditionSet(telemetryObject);
 
-            const conditionsArr = cs.conditionsToArr(telemetryObject);
-            cs.addConditions(telemetryObject, conditionsArr);
+            const conditionsObjArr = cs.conditionsToObjArr(telemetryObject);
+            cs.addConditionsFromObjArr(conditionsObjArr);
 
             telemetryObjects[curIndex].csKey = cs.identifier.key;
             telemetryObjects[curIndex].cs = cs;

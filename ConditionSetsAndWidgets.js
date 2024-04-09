@@ -7,50 +7,52 @@ const ConditionSet = function (telemetryObject) {
 
     this.composition.push(createIdentifier(
         telemetryObject.dataSource,
-        telemetryObject.dataSource.includes('~')? 'taxonomy' : ''
+        telemetryObject.dataSource.includes('~') ? 'taxonomy' : ''
     ));
 
-    this.addConditions = function (telemetryObject, conditionsArr) {
-        for (let i = 0; i < conditionsArr.length - 1; i++) {
-            this.configuration.conditionCollection.push(createConditionFromArr(
-                'Condition ' + i.toString(),
-                false,
-                conditionsArr[i]
+    this.addConditionsFromObjArr = function(conditionsObjArr) {
+        // Counts on the last condition in conditionsObjArr to be the default
+        for (let i = 0; i < conditionsObjArr.length; i++) {
+            conditionsObjArr.conditionName = 'Condition '.concat(i.toString());
+            this.configuration.conditionCollection.push(createConditionFromObj(
+                conditionsObjArr[i]
             ));
         }
-
-        // Default condition, will be last
-        this.configuration.conditionCollection.push(createConditionFromArr(
-            'Default',
-            true,
-            conditionsArr[conditionsArr.length - 1]
-        ));
     }
 
-    this.conditionsToArr = function (telemetryObject) {
+    this.conditionsToObjArr = function(telemetryObject) {
         const totalConditions = 10;
-        // console.log('telemetryObject',telemetryObject);
-        let cArr = [];
+        let condObjArr = [];
 
         // Unpack conditions 1 - 10
         // Output string, bg, fg, criteria, value
         for (let i = 1; i < totalConditions; i++) {
-            const cCond = telemetryObject['cond' + i.toString()];
-            if (cCond && cCond.length > 0) {
-                console.log('cCond', cCond);
-                cArr.push(cCond.split(","));
+            const condStr = telemetryObject['cond' + i.toString()];
+
+            if (condStr && condStr.length > 0) {
+                // console.log('condStr', condStr);
+                condObjArr.push(conditionStrToObj(condStr));
             }
         }
 
         // Unpack default condition
-        cArr.push(telemetryObject.condDefault.split(","));
+        condObjArr.push(conditionStrToObj(telemetryObject.condDefault));
+        // console.log('conditionsToObjArr',telemetryObject, condObjArr);
 
-        return cArr;
+        return condObjArr;
     }
 }
 
-function createConditionFromArr(name, isDefault, arr) {
+/***************************************** UNPACKING CSV CONDITION DEFINITIONS */
+function conditionStrToObj(condStr) {
     /*
+    Used by csv-to-matrix.
+
+    condStr like:
+    -,#444444,#ffffff
+    NOM,#009900,#ffffff,any,isUndefined
+    NOM,#009900,#ffffff,any,between,-10, 10
+
     arr indexes:
     0: output string
     1: bgColor
@@ -60,53 +62,35 @@ function createConditionFromArr(name, isDefault, arr) {
     5: input value 1 (OPTIONAL)
     6: input value 2 (OPTIONAL)
      */
-
-
-    const numericOps = [
-        'equalTo',
-        'greaterThan',
-        'lessThan',
-        'greaterThanOrEq',
-        'lessThanOrEq',
-        'between',
-        'notBetween',
-        'enumValueIs',
-        'enumValueIsNot'
-    ]
-    const operation = arr[4];
-    let arrInput = [];
-
-    if (numericOps.includes(operation)) {
-        arrInput = arr.length > 6 ? [
-            parseFloat(arr[5]),
-            parseFloat(arr[6])
-        ] : [parseFloat(arr[5])];
-
-    } else if (arr.length > 5) {
-        arrInput = [arr[5]];
-    } else {
-        arrInput = [];
+    const condArr = condStr.split(',');
+    let inputStr = '';
+    let condObj = {
+        'isDefault': true,
+        'output': condArr[0],
+        'bgColor': condArr[1],
+        'fgColor': condArr[2]
+    }
+    if (condArr.length > 3) {
+        condObj.isDefault = false;
+        condObj.trigger = condArr[3];
+        condObj.operation = condArr[4];
+        condObj.inputArr = [];
+    }
+    if (condArr.length > 5) {
+        // There are input(s). Make into a string and add as a string
+        condObj.input = condArr[5]
+            .concat(condArr.length > 6? ','.concat(condArr[6]) : '');
     }
 
-    let o = {};
-    o.isDefault = isDefault;
-    o.id = createUUID();
-    o.bgColor = arr[1];
-    o.fgColor = arr[2];
-
-    let c = o.configuration = {};
-    c.name = name;
-    c.output = arr[0];
-    c.trigger = (!isDefault) ? arr[3] : 'all';
-    c.criteria = (!isDefault) ? [createConditionCriteria(operation, arrInput)] : [];
-    c.summary = c.name + ' was scripted';
-
-    // console.log('createConditionFromArr', o);
-
-    return o;
+    return condObj;
 }
 
+/***************************************** CONDITION OBJECT CREATION AND STRUCTURE */
 function createConditionFromObj(argsObj) {
+    /*
+    Used by csv-conditional-graphics AND csv-to-matrix.
+    */
+
     let o = {};
     o.isDefault = argsObj.isDefault ? argsObj.isDefault : false;
     o.id = argsObj.id ? argsObj.id : createUUID();
@@ -116,73 +100,62 @@ function createConditionFromObj(argsObj) {
     let c = o.configuration = {};
     c.name = argsObj.name ? argsObj.name : 'Unnamed Condition';
     c.output = argsObj.output ? argsObj.output : '';
-    c.trigger = argsObj.outptriggerut ? argsObj.trigger : 'all';
+    c.trigger = argsObj.trigger ? argsObj.trigger : 'all';
+
+    argsObj.inputArr = conditionInputStrToArr(argsObj.operation, argsObj.input);
     c.criteria = (!argsObj.isDefault) ? [createConditionCriteriaFromObj(argsObj)] : [];
     c.summary = c.name + ' was scripted';
 
     return o;
 }
 
-function createConditionCriteria(operation, input) {
-    let o = {};
-    isNumericOp = function(operation) {
-        const arrNumericOperations = [
-                'than',
-                'equal',
-                'between',
-                'enumvalue'
-            ];
-        return arrNumericOperations.includes(operation.toLowerCase());
-    }
-
-    let arrInput = [];
-
-    if (input.includes(',')) {
-        arrInput = input.split(',').map(num => parseFloat(num));
-    } else if (isNumericOp(operation)) {
-        arrInput.push(parseFloat(input));
+function conditionInputStrToArr(operation, inputStr) {
+    // Expect .operation and .input, like "10" or "-10,10"
+    let inputArr = [];
+    if (!inputStr) { return inputArr; }
+    if (isNumericConditionOperation(operation)) {
+        // Convert to numbers
+        if (inputStr.includes(',')) {
+            const strArr = inputStr.split(',');
+            inputArr[0] = parseFloat(strArr[0]);
+            inputArr[1] = parseFloat(strArr[1]);
+        } else {
+            inputArr[0] = parseFloat(inputStr);
+        }
     } else {
-        arrInput.push(input);
+        // Set as an array with a string
+        inputArr = [inputStr];
     }
-
-    o.id = createUUID();
-    o.telemetry = 'any';
-    o.operation = operation;
-    o.input = arrInput;
-    o.metadata = metadata ? metadata : 'value';
-
-    return o;
+    return inputArr;
 }
 
-function createConditionCriteriaFromObj(argsObj, operation, input, metadata) {
+function createConditionCriteriaFromObj(argsObj) {
     let o = {};
-    isNumericOp = function(op) {
-        const arrNumericOperations = [
-            'than',
-            'equal',
-            'between',
-            'enumvalue'
-        ];
-        return arrNumericOperations.includes(op.toLowerCase());
-    }
-
-    let arrInput = [];
-
-    if (argsObj.input.includes(',')) {
-        arrInput = argsObj.input.split(',').map(num => parseFloat(num));
-    } else if (isNumericOp(argsObj.operation)) {
-        arrInput.push(parseFloat(argsObj.input));
-    } else {
-        arrInput.push(argsObj.input);
-    }
+    // console.log('createConditionCriteriaFromObj', argsObj);
 
     o.id = createUUID();
     o.telemetry = 'any';
     o.operation = argsObj.operation;
-    o.input = arrInput;
+    o.input = argsObj.inputArr;
     o.metadata = argsObj.metadata ? argsObj.metadata : 'value';
 
     return o;
+}
+
+/***************************************** UTILITY */
+function isNumericConditionOperation(op) {
+    const arrNumericOperations = [
+        'equalTo',
+        'greaterThan',
+        'lessThan',
+        'greaterThanOrEq',
+        'lessThanOrEq',
+        'between',
+        'notBetween',
+        'enumValueIs',
+        'enumValueIsNot'
+    ];
+    return arrNumericOperations.includes(op);
 }
 
 // CONDITION WIDGETS

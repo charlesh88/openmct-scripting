@@ -49,7 +49,7 @@ function parseCSVTelemetry(csv) {
         datasSource: full path to datasource, SWG object or SWG name reference
         idDefault: is this condition a default, boolean
         operator: equalTo, notEqualTo, between, etc.
-        input: either single string or number, or comma-sepped same
+        input: either single string or number, or comma-sepped numbers
         output: output string for a given Condition
         bgColor
         fgColor
@@ -91,6 +91,8 @@ function parseCSVTelemetry(csv) {
         let addDataSourceToConditionSet = false;
 
         rowObj.url = rowObj.imageUrl.replaceAll('~', '/');
+        rowObj.conditionStr = rowObj.output.concat(',')
+            .concat(rowObj.bgColor).concat(',')
 
         /***************************** IMAGE VIEW */
         if (Object.keys(imageViewObjs).includes(rowObj.imageViewName)) {
@@ -199,9 +201,9 @@ function parseCSVTelemetry(csv) {
             dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
         }
     }
-    console.log('rowObjs', rowObjs);
-    console.log('imageViewObjs', imageViewObjs);
-    console.log('dataSources', dataSources);
+    // console.log('rowObjs', rowObjs);
+    // console.log('imageViewObjs', imageViewObjs);
+    // console.log('dataSources', dataSources);
 
     outputJSON();
 }

@@ -113,6 +113,7 @@ function csvToObjArray(str) {
 
 /************************************************* OUTPUTS AND DOWNLOADING */
 function outputJSON() {
+    console.log('outputJSON', objJson);
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
     outputStatsDisplay.innerHTML =

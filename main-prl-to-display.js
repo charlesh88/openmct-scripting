@@ -86,8 +86,6 @@ processInputPrls = function (prlFilenames, prlContentArr) {
         }
     }
 
-    // console.log(globalArrUniquePaths);
-
     outputJSON();
 }
 
