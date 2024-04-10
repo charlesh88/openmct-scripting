@@ -101,13 +101,12 @@ function parseCSVTelemetry(csv) {
                 telemetryObjects[curIndex].alphaObjStyles = [];
 
                 for (const cond of cs.configuration.conditionCollection) {
-                    const args = {
+                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj({
                         border: ALPHA_BORDER,
                         bgColor: cond.bgColor,
                         fgColor: cond.fgColor,
-                        id: cond.id
-                    }
-                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj(args));
+                        conditionId: cond.id
+                    }));
                 }
             }
 
