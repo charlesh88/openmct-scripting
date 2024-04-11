@@ -30,14 +30,12 @@ const ConditionSet = function (telemetryObject) {
             const condStr = telemetryObject['cond' + i.toString()];
 
             if (condStr && condStr.length > 0) {
-                // console.log('condStr', condStr);
                 condObjArr.push(conditionStrToObj(condStr));
             }
         }
 
         // Unpack default condition
         condObjArr.push(conditionStrToObj(telemetryObject.condDefault));
-        // console.log('conditionsToObjArr',telemetryObject, condObjArr);
 
         return condObjArr;
     }
