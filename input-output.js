@@ -93,7 +93,7 @@ function csvToArray(str, delimiter = ',') {
             return valuesArrFormatted;
         }
     })
-    console.log('arrLinesCleaned',arrLinesCleaned);
+    // console.log('arrLinesCleaned',arrLinesCleaned);
     return arrLinesCleaned;
 }
 
