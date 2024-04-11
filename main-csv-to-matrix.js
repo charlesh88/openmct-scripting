@@ -203,7 +203,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
                 let linkArg = extractArg(cellArgsArr, '_link');
                 if (linkArg) {
-                    cellArgsObj.url = linkArg.replaceAll('~', '/');
+                    cellArgsObj.url = linkArg;
                 }
             }
 
