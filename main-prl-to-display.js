@@ -86,8 +86,6 @@ processInputPrls = function (prlFilenames, prlContentArr) {
         }
     }
 
-    // console.log(globalArrUniquePaths);
-
     outputJSON();
 }
 
@@ -116,7 +114,6 @@ prlToDisplay = function (prlFilename, prlContents) {
 
         const longestLabel = findLongestLabel(prlObjects);
         const labelWidth = labelWidthFromChars(parseInt(config.layoutGrid[0]), longestLabel);
-        // console.log(longestLabel);
 
         for (const prlObject of prlObjects) {
             const curIndex = prlObjects.indexOf(prlObject);
@@ -170,8 +167,6 @@ prlToDisplay = function (prlFilename, prlContents) {
         responseObj.display_layout = procDisplayLayout;
         responseObj.stacked_plot = procStackedPlot;
     }
-
-    // console.log(procName + ' responseObj', responseObj);
 
     return responseObj;
 }
@@ -247,13 +242,11 @@ extractFromPrl = function (str) {
         }*/
     }
 
-    // console.log('extractFromPrl arrStepsAndTelem', arrStepsAndTelem);
     return arrStepsAndTelem;
 }
 
 extractTelemFromDataReferences = function (arrToIterate, arrUniquePathsForStep) {
     for (let i = 0; i < arrToIterate.length; i++) {
-        // console.log(arrToIterate[i], arrToIterate[i].getElementsByTagName("prl:Description"));
         let description = '', identifier = ''; //
 
         if (arrToIterate[i].getElementsByTagName("prl:Description")[0]) {

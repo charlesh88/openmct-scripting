@@ -82,7 +82,6 @@ replaceStrings = function() {
     let replaceCnt = 0;
 
     addStat("replace-stats", "Replace table has " + replaceTable.length + " rows", true);
-    // console.log(replaceTable[0].Find);
 
     if (inputFileText && inputFileText.length > 0) {
         // Do replacements

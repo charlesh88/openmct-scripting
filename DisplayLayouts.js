@@ -8,6 +8,11 @@ function initWidgetsItemPlacementTracker() {
     widgetsItemPlacementTracker.shiftIndex = 0;
 }
 
+function displayLayoutConvertPxToGridUnits(gridUnit, px) {
+    // Expects all args to be numbers
+    return Math.round(px / gridUnit);
+}
+
 // DISPLAY LAYOUT
 const DisplayLayout = function (args) {
     Obj.call(this, args.name, 'layout', true);
@@ -124,6 +129,22 @@ const DisplayLayout = function (args) {
             this.configuration.objectStyles[subObj.id].styles = [];
         }
         this.configuration.items.push(subObj);
+    }
+
+    this.addImageView = function (args) {
+        const subObj = this.createBaseItem(args);
+        subObj.x = args.x;
+        subObj.y = args.y;
+        subObj.width = args.width;
+        subObj.height = args.height;
+        subObj.url = args.url;
+        subObj.type = 'image-view';
+        this.configuration.objectStyles[subObj.id] = {};
+        this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj(args);
+        this.configuration.objectStyles[subObj.id].styles = [];
+        this.configuration.items.push(subObj);
+
+        return subObj;
     }
 
     this.addTelemetryView = function (args) {

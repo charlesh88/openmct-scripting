@@ -31,8 +31,6 @@ extractTelemFromPrlDataReferences = function (prlNodesArr) {
         }
     }
 
-    // console.log('extractTelemFromPrlDataReferences', telemArrOut);
-
     return telemArrOut;
 }
 
@@ -57,8 +55,6 @@ extractTelemFromPrlDataNomenclature = function (prlNodesArr) {
             }
         }
     }
-
-    // console.log('extractTelemFromPrlDataNomenclature', telemArrOut);
 
     return telemArrOut;
 }

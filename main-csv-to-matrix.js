@@ -90,8 +90,8 @@ function parseCSVTelemetry(csv) {
         if (telemetryObject.cond1.length > 0) {
             let cs = new ConditionSet(telemetryObject);
 
-            const conditionsArr = cs.conditionsToArr(telemetryObject);
-            cs.addConditions(telemetryObject, conditionsArr);
+            const conditionsObjArr = cs.conditionsToObjArr(telemetryObject);
+            cs.addConditionsFromObjArr(conditionsObjArr);
 
             telemetryObjects[curIndex].csKey = cs.identifier.key;
             telemetryObjects[curIndex].cs = cs;
@@ -101,13 +101,12 @@ function parseCSVTelemetry(csv) {
                 telemetryObjects[curIndex].alphaObjStyles = [];
 
                 for (const cond of cs.configuration.conditionCollection) {
-                    const args = {
+                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj({
                         border: ALPHA_BORDER,
                         bgColor: cond.bgColor,
                         fgColor: cond.fgColor,
-                        id: cond.id
-                    }
-                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj(args));
+                        conditionId: cond.id
+                    }));
                 }
             }
 
@@ -204,7 +203,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
                 let linkArg = extractArg(cellArgsArr, '_link');
                 if (linkArg) {
-                    cellArgsObj.url = linkArg.replaceAll('~', '/');
+                    cellArgsObj.url = linkArg;
                 }
             }
 

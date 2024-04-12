@@ -65,15 +65,13 @@ function csvToArray(str, delimiter = ',') {
     // Break the csv into rows
     const arrLines = str.split(/\r?\n/).filter((row) => row.length > 0);
 
-    const arrCleaned = arrLines.map(function (row) {
-        // Convert escaped characters like commas, backslashes and tildes
+    const arrLinesCleaned = arrLines.map(function (row) {
         let valuesStr = row
-            .replaceAll('\\,', ESC_CHARS.escComma)
-            .replaceAll('\\~', ESC_CHARS.tilde)
-            .replaceAll('\\/', ESC_CHARS.backslash);
+            .replaceAll('\\,', ESC_CHARS.escComma)// Encode all escaped commas so they don't drive array splits
+            .replaceAll('""',ESC_CHARS.doublequotes); // Escape double-double quotes
 
         valuesStr = valuesStr.replace(/"[^"]+"/g, function (v) {
-            // Isolate strings within double-quote blocks and encode all commas in there
+            // Isolate strings within double-quote blocks and encode all vanilla commas in there
             return v.replaceAll(',', ESC_CHARS.comma);
         })
 
@@ -81,19 +79,22 @@ function csvToArray(str, delimiter = ',') {
 
         if (valuesArr.length > 0) {
             const valuesArrFormatted = valuesArr.map(function (value) {
+                // Specifically target fields that begin with '/' and treat as telem end point paths, replace all / with ~
+                value = (value.startsWith('/') || value.startsWith('"/'))?
+                    value.replaceAll('/', '~') : value;
                 return value
-                    .replaceAll('\"', '') // Kill double-quotes
-                    .replaceAll(ESC_CHARS.comma, ',') // Restore separator commas
-                    .replaceAll('/', '~'); // Convert any path / to ~
+                    .replaceAll('\\~', ESC_CHARS.tilde) // Escape escaped tildes. These get restored later.
+                    .replaceAll('\\/', ESC_CHARS.backslash) // Escape escaped slashes. These get restored later.
+                    .replaceAll('\"', '') // Kill all remaining double-quotes.
+                    .replaceAll(ESC_CHARS.comma, ',') // Restore escaped "vanilla" commas.
+                    .replaceAll(ESC_CHARS.doublequotes, '\"'); // Restore escaped double-double quotes.
             })
 
             return valuesArrFormatted;
         }
     })
-
-    // console.log('csvToArray', arrCleaned);
-
-    return arrCleaned;
+    // console.log('arrLinesCleaned',arrLinesCleaned);
+    return arrLinesCleaned;
 }
 
 function csvToObjArray(str) {
@@ -113,6 +114,7 @@ function csvToObjArray(str) {
 
 /************************************************* OUTPUTS AND DOWNLOADING */
 function outputJSON() {
+    console.log('outputJSON', objJson);
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
     outputStatsDisplay.innerHTML =
@@ -169,7 +171,6 @@ function outputMsgAdd(str) {
 }
 
 function outputTable(rowArray = [], startTable = false, endTable = false) {
-    // console.log('rA', rowArray, rowArray.length);
     if (startTable) {
         outputMsgAdd('<table>');
     }
@@ -237,12 +238,10 @@ function htmlGridFromArray(arr) {
 
 /************************************************* LOCAL STORAGE */
 function storeLocal(key, value) {
-    // console.log('storeLocal', key, value);
     window.localStorage.setItem(key, value);
 }
 
 function loadLocal(key) {
-    // console.log('loadLocal', key);
     return window.localStorage.getItem(key);
 }
 
