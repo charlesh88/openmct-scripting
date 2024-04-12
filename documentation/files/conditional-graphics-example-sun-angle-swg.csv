@@ -1,0 +1,26 @@
+imageViewName,dataSource,isDefault,operation,input,name,output,bgColor,fgColor,border,imageUrl
+RoverBase,,,,,,,,,,https://example.server/images/SunAngle_2/RoverBase.png
+Sun Angle,"{""Scripted SWG"": {""metadata"": ""sin"", ""period"": 20, ""amplitude"": 180, ""offset"": 180, ""dataRateInHz"": 5,""randomness"": 0}}",,between,"0,15",SunAngle_0,SunAngle_0,,,,https://example.server/images/SunAngle_2/SunAngle_0.png
+Sun Angle,Scripted SWG,,between,"15,30",SunAngle_15,SunAngle_15,,,,https://example.server/images/SunAngle_2/SunAngle_15.png
+Sun Angle,Scripted SWG,,between,"30,45",SunAngle_30,SunAngle_30,,,,https://example.server/images/SunAngle_2/SunAngle_30.png
+Sun Angle,Scripted SWG,,between,"45,60",SunAngle_45,SunAngle_45,,,,https://example.server/images/SunAngle_2/SunAngle_45.png
+Sun Angle,Scripted SWG,,between,"60,75",SunAngle_60,SunAngle_60,,,,https://example.server/images/SunAngle_2/SunAngle_60.png
+Sun Angle,Scripted SWG,,between,"75,90",SunAngle_75,SunAngle_75,,,,https://example.server/images/SunAngle_2/SunAngle_75.png
+Sun Angle,Scripted SWG,,between,"90,105",SunAngle_90,SunAngle_90,,,,https://example.server/images/SunAngle_2/SunAngle_90.png
+Sun Angle,Scripted SWG,,between,"105,120",SunAngle_105,SunAngle_105,,,,https://example.server/images/SunAngle_2/SunAngle_105.png
+Sun Angle,Scripted SWG,,between,"120,135",SunAngle_120,SunAngle_120,,,,https://example.server/images/SunAngle_2/SunAngle_120.png
+Sun Angle,Scripted SWG,,between,"135,150",SunAngle_135,SunAngle_135,,,,https://example.server/images/SunAngle_2/SunAngle_135.png
+Sun Angle,Scripted SWG,,between,"150,165",SunAngle_150,SunAngle_150,,,,https://example.server/images/SunAngle_2/SunAngle_150.png
+Sun Angle,Scripted SWG,,between,"165,180",SunAngle_165,SunAngle_165,,,,https://example.server/images/SunAngle_2/SunAngle_165.png
+Sun Angle,Scripted SWG,,between,"180,195",SunAngle_180,SunAngle_180,,,,https://example.server/images/SunAngle_2/SunAngle_180.png
+Sun Angle,Scripted SWG,,between,"195,210",SunAngle_195,SunAngle_195,,,,https://example.server/images/SunAngle_2/SunAngle_195.png
+Sun Angle,Scripted SWG,,between,"210,225",SunAngle_210,SunAngle_210,,,,https://example.server/images/SunAngle_2/SunAngle_210.png
+Sun Angle,Scripted SWG,,between,"225,240",SunAngle_225,SunAngle_225,,,,https://example.server/images/SunAngle_2/SunAngle_225.png
+Sun Angle,Scripted SWG,,between,"240,255",SunAngle_240,SunAngle_240,,,,https://example.server/images/SunAngle_2/SunAngle_240.png
+Sun Angle,Scripted SWG,,between,"255,270",SunAngle_255,SunAngle_255,,,,https://example.server/images/SunAngle_2/SunAngle_255.png
+Sun Angle,Scripted SWG,,between,"270,285",SunAngle_270,SunAngle_270,,,,https://example.server/images/SunAngle_2/SunAngle_270.png
+Sun Angle,Scripted SWG,,between,"285,300",SunAngle_285,SunAngle_285,,,,https://example.server/images/SunAngle_2/SunAngle_285.png
+Sun Angle,Scripted SWG,,between,"300,315",SunAngle_300,SunAngle_300,,,,https://example.server/images/SunAngle_2/SunAngle_300.png
+Sun Angle,Scripted SWG,,between,"315,330",SunAngle_315,SunAngle_315,,,,https://example.server/images/SunAngle_2/SunAngle_315.png
+Sun Angle,Scripted SWG,,between,"330,345",SunAngle_330,SunAngle_330,,,,https://example.server/images/SunAngle_2/SunAngle_330.png
+Sun Angle,Scripted SWG,,between,"345,360",SunAngle_345,SunAngle_345,,,,https://example.server/images/SunAngle_2/SunAngle_345.png
