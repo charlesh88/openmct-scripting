@@ -40,19 +40,22 @@ extractTelemFromPrlDataNomenclature = function (prlNodesArr) {
     for (let i = 0; i < prlNodesArr.length; i++) {
         let path = prlNodesArr[i].textContent;
 
-        // Sometimes this node contains a useful path to telem, like this:
-        // Current uplink rate, in SPS, from /ViperRover/RadIo/rxDemodulation
         if (validatePath(path) && path.includes('/')) {
+            // Sometimes this node contains a useful path to telem, like this:
+            // Current uplink rate, in SPS, from /Spacesystem/Subsystem/endPoint
             path = path.substring(path.indexOf('/'), path.length);
             if (path.includes(' ')) {
                 path = path.substring(0, path.indexOf(' '));
             }
 
             path = strClean(path);
+        } else if (path.includes('[')) {
+            // Sometimes paths are just a subsystem in [] and an end point, like [Subsystem] endPoint
+            path = strClean(path);
+        }
 
-            if (path.length > 0) {
-                telemArrOut.push(path);
-            }
+        if (path.length > 0) {
+            telemArrOut.push(path);
         }
     }
 
