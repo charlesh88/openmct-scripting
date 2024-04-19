@@ -69,7 +69,6 @@ extractTelemFromPrlDataNomenclature = function (prlNodesArr) {
     return telemArrOut;
 }
 
-
 extractTelemFromPrlVerifications = function (arrToIterate, filename, boolFilterParams) {
     // OLD, NOT USED: NEEDS UPDATING FOR APPROACH AS ABOVE
     // arrToIterate is an array of the following

@@ -60,11 +60,9 @@ function restoreEscChars(str) {
 
 function labelWidthFromChars(pxScale, charCnt) {
     // Calcs a label width to a scale from a character count
-    const pxPerChar = 14;
+    const pxPerChar = 16;
     const retinaScanAdj = 0.5;
-    const width = Math.ceil(((pxPerChar * retinaScanAdj) / pxScale) * charCnt);
-
-    return width;
+    return Math.ceil(((pxPerChar * retinaScanAdj) / pxScale) * charCnt);
 }
 
 function strClean(str) {
@@ -76,9 +74,7 @@ function escForCsv(str) {
     let o = '"'.concat(str.replace(/,/g, ';;').replace(/"/g, '""')).concat('"');
 
     // Restore commas
-    o = o.replace(/;;/g, ',');
-
-    return o;
+    return o.replace(/;;/g, ',');
 }
 
 function getCurrentTimeEpoch() {
