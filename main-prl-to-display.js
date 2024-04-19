@@ -180,10 +180,10 @@ extractFromPrl = function (str) {
         // COMPILE TELEM FOR A GIVEN STEP
         const arrDataReferences = steps[s].getElementsByTagName("prl:DataReference");
         const arrDataNomenclature = steps[s].getElementsByTagName("prl:DataNomenclature");
+        const arrVerifyGoals = steps[s].getElementsByTagName("prl:VerifyGoal");
         // const arrVerifications = steps[s].getElementsByTagName("prl:VerifyGoal");
         const nodeStepTitle = steps[s].getElementsByTagName("prl:StepTitle")[0];
-        // const strStepLabel = 'STEP '
-        //     .concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent);
+        console.log('extractFromPrl',nodeStepTitle,arrDataNomenclature,arrDataReferences);
 
         let arrUniquePathsForStep = [];
 
@@ -198,6 +198,15 @@ extractFromPrl = function (str) {
 
         if (arrDataNomenclature && arrDataNomenclature.length > 0) {
             const arrPaths = extractTelemFromPrlDataNomenclature(arrDataNomenclature);
+            for (let i = 0; i < arrPaths.length; i++) {
+                if (!arrUniquePathsForStep.includes(arrPaths[i])) {
+                    arrUniquePathsForStep.push(arrPaths[i]);
+                }
+            }
+        }
+
+        if (arrVerifyGoals && arrVerifyGoals.length > 0) {
+            const arrPaths = extractTelemFromPrlVerifications(arrVerifyGoals);
             for (let i = 0; i < arrPaths.length; i++) {
                 if (!arrUniquePathsForStep.includes(arrPaths[i])) {
                     arrUniquePathsForStep.push(arrPaths[i]);

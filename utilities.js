@@ -69,14 +69,6 @@ function strClean(str) {
     return str.replaceAll('\n', '');
 }
 
-function escForCsv(str) {
-    // Change all commas; change double-quotes to double-double-quotes
-    let o = '"'.concat(str.replace(/,/g, ';;').replace(/"/g, '""')).concat('"');
-
-    // Restore commas
-    return o.replace(/;;/g, ',');
-}
-
 function getCurrentTimeEpoch() {
     return Math.floor(Date.now() / 1000); // Convert milliseconds to seconds
 }
