@@ -1,5 +1,5 @@
 
-const APP_VERSION = '3.10';
+const APP_VERSION = '3.11';
 const LOCALSTORE_BASE_NAME = 'OPENMCT_SCRIPTING';
 const ESC_CHARS = {
     'comma': '$C',
