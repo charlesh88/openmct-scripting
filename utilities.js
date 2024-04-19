@@ -68,18 +68,7 @@ function labelWidthFromChars(pxScale, charCnt) {
 }
 
 function strClean(str) {
-    let oStr = '';
-    oStr = str.replaceAll('\n', '');
-    return oStr;
-}
-
-function validatePath(path) {
-    for (let i = 0; i < VALID_PATH.length; i++) {
-        if (path.includes(VALID_PATH[i])) {
-            return true;
-        }
-    }
-    return false;
+    return str.replaceAll('\n', '');
 }
 
 function escForCsv(str) {

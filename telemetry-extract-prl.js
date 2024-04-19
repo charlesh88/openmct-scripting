@@ -1,3 +1,10 @@
+const VALID_TELEM_PATH = [
+    'Viper',
+    'yamcs'
+];
+
+const BRACKET_PATH_ROOT = 'ViperRover';
+
 extractTelemFromPrlDataReferences = function (prlNodesArr) {
     let telemArrOut = [];
 
@@ -51,7 +58,7 @@ extractTelemFromPrlDataNomenclature = function (prlNodesArr) {
             path = strClean(path);
         } else if (path.includes('[')) {
             // Sometimes paths are just a subsystem in [] and an end point, like [Subsystem] endPoint
-            path = strClean(path);
+            path = strClean(convertPrideBracketPath(path));
         }
 
         if (path.length > 0) {
@@ -89,4 +96,18 @@ extractTelemFromPrlVerifications = function (arrToIterate, filename, boolFilterP
     }
 
     return telemCntr;
+}
+
+function validatePath(path) {
+    for (let i = 0; i < VALID_TELEM_PATH.length; i++) {
+        if (path.includes(VALID_TELEM_PATH[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function convertPrideBracketPath(path) {
+    // Converts paths like [Subsystem] parameterName
+    return path.replaceAll('[','/'+ BRACKET_PATH_ROOT + '/').replaceAll('] ','/');
 }
