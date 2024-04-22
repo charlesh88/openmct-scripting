@@ -23,8 +23,6 @@ function getConfigFromForm() {
     config.itemMargin = getFormNumericVal('itemMargin');
 
     config.dlAlphas = {};
-    // config.dlAlphas.layoutStrategy = document.getElementById('alphaLayoutStrategy').value;
-    // config.dlAlphas.layoutStrategyNum = getFormNumericVal('alphaLayoutStrategyNum');
     config.dlAlphas.itemW = getFormNumericVal('alphaLayoutItemWidth');
     config.dlAlphas.itemH = getFormNumericVal('alphaLayoutItemHeight');
 
@@ -135,7 +133,7 @@ prlToDisplay = function (prlFilename, prlContents) {
                     layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                     placeIndex: alphasItemPlacementTracker.placeIndex,
                     shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                    alphaFormat: prlObject.alphaFormat,
+                    alphaFormat: config.dlAlphas.alphaFormat,
                     alphaShowsUnit: prlObject.alphaShowsUnit
                 });
 
@@ -153,9 +151,7 @@ prlToDisplay = function (prlFilename, prlContents) {
                         layoutStrategy: config.dlAlphas.layoutStrategy,
                         layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                         placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                        alphaFormat: prlObject.alphaFormat,
-                        alphaShowsUnit: prlObject.alphaShowsUnit
+                        shiftIndex: alphasItemPlacementTracker.shiftIndex
                     }
                 )
             }
