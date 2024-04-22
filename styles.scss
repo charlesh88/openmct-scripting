@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
+
 body {
   background: #333;
   color: #999;
@@ -14,6 +15,7 @@ body > * + * {
 a {
   color: #ff8000;
 }
+
 
 div {
   box-sizing: border-box;
@@ -34,21 +36,26 @@ ol, ul {
   padding: 0 20px;
 }
 
-.--main h2, .--main h3 {
-  font-size: inherit;
-  text-transform: uppercase;
-}
-.--main h2 {
-  padding: 4px 6px;
-  margin: 2px 0;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  text-transform: uppercase;
-}
-.--main p {
-  display: block;
-  padding: 4px 6px;
+.--main {
+  h2, h3 {
+    font-size: inherit;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    padding: 4px 6px;
+    margin: 2px 0;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+  }
+
+  p {
+    display: block;
+    padding: 4px 6px;
+  }
+
 }
 
 .--sidebar {
@@ -70,8 +77,8 @@ h3 {
   font-weight: normal;
 }
 
-input[type=text],
-input[type=number],
+input[type="text"],
+input[type="number"],
 textarea,
 select,
 .output {
@@ -81,27 +88,27 @@ select,
   color: inherit;
 }
 
-input[type=text],
-input[type=number],
+input[type="text"],
+input[type="number"],
 textarea {
   background: #222;
   appearance: none;
   padding: 5px 10px;
 }
 
-input[type=text] {
+input[type="text"] {
   width: 200px;
 }
 
 button,
-input[type=file],
-input[type=submit] {
+input[type="file"],
+input[type="submit"] {
   cursor: pointer;
   width: max-content;
 }
 
 button,
-input[type=submit] {
+input[type="submit"] {
   background-color: #666;
 }
 
@@ -129,7 +136,7 @@ button,
   text-decoration: none;
 }
 
-button[class*="--minor"] {
+button[class*='--minor'] {
   background: #999;
 }
 
@@ -201,15 +208,15 @@ form {
   width: 75px;
 }
 
-[class*=-holder] {
+[class*='-holder'] {
   display: flex;
 }
 
-[class*=-holder] > * {
+[class*='-holder'] > * {
   flex: 1 1 50%;
 }
 
-[class*=-holder] > * + * {
+[class*='-holder'] > * + * {
   margin-left: 10px;
 }
 
@@ -248,16 +255,19 @@ form {
 .c-msg__grid {
   display: grid;
   gap: 1px;
-}
-.c-msg__grid div {
-  padding: 2px 4px;
-}
-.c-msg__grid div.bdy {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  overflow-wrap: anywhere;
-}
-.c-msg__grid div.hdr {
-  background-color: rgba(255, 255, 255, 0.1);
+
+  div {
+    padding: 2px 4px;
+  }
+
+  div.bdy {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    overflow-wrap: anywhere;
+  }
+
+  div.hdr {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .c-config {
@@ -282,7 +292,7 @@ form {
   display: flex;
 }
 
-.c-file-input input[type=file] {
+.c-file-input input[type="file"] {
   flex: 1 1 auto;
 }
 
@@ -357,38 +367,49 @@ form {
 }
 
 /*************************************** HELP */
-.--help h1, .--help h2, .--help h3, .--help h4 {
-  background: none !important;
-  color: white;
-  margin-bottom: 0.3em;
-}
-.--help h2 {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.5em;
-}
-.--help h2.feature-hdr {
-  text-transform: uppercase;
-}
-.--help h2, .--help h3 {
-  margin-top: 1em;
-}
-.--help h4 {
-  margin-top: 0.7em;
-}
-.--help table {
-  border-collapse: collapse;
-}
-.--help table td, .--help table th {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2px 4px;
-  text-align: left;
-}
-.--help table th {
-  background: rgba(255, 255, 255, 0.1);
-}
-.--help .screenshot {
-  width: 100%;
-  max-width: 1000px;
-}
+.--help {
+  $c: rgba(white, 0.1);
 
-/*# sourceMappingURL=styles.css.map */
+  h1, h2, h3, h4 {
+    background: none !important;
+    color: white;
+    margin-bottom: .3em;
+  }
+
+  h2 {
+    border-bottom: 1px solid $c;
+    padding-bottom: 0.5em;
+
+    &.feature-hdr {
+      text-transform: uppercase;
+    }
+  }
+
+  h2,h3 {
+    margin-top: 1em;
+  }
+
+  h4 {
+    margin-top: .7em;
+  }
+
+  table {
+    border-collapse: collapse;
+
+    td, th {
+      border: 1px solid $c;
+      padding: 2px 4px;
+      text-align: left;
+    }
+
+    th {
+      background: $c;
+    }
+  }
+
+  .screenshot {
+    width: 100%;
+    max-width: 1000px;
+  }
+
+}

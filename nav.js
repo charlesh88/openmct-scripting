@@ -22,6 +22,10 @@ const navArray = [
     {
         "name": "Find / Replace",
         "pathname": "index-find-replace.html"
+    },
+    {
+        "name": "Help",
+        "pathname": "index-help.html"
     }
 ];
 
