@@ -139,8 +139,10 @@ function parseCSVTelemetry(csv) {
                         'period': dataSourceObj.props.period,
                         'amplitude': dataSourceObj.props.amplitude,
                         'dataRateInHz': dataSourceObj.props.dataRateInHz,
-                        'offset': dataSourceObj.props.offset
+                        'offset': dataSourceObj.props.offset,
+                        'randomness': dataSourceObj.props.randomness
                     })
+
                     dataSourceObj.id = swgObj.identifier.key;
                     root.addJson(swgObj);
                     folderRoot.addToComposition(swgObj.identifier.key);
