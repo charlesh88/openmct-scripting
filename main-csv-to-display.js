@@ -222,7 +222,6 @@ function processInputCsv(csv) {
 }
 
 function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
-    // console.log('createOpenMCTMatrixLayoutJSONfromCSV\n', csv);
     csv = csv.replaceAll('\r', '');
     csv = csv.replace(/"[^"]+"/g, function (v) {
         // Encode all commas that are within double quote chunks with |
@@ -234,8 +233,6 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         const values = row.split(',');
         return values;
     });
-
-    // console.log('telemetryObjects', telemetryObjects);
 
     // Create a layout for the matrix and add it to the root folder
     let dlMatrix = new DisplayLayout({
@@ -295,7 +292,6 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 // Add widths from columns to be spanned to itemW
                 for (let i = c + 1; i < (c + spanNum); i++) {
                     itemW += parseInt(arrColWidths[i]) + config.itemMargin;
-                    // console.log('...incrementing itemW',itemW);
                 }
             }
 
@@ -348,8 +344,6 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     y: curY,
                     text: restoreEscChars(cell)
                 };
-
-                // console.log('args for', cell,'colW:',colW);
 
                 if (cellArgs && cellArgs.includes('_bg')) {
                     const start = cellArgs.indexOf('_bg');

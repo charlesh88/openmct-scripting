@@ -18,8 +18,6 @@ function getConfigFromForm() {
     const config = {};
 
     config.outputBaseName = document.getElementById('output-base-name').value;
-    config.layoutGrid = document.getElementById('layoutGrid').value.split(',');
-    config.itemMargin = getFormNumericVal('itemMargin');
 
     return config;
 }
@@ -77,16 +75,23 @@ function parseCSVTelemetry(csv) {
     folderRoot.addToComposition(folderConditionWidgets.identifier.key);
     folderConditionWidgets.setLocation(folderRoot);
 
+    // Create a LAD Table
+    let LadTable = new Obj('LAD Table', 'LadTable', true);
+    root.addJson(LadTable);
+    folderRoot.addToComposition(LadTable.identifier.key);
+    LadTable.setLocation(folderRoot);
+
     for (const telemetryObject of telemetryObjects) {
         const curIndex = telemetryObjects.indexOf(telemetryObject);
-        const isTelemetry = telemetryObject.dataSource.length > 0;
+
+        LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
 
         // Add conditionals
         if (telemetryObject.cond1.length > 0) {
             let cs = new ConditionSet(telemetryObject);
 
-            const conditionsArr = cs.conditionsToArr(telemetryObject);
-            cs.addConditions(telemetryObject, conditionsArr);
+            const conditionsObjArr = cs.conditionsToObjArr(telemetryObject);
+            cs.addConditionsFromObjArr(conditionsObjArr);
 
             telemetryObjects[curIndex].csKey = cs.identifier.key;
             telemetryObjects[curIndex].cs = cs;
@@ -96,13 +101,12 @@ function parseCSVTelemetry(csv) {
                 telemetryObjects[curIndex].alphaObjStyles = [];
 
                 for (const cond of cs.configuration.conditionCollection) {
-                    const args = {
+                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj({
                         border: ALPHA_BORDER,
                         bgColor: cond.bgColor,
                         fgColor: cond.fgColor,
-                        id: cond.id
-                    }
-                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj(args));
+                        conditionId: cond.id
+                    }));
                 }
             }
 
@@ -118,15 +122,6 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
     const rowArr = csvToArray(csv);
 
-    // Create a layout for the matrix and add it to the root folder
-    let dlMatrix = new DisplayLayout({
-        'name': 'DL Matrix',
-        'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
-        'itemMargin': config.itemMargin
-    });
-    root.addJson(dlMatrix);
-    folderRoot.addToComposition(dlMatrix.identifier.key);
-    dlMatrix.setLocation(folderRoot);
 
     // Create a folder to hold Hyperlinks and add it to the root folder
     let folderHyperlinks;
@@ -139,14 +134,36 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     }
 
     const arrColWidths = rowArr[0];
+    const arrGridMargin = arrColWidths[0].length > 0 ? arrColWidths[0].split(',') : [2, 2, 2];
+    const gridDimensions = [
+        parseInt(arrGridMargin[0]),
+        parseInt(arrGridMargin[1])
+    ];
+    const itemMargin = parseInt(arrGridMargin[2]);
+
+    // Create a layout for the matrix and add it to the root folder
+    let dlMatrix = new DisplayLayout({
+        'name': 'DL '.concat(config.outputBaseName),
+        'layoutGrid': gridDimensions,
+        'itemMargin': itemMargin
+    });
+    root.addJson(dlMatrix);
+    folderRoot.addToComposition(dlMatrix.identifier.key);
+    dlMatrix.setLocation(folderRoot);
+
+
     let curY = 0;
     let dlItem = {};
 
-    outputMsg('Matrix Layout started: '
+    outputMsg('Matrix layout started: '
         .concat(arrColWidths.length.toString())
         .concat(' columns and ')
         .concat(rowArr.length.toString())
-        .concat(' rows')
+        .concat(' rows;')
+        .concat(' grid dimensions: ')
+        .concat(gridDimensions.join(','))
+        .concat(' item margin: ')
+        .concat(itemMargin)
     );
 
     // Iterate through telemetry collection
@@ -180,13 +197,13 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     // Span includes the current column, c
                     // Add widths from columns to be spanned to itemW
                     for (let i = c + 1; i < (c + cellArgsObj.span); i++) {
-                        itemW += parseInt(arrColWidths[i]) + config.itemMargin;
+                        itemW += parseInt(arrColWidths[i]) + itemMargin;
                     }
                 }
 
                 let linkArg = extractArg(cellArgsArr, '_link');
                 if (linkArg) {
-                    cellArgsObj.url = linkArg.replaceAll('~', '/');
+                    cellArgsObj.url = linkArg;
                 }
             }
 
@@ -290,14 +307,14 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 }
             }
 
-            curX += colW + ((c > 1) ? config.itemMargin : 0);
+            curX += colW + itemMargin;
         }
 
-        curY += rowH + config.itemMargin;
+        curY += rowH + itemMargin;
     }
 
     outputJSON();
-    outputMsg('Matrix Layout generated');
+    outputMsg('Matrix layout generated');
 }
 
 function extractArg(arr, argKey) {
@@ -308,7 +325,7 @@ function extractArg(arr, argKey) {
 
     if (argStr) {
         return argStr
-            .substring(0,argStr.length - 1) // Get rid of last )
+            .substring(0, argStr.length - 1) // Get rid of last )
             .split('(')[1]
     }
 

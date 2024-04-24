@@ -1,0 +1,14 @@
+OverlayPlotName,DataSource,InterpolateMethod,ShowLimitLines,MarkerShape,MarkerSize
+Pipe Tracker States,/Spacesystem/Subsystem/nodeStates.PPE_TRK_HTRS.state,none,TRUE,diamond,3
+Pipe Tracker States,/Spacesystem/Subsystem/nodeStates.PPE_TRK_LCAP.state,none,TRUE,circle,4
+Pipe Tracker States,/Spacesystem/Subsystem/nodeStates.PPE_TRK_HTRS.mode,linear,,triangle,5
+KX Htms,/Spacesystem/Subsystem/nodeStates.Z1_K1_STBD_HTRS.state,,,,
+KX Htms,/Spacesystem/Subsystem/nodeStates.Z1_K1_AFT_HTRS.state,,,,
+KX Htms,/Spacesystem/Subsystem/nodeStates.Z1_K1_FWD_HTRS.state,,,,
+KX Htms,/Spacesystem/Subsystem/nodeStates.Z1_K1_FWD_CCHPSTARTUP_HTRS.state,,,,
+T9 Htms,/Spacesystem/Subsystem/nodeStates.T9_AFTCAM_STEREO_R_HTR.state,,,,
+T9 Htms,/Spacesystem/Subsystem/nodeStates.T9_AFTCAM_STEREO_L_HTR.state,,,,
+T9 Htms,/Spacesystem/Subsystem/nodeStates.T9_HAZCAM_FWD_PORT_HTR.state,,,,
+T9 Htms,/Spacesystem/Subsystem/nodeStates.T9_HAZCAM_AFT_PORT_HTR.state,,,,
+,/Spacesystem/Subsystem/commandCount,,,diamond,6
+,/Spacesystem/Subsystem/errorCount,,,circle,7

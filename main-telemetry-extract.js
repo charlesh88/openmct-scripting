@@ -96,9 +96,6 @@ prlExtractTelemetry = function(filenames, values) {
         'Total telem count = ' + nonUniqueTelemCntr + '; ' +
         'Total uniques = ' + globalArrUniquePaths.length);
 
-    // console.log('globalArrPathsAndRefs', globalArrPathsAndRefs);
-    // console.log('globalArrUniquePaths', globalArrUniquePaths);
-
     btnDownloadTelemList.removeAttribute('disabled');
     btnDownloadTelemAndRefsList.removeAttribute('disabled');
 }
@@ -115,7 +112,6 @@ gcsExtractTelemetry = function (filenames, values) {
     outputMsg('GCS extraction done. ' +
         'Total telem count = ' + nonUniqueTelemCntr + '; ' +
         'Total uniques = ' + globalArrUniquePaths.length);
-    // console.log(globalArrPathsAndRefs);
     btnDownloadTelemList.removeAttribute('disabled');
     btnDownloadTelemAndRefsList.removeAttribute('disabled');
 }
@@ -129,8 +125,6 @@ extractTelemFromPrl = function (strValue, filename) {
     let arrUniqueTelemForProc = [];
     // const arrVerifications = xmlDoc.getElementsByTagName("prl:VerifyGoal");
     // const filterParams = checkboxFilterParameters.checked;
-
-    // console.log("filterParams: ", filterParams);
 
     let nonUniqueTelemCntr = 0;
 
@@ -206,8 +200,6 @@ function addToArrUniquePaths(path) {
 }
 
 function addToArrPathsAndRefs(path, filename, type) {
-    // console.log(path, filename, type);
-
     let value = path.concat(",").concat(filename);
     if (type) {
         value += (",").concat(type);

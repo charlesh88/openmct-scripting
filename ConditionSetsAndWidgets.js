@@ -1,74 +1,159 @@
 // CONDITION SETS AND CONDITIONS
 const ConditionSet = function (telemetryObject) {
-    Obj.call(this, 'CS ' + telemetryObject.name, 'conditionSet', true);
+    Obj.call(this, telemetryObject.name, 'conditionSet', true);
     this.configuration = {};
     this.configuration.conditionTestData = [];
     this.configuration.conditionCollection = [];
 
-    this.composition.push(createIdentifier(telemetryObject.dataSource, 'taxonomy'));
+    this.composition.push(createIdentifier(
+        telemetryObject.dataSource,
+        telemetryObject.dataSource.includes('~') ? 'taxonomy' : ''
+    ));
 
-    this.addConditions = function (telemetryObject, conditionsArr) {
-        for (let i = 1; i < conditionsArr.length; i++) {
-            this.configuration.conditionCollection.push(createConditionFromArr(
-                'Condition ' + i.toString(),
-                false,
-                conditionsArr[i]
+    this.addConditionsFromObjArr = function(conditionsObjArr) {
+        // Counts on the last condition in conditionsObjArr to be the default
+        for (let i = 0; i < conditionsObjArr.length; i++) {
+            conditionsObjArr.conditionName = 'Condition '.concat(i.toString());
+            this.configuration.conditionCollection.push(createConditionFromObj(
+                conditionsObjArr[i]
             ));
         }
-
-        // Default condition
-        this.configuration.conditionCollection.push(createConditionFromArr(
-            'Default',
-            true,
-            conditionsArr[0]
-        ));
     }
 
-    this.conditionsToArr = function (telemetryObject) {
-        let cArr = [];
-        // Unpack default condition
-        // Output string, bg, fg
-        cArr.push(telemetryObject.condDefault.split(","));
+    this.conditionsToObjArr = function(telemetryObject) {
+        const totalConditions = 10;
+        let condObjArr = [];
 
-        // Unpack conditions 1 - 4
+        // Unpack conditions 1 - 10
         // Output string, bg, fg, criteria, value
-        for (let i = 4; i > 0; i--) {
-            const cCond = telemetryObject['cond' + i.toString()];
-            if (cCond.length > 0) {
-                cArr.push(cCond.split(","));
+        for (let i = 1; i < totalConditions; i++) {
+            const condStr = telemetryObject['cond' + i.toString()];
+
+            if (condStr && condStr.length > 0) {
+                condObjArr.push(conditionStrToObj(condStr));
             }
         }
 
-        return cArr;
+        // Unpack default condition
+        condObjArr.push(conditionStrToObj(telemetryObject.condDefault));
+
+        return condObjArr;
     }
 }
 
-function createConditionFromArr(name, isDefault, arr) {
+/***************************************** UNPACKING CSV CONDITION DEFINITIONS */
+function conditionStrToObj(condStr) {
+    /*
+    Used by csv-to-matrix.
+
+    condStr like:
+    -,#444444,#ffffff
+    NOM,#009900,#ffffff,any,isUndefined
+    NOM,#009900,#ffffff,any,between,-10, 10
+
+    arr indexes:
+    0: output string
+    1: bgColor
+    2: fgColor
+    3: trigger
+    4: operation
+    5: input value 1 (OPTIONAL)
+    6: input value 2 (OPTIONAL)
+     */
+    const condArr = condStr.split(',');
+    let inputStr = '';
+    let condObj = {
+        'isDefault': true,
+        'output': condArr[0],
+        'bgColor': condArr[1],
+        'fgColor': condArr[2]
+    }
+    if (condArr.length > 3) {
+        condObj.isDefault = false;
+        condObj.trigger = condArr[3];
+        condObj.operation = condArr[4];
+        condObj.inputArr = [];
+    }
+    if (condArr.length > 5) {
+        // There are input(s). Make into a string and add as a string
+        condObj.input = condArr[5]
+            .concat(condArr.length > 6? ','.concat(condArr[6]) : '');
+    }
+
+    return condObj;
+}
+
+/***************************************** CONDITION OBJECT CREATION AND STRUCTURE */
+function createConditionFromObj(argsObj) {
+    /*
+    Used by csv-conditional-graphics AND csv-to-matrix.
+    */
+
     let o = {};
-    o.isDefault = isDefault;
-    o.id = createUUID();
-    o.bgColor = arr[1];
-    o.fgColor = arr[2];
+    o.isDefault = argsObj.isDefault ? argsObj.isDefault : false;
+    o.id = argsObj.id ? argsObj.id : createUUID();
+    o.bgColor = argsObj.bgColor ? argsObj.bgColor : '';
+    o.fgColor = argsObj.fgColor ? argsObj.fgColor : '';
 
     let c = o.configuration = {};
-    c.name = name;
-    c.output = arr[0];
-    c.trigger = (!isDefault) ? arr[3] : 'all';
-    c.criteria = (!isDefault) ? [createConditionCriteria(arr[4], arr[5])] : [];
+    c.name = argsObj.name ? argsObj.name : 'Unnamed Condition';
+    c.output = argsObj.output ? argsObj.output : '';
+    c.trigger = argsObj.trigger ? argsObj.trigger : 'all';
+
+    argsObj.inputArr = conditionInputStrToArr(argsObj.operation, argsObj.input);
+    c.criteria = (!argsObj.isDefault) ? [createConditionCriteriaFromObj(argsObj)] : [];
     c.summary = c.name + ' was scripted';
 
     return o;
 }
 
-function createConditionCriteria(operation, input) {
+function conditionInputStrToArr(operation, inputStr) {
+    // Expect .operation and .input, like "10" or "-10,10"
+    let inputArr = [];
+    if (!inputStr) { return inputArr; }
+    if (isNumericConditionOperation(operation)) {
+        // Convert to numbers
+        if (inputStr.includes(',')) {
+            const strArr = inputStr.split(',');
+            inputArr[0] = parseFloat(strArr[0]);
+            inputArr[1] = parseFloat(strArr[1]);
+        } else {
+            inputArr[0] = parseFloat(inputStr);
+        }
+    } else {
+        // Set as an array with a string
+        inputArr = [inputStr];
+    }
+    return inputArr;
+}
+
+function createConditionCriteriaFromObj(argsObj) {
     let o = {};
+    // console.log('createConditionCriteriaFromObj', argsObj);
+
     o.id = createUUID();
     o.telemetry = 'any';
-    o.operation = operation;
-    o.input = [input];
-    o.metadata = 'value';
+    o.operation = argsObj.operation;
+    o.input = argsObj.inputArr;
+    o.metadata = argsObj.metadata ? argsObj.metadata : 'value';
 
     return o;
+}
+
+/***************************************** UTILITY */
+function isNumericConditionOperation(op) {
+    const arrNumericOperations = [
+        'equalTo',
+        'greaterThan',
+        'lessThan',
+        'greaterThanOrEq',
+        'lessThanOrEq',
+        'between',
+        'notBetween',
+        'enumValueIs',
+        'enumValueIsNot'
+    ];
+    return arrNumericOperations.includes(op);
 }
 
 // CONDITION WIDGETS

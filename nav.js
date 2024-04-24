@@ -4,6 +4,10 @@ const navArray = [
         "pathname": "index.html"
     },
     {
+        "name": "Conditional Graphics",
+        "pathname": "index-csv-conditional-graphics.html"
+    },
+    {
         "name": "Procedure Displays",
         "pathname": "index-gen-from-prl.html"
     },
@@ -24,8 +28,8 @@ const navArray = [
         "pathname": "index-mdb.html"
     },
     {
-        "name": "Legacy",
-        "pathname": "index-legacy-displays.html"
+        "name": "Help",
+        "pathname": "index-help.html"
     }
 ];
 
