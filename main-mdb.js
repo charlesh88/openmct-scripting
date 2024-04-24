@@ -61,13 +61,13 @@ processInputXMLs = function (filePaths, fileContentArr) {
             }
         }
 
-        if (filePath.includes('.xml') && !filePath.includes('.idea')) {
+        if (filePath.includes('.xml')) {
             xmlFileCntr++;
             outputMsg(filePath);
             globalArrUniquePaths = globalArrUniquePaths.concat(processInputXML(fileContent, pathRoot));
         }
     }
-    // globalArrUniquePaths.sort();
+
     globalArrUniquePaths.sort((a, b) => {
         return a[0].localeCompare(b[0]);
     });
