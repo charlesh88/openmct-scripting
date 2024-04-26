@@ -16,15 +16,6 @@ document.getElementById("inputXML").addEventListener("change", function (ev) {
     ingestXMLFiles(ev);
 }, false);
 
-function getConfigFromForm() {
-    // Get form values
-    const config = {};
-
-    config.outputBaseName = document.getElementById('output-base-name').value;
-
-    return config;
-}
-
 function ingestXMLFiles(event) {
     let readers = [];
     let filePaths = [];
@@ -78,11 +69,12 @@ processInputXMLs = function (filePaths, fileContentArr) {
         .concat(' files.')
     );
     console.log('globalArrUniquePaths', globalArrUniquePaths);
-    config.outputBaseName = document.getElementById('output-base-name').value;
+    config.outputBaseName = 'MDB Extract';
     if (!storeLocal(LOCALSTORE_MDB_EXTRACT, JSON.stringify(globalArrUniquePaths))) {
        alert('Not enough room in localstorage to store extracted mdb data.');
     }
     btnDownloadTelemList.removeAttribute('disabled');
+    showMdbStatus(true);
 }
 
 /******************** CHATGPT START */
