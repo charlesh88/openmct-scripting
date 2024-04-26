@@ -23,8 +23,6 @@ function getConfigFromForm() {
     config.itemMargin = getFormNumericVal('itemMargin');
 
     config.dlAlphas = {};
-    // config.dlAlphas.layoutStrategy = document.getElementById('alphaLayoutStrategy').value;
-    // config.dlAlphas.layoutStrategyNum = getFormNumericVal('alphaLayoutStrategyNum');
     config.dlAlphas.itemW = getFormNumericVal('alphaLayoutItemWidth');
     config.dlAlphas.itemH = getFormNumericVal('alphaLayoutItemHeight');
 
@@ -135,7 +133,7 @@ prlToDisplay = function (prlFilename, prlContents) {
                     layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                     placeIndex: alphasItemPlacementTracker.placeIndex,
                     shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                    alphaFormat: prlObject.alphaFormat,
+                    alphaFormat: config.dlAlphas.alphaFormat,
                     alphaShowsUnit: prlObject.alphaShowsUnit
                 });
 
@@ -153,9 +151,7 @@ prlToDisplay = function (prlFilename, prlContents) {
                         layoutStrategy: config.dlAlphas.layoutStrategy,
                         layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                         placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                        alphaFormat: prlObject.alphaFormat,
-                        alphaShowsUnit: prlObject.alphaShowsUnit
+                        shiftIndex: alphasItemPlacementTracker.shiftIndex
                     }
                 )
             }
@@ -177,13 +173,12 @@ extractFromPrl = function (str) {
     let arrStepsAndTelem = [];
 
     for (let s = 0; s < steps.length; s++) {
-        // COMPILE TELEM FOR A GIVEN STEP
+        // Collect all telem path references for a given step
         const arrDataReferences = steps[s].getElementsByTagName("prl:DataReference");
         const arrDataNomenclature = steps[s].getElementsByTagName("prl:DataNomenclature");
+        const arrVerifyGoals = steps[s].getElementsByTagName("prl:VerifyGoal");
         // const arrVerifications = steps[s].getElementsByTagName("prl:VerifyGoal");
         const nodeStepTitle = steps[s].getElementsByTagName("prl:StepTitle")[0];
-        // const strStepLabel = 'STEP '
-        //     .concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent);
 
         let arrUniquePathsForStep = [];
 
@@ -205,6 +200,15 @@ extractFromPrl = function (str) {
             }
         }
 
+        if (arrVerifyGoals && arrVerifyGoals.length > 0) {
+            const arrPaths = extractTelemFromPrlVerifications(arrVerifyGoals);
+            for (let i = 0; i < arrPaths.length; i++) {
+                if (!arrUniquePathsForStep.includes(arrPaths[i])) {
+                    arrUniquePathsForStep.push(arrPaths[i]);
+                }
+            }
+        }
+
         if (arrUniquePathsForStep.length > 0) {
             // Add a step label
             arrStepsAndTelem.push(createTableObj('label', 'STEP '.concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent)));
@@ -213,37 +217,12 @@ extractFromPrl = function (str) {
                 arrStepsAndTelem.push(createTableObj('path', arrUniquePathsForStep[i]));
             }
         }
-
-/*        if (
-            arrDataReferences.length > 0 ||
-            arrDataNomenclature.length > 0
-        ) {
-            // NEED A BETTER TEST - ARE THERE ACTUAL GOOD TELEM REFS IN HERE?
-            // 1. This step has either data refs or data nomenclature, so add a step label
-            arrStepsAndTelem.push(createTableObj('label', strStepLabel));
-
-            // 2. Get all the unique paths for data refs and add them to the uniquepaths array
-            if (arrDataReferences.length > 0) {
-                arrUniquePathsForStep = extractTelemFromDataReferences(arrDataReferences, arrUniquePathsForStep);
-            }
-
-            if (arrDataNomenclature.length > 0) {
-                arrUniquePathsForStep = extractTelemFromDataNomenclature(arrDataNomenclature, arrUniquePathsForStep);
-            }
-
-            // if (arrVerifications.length > 0) {
-            //     arrUniquePathsForStep = extractTelemFromVerifications(arrVerifications, arrUniquePathsForStep);
-            // }
-
-            // 4. Iterate through the unique paths array and create table objs for them, adding to arrStepsAndTelem
-            for (let j = 0; j < arrUniquePathsForStep.length; j++) {
-                arrStepsAndTelem.push(createTableObj('path', arrUniquePathsForStep[j]));
-            }
-        }*/
     }
 
     return arrStepsAndTelem;
 }
+
+/*************************************************** TELEM EXTRACTION METHODS */
 
 extractTelemFromDataReferences = function (arrToIterate, arrUniquePathsForStep) {
     for (let i = 0; i < arrToIterate.length; i++) {
@@ -289,8 +268,6 @@ extractTelemFromDataNomenclature = function (arrToIterate, arrUniquePathsForStep
     for (let i = 0; i < arrToIterate.length; i++) {
         let path = arrToIterate[i].textContent;
 
-        // path = convertSybilStyle(path);
-
         if (!path.includes(' ')) {
             // If there are any spaces in the path, ignore it
 
@@ -319,8 +296,6 @@ extractTelemFromVerifications = function (arrToIterate, arrUniquePathsForStep) {
 
         if (!path.includes(' ')) {
             // If there are any spaces in the path, ignore it
-
-            // path = convertSybilStyle(path);
 
             if (!arrUniquePathsForStep.includes(path)) {
                 arrUniquePathsForStep.push(path);

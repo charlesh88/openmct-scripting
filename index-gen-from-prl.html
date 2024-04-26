@@ -26,18 +26,9 @@
                 <div class="c-config__value sm"><input type="number" id="itemMargin" value="1"/></div>
             </div>
             <div class="c-config">
-                <h2>Alpha Layout</h2>
-<!--                <div class="c-config__value">-->
-<!--                    <select id="alphaLayoutStrategy">-->
-<!--                        <option value="columns">Columns</option>-->
-<!--                        <option value="rows">Rows</option>-->
-<!--                    </select>-->
-<!--                </div>-->
-<!--                <div class="c-config__value sm"><input type="number" id="alphaLayoutStrategyNum" value="1"/></div>-->
-
+                <h2>Alphanumerics</h2>
                 <div class="c-config__label">Alphanumeric Width</div>
                 <div class="c-config__value sm"><input type="number" id="alphaLayoutItemWidth" value="150"/></div>
-
                 <div class="c-config__label">Row Height</div>
                 <div class="c-config__value sm"><input type="number" id="alphaLayoutItemHeight" value="10"/></div>
             </div>
@@ -55,6 +46,7 @@
 
         <div class="page-section">
             <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
+            <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
         </div>
 
         <div class="page-section --expands">

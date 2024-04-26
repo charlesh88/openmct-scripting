@@ -60,36 +60,13 @@ function restoreEscChars(str) {
 
 function labelWidthFromChars(pxScale, charCnt) {
     // Calcs a label width to a scale from a character count
-    const pxPerChar = 14;
+    const pxPerChar = 16;
     const retinaScanAdj = 0.5;
-    const width = Math.ceil(((pxPerChar * retinaScanAdj) / pxScale) * charCnt);
-
-    return width;
+    return Math.ceil(((pxPerChar * retinaScanAdj) / pxScale) * charCnt);
 }
 
 function strClean(str) {
-    let oStr = '';
-    oStr = str.replaceAll('\n', '');
-    return oStr;
-}
-
-function validatePath(path) {
-    for (let i = 0; i < VALID_PATH.length; i++) {
-        if (path.includes(VALID_PATH[i])) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function escForCsv(str) {
-    // Change all commas; change double-quotes to double-double-quotes
-    let o = '"'.concat(str.replace(/,/g, ';;').replace(/"/g, '""')).concat('"');
-
-    // Restore commas
-    o = o.replace(/;;/g, ',');
-
-    return o;
+    return str.replaceAll('\n', '');
 }
 
 function getCurrentTimeEpoch() {
