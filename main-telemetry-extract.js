@@ -85,12 +85,22 @@ function uploadPrlFiles(files) {
 /*********************************** MULTIPLE FILE HANDLING */
 prlExtractTelemetry = function(filenames, values) {
     let nonUniqueTelemCntr = 0;
+    arrAllProcsAndTelem = [];
 
     for (let i = 0; i < filenames.length; i++) {
-        const telemCnt = extractTelemFromPrl(values[i], filenames[i]);
+        const arrStepsAndTelem = extractFromPrlExpanded(values[i], filenames[i]);
+        arrAllProcsAndTelem.push(...arrStepsAndTelem);
+        // console.log(filenames[i],'arrStepsAndTelem', arrStepsAndTelem);
+
+        const telemCnt = arrStepsAndTelem.length;
         nonUniqueTelemCntr += telemCnt;
         outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
     }
+
+    console.log('arrAllProcsAndTelem', arrAllProcsAndTelem);
+    const objTelemByProc = telemByProc(arrAllProcsAndTelem);
+    console.log('objTelemByProc',objTelemByProc);
+
     outputMsg(lineSepStr);
     outputMsg('Prl extraction done. ' +
         'Total telem count = ' + nonUniqueTelemCntr + '; ' +
@@ -117,7 +127,37 @@ gcsExtractTelemetry = function (filenames, values) {
 }
 
 /*********************************** .PRL FUNCTIONS */
-extractTelemFromPrl = function (strValue, filename) {
+telemByProc = function(arr) {
+    /*
+    Expects an array of objects in format from extractFromPrlExpanded
+    Go through arr, get path and add as an object key to the objTelemByProc
+    */
+    objTelemByProc = {};
+    for (let i = 0; i < arr.length; i++) {
+        console.log('arr[i]',arr[i].path);
+        const curPath = arr[i].path;
+        if (!Object.keys(objTelemByProc).includes(curPath)) {
+            objTelemByProc[curPath] = {
+                'refType': arr[i].refType,
+                'procs': {},
+                'procCount': 0
+            }
+        }
+        const objCurTelemProcs = objTelemByProc[curPath].procs;
+        const curProc = arr[i].procedure;
+        if (!Object.keys(objCurTelemProcs).includes(curProc)) {
+            objTelemByProc[curPath].procCount += 1;
+            objTelemByProc[curPath].procs[curProc] = {
+                'steps': []
+            }
+        }
+        objTelemByProc[curPath].procs[curProc].steps.push(arr[i].number.concat(' ',arr[i].desc));
+    }
+
+    return objTelemByProc;
+}
+
+extractTelemFromPrlDEPRECATED = function (strValue, filename) {
     let xmlDoc = new DOMParser().parseFromString(strValue, "text/xml");
     const arrDataReferences = xmlDoc.getElementsByTagName("prl:DataReference");
     const arrDataNomenclature = xmlDoc.getElementsByTagName("prl:DataNomenclature");
@@ -130,6 +170,7 @@ extractTelemFromPrl = function (strValue, filename) {
 
     if (arrDataReferences.length > 0) {
         arrTelem = extractTelemFromPrlDataReferences(arrDataReferences);
+        console.log('arrTelem',arrTelem);
         if (arrTelem.length > 0) {
             for (let i = 0; i < arrTelem.length; i++) {
                 const path = arrTelem[i];

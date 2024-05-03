@@ -167,61 +167,6 @@ prlToDisplay = function (prlFilename, prlContents) {
     return responseObj;
 }
 
-extractFromPrl = function (str) {
-    let xmlDoc = new DOMParser().parseFromString(str, "text/xml");
-    const steps = xmlDoc.getElementsByTagName("prl:Step");
-    let arrStepsAndTelem = [];
-
-    for (let s = 0; s < steps.length; s++) {
-        // Collect all telem path references for a given step
-        const arrDataReferences = steps[s].getElementsByTagName("prl:DataReference");
-        const arrDataNomenclature = steps[s].getElementsByTagName("prl:DataNomenclature");
-        const arrVerifyGoals = steps[s].getElementsByTagName("prl:VerifyGoal");
-        // const arrVerifications = steps[s].getElementsByTagName("prl:VerifyGoal");
-        const nodeStepTitle = steps[s].getElementsByTagName("prl:StepTitle")[0];
-
-        let arrUniquePathsForStep = [];
-
-        if (arrDataReferences && arrDataReferences.length > 0) {
-            const arrPaths = extractTelemFromPrlDataReferences(arrDataReferences);
-            for (let i = 0; i < arrPaths.length; i++) {
-                if (!arrUniquePathsForStep.includes(arrPaths[i])) {
-                    arrUniquePathsForStep.push(arrPaths[i]);
-                }
-            }
-        }
-
-        if (arrDataNomenclature && arrDataNomenclature.length > 0) {
-            const arrPaths = extractTelemFromPrlDataNomenclature(arrDataNomenclature);
-            for (let i = 0; i < arrPaths.length; i++) {
-                if (!arrUniquePathsForStep.includes(arrPaths[i])) {
-                    arrUniquePathsForStep.push(arrPaths[i]);
-                }
-            }
-        }
-
-        if (arrVerifyGoals && arrVerifyGoals.length > 0) {
-            const arrPaths = extractTelemFromPrlVerifications(arrVerifyGoals);
-            for (let i = 0; i < arrPaths.length; i++) {
-                if (!arrUniquePathsForStep.includes(arrPaths[i])) {
-                    arrUniquePathsForStep.push(arrPaths[i]);
-                }
-            }
-        }
-
-        if (arrUniquePathsForStep.length > 0) {
-            // Add a step label
-            arrStepsAndTelem.push(createTableObj('label', 'STEP '.concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent)));
-
-            for (let i = 0; i < arrUniquePathsForStep.length; i++) {
-                arrStepsAndTelem.push(createTableObj('path', arrUniquePathsForStep[i]));
-            }
-        }
-    }
-
-    return arrStepsAndTelem;
-}
-
 /*************************************************** TELEM EXTRACTION METHODS */
 
 extractTelemFromDataReferences = function (arrToIterate, arrUniquePathsForStep) {
@@ -318,7 +263,20 @@ convertSybilStyle = function (strSybilRef) {
     return strSybilRef.replace('[', pathRoot).replace('] ', '/');
 }
 
-createTableObj = function (type, str) {
+findLongestLabel = function(objArr) {
+    let maxLen = 0;
+    let curLen = 0;
+    for (let i = 0; i < objArr.length; i++) {
+        curLen = objArr[i].name.toString().length;
+        if (curLen > maxLen) {
+            maxLen = curLen;
+        }
+    }
+
+    return maxLen;
+}
+
+createTableObj = function (type, str, referenceType) {
     let tableObj = {};
     tableObj.alphaFormat = '';
     tableObj.alphaShowsUnit = 'TRUE';
@@ -334,6 +292,7 @@ createTableObj = function (type, str) {
         tableObj.name = nameFromPath(str, '/', 2);
         tableObj.dataSource = str.replaceAll('/', '~');
         tableObj.type = 'telemetry';
+        tableObj.referenceType = referenceType;
     }
 
     return tableObj;
@@ -351,15 +310,3 @@ nameFromPath = function (str, delim, places) {
     return name.trim();
 }
 
-findLongestLabel = function(objArr) {
-    let maxLen = 0;
-    let curLen = 0;
-    for (let i = 0; i < objArr.length; i++) {
-        curLen = objArr[i].name.toString().length;
-        if (curLen > maxLen) {
-            maxLen = curLen;
-        }
-    }
-
-    return maxLen;
-}
