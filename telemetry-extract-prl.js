@@ -21,7 +21,6 @@ extractFromPrlExpanded = function (str, filename) {
 
     let xmlDoc = new DOMParser().parseFromString(str, "text/xml");
     const steps = xmlDoc.getElementsByTagName("prl:Step");
-    console.log(steps);
     let arrPrlTelem = [];
 
 
@@ -32,8 +31,9 @@ extractFromPrlExpanded = function (str, filename) {
             .getElementsByTagName("prl:StepTitle")[0]
             .getElementsByTagName("prl:Text")[0]
             .textContent;
-        const verifyIns = curStep.getElementsByTagName("prl:VerifyInstruction");
 
+        // VERIFICATIONS
+        const verifyIns = curStep.getElementsByTagName("prl:VerifyInstruction");
         if (verifyIns && verifyIns.length > 0) {
             for (let vi = 0; vi < verifyIns.length; vi++) {
                 const verifyIn = verifyIns[vi];
@@ -53,8 +53,9 @@ extractFromPrlExpanded = function (str, filename) {
                                     'procedure': filename,
                                     'path': convertPrideBracketPath(dataRefDesc),
                                     'pathRef': dataRefDesc,
-                                    'refType': 'dataReference',
+                                    'refType': 'Verify DataReference',
                                     'number': verifyNum,
+                                    'parentNumber': stepNumber,
                                     'desc': targDesc
                                 });
                             }
@@ -63,6 +64,40 @@ extractFromPrlExpanded = function (str, filename) {
                 }
             }
 
+        }
+
+        // RECORDS
+        const recordIns = curStep.getElementsByTagName("prl:RecordInstruction");
+        if (recordIns && recordIns.length > 0) {
+            for (let ri = 0; ri < recordIns.length; ri++) {
+                const recordIn = recordIns[ri];
+                const recordNum = recordIn.getElementsByTagName("prl:Number")[0].textContent;
+                const recordDesc = recordIn
+                    .getElementsByTagName("prl:Description")[0]
+                    .getElementsByTagName("prl:Text")[0].textContent;
+                const recordDataNs = recordIn.getElementsByTagName("prl:DataNomenclature");
+                if (recordDataNs && recordDataNs.length > 0) {
+                    for (let rn = 0; rn < recordDataNs.length; rn++) {
+                        const recordDataNText = recordDataNs[rn].textContent;
+                        // This could be a string that contains a parameter path like: "Current uplink rate, in SPS,
+                        // from /Spacesystem/Subsystem/rxDemodulation"
+                        const paths = arrPathsFromString(recordDataNText);
+                        if (paths && paths.length > 0) {
+                            for (let p = 0; p < paths.length; p++) {
+                                arrPrlTelem.push({
+                                    'procedure': filename,
+                                    'path': paths[p],
+                                    'pathRef': recordDataNText,
+                                    'refType': 'Record DataNomenclature',
+                                    'number': recordNum,
+                                    'parentNumber': stepNumber,
+                                    'desc': recordDesc
+                                });
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     return arrPrlTelem;

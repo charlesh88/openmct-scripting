@@ -14,15 +14,15 @@ let globalArrPathsAndRefs = [];
 storeOutputBaseName();
 loadLocalSettings();
 
-inputType.addEventListener("change", function(ev){
+inputType.addEventListener("change", function (ev) {
     toggleHiddenClass([inputGCS, inputPrl]);
 }, false);
 
-inputGCS.addEventListener("change", function(ev){
+inputGCS.addEventListener("change", function (ev) {
     uploadGCSFiles(ev.currentTarget.files);
 }, false);
 
-inputPrl.addEventListener("change", function(ev){
+inputPrl.addEventListener("change", function (ev) {
     uploadPrlFiles(ev.currentTarget.files);
 }, false);
 
@@ -34,6 +34,7 @@ function getConfigFromForm() {
 
     return config;
 }
+
 function resetTelemetryExtract() {
     globalArrUniquePaths = ['Unique Path'];
     globalArrPathsAndRefs = ['Path,Filename,Type'];
@@ -47,10 +48,10 @@ function uploadGCSFiles(files) {
     let filenames = [];
 
     // Abort if there were no files selected
-    if(!files.length) return;
+    if (!files.length) return;
 
     // Store promises in array
-    for(let i = 0;i < files.length;i++){
+    for (let i = 0; i < files.length; i++) {
         filenames.push(files[i].name);
         readers.push(readFileAsText(files[i]));
     }
@@ -68,10 +69,10 @@ function uploadPrlFiles(files) {
     let filenames = [];
 
     // Abort if there were no files selected
-    if(!files.length) return;
+    if (!files.length) return;
 
     // Store promises in array
-    for(let i = 0;i < files.length;i++){
+    for (let i = 0; i < files.length; i++) {
         filenames.push(files[i].name);
         readers.push(readFileAsText(files[i]));
     }
@@ -83,14 +84,13 @@ function uploadPrlFiles(files) {
 }
 
 /*********************************** MULTIPLE FILE HANDLING */
-prlExtractTelemetry = function(filenames, values) {
+prlExtractTelemetry = function (filenames, values) {
     let nonUniqueTelemCntr = 0;
     arrAllProcsAndTelem = [];
 
     for (let i = 0; i < filenames.length; i++) {
         const arrStepsAndTelem = extractFromPrlExpanded(values[i], filenames[i]);
         arrAllProcsAndTelem.push(...arrStepsAndTelem);
-        // console.log(filenames[i],'arrStepsAndTelem', arrStepsAndTelem);
 
         const telemCnt = arrStepsAndTelem.length;
         nonUniqueTelemCntr += telemCnt;
@@ -99,7 +99,22 @@ prlExtractTelemetry = function(filenames, values) {
 
     console.log('arrAllProcsAndTelem', arrAllProcsAndTelem);
     const objTelemByProc = telemByProc(arrAllProcsAndTelem);
-    console.log('objTelemByProc',objTelemByProc);
+    console.log('objTelemByProc', objTelemByProc);
+
+    const outTelemByProcArr = telemByProcToArr(objTelemByProc);
+
+    console.log(outTelemByProcArr);
+
+    let outTelemByProcStrArr = [];
+    outTelemByProcArr.forEach(row => {
+        outTelemByProcStrArr.push(
+            row.join(',')
+        );
+    })
+
+    console.log('outTelemByProcStrArr', outTelemByProcStrArr);
+
+    globalArrPathsAndRefs = outTelemByProcStrArr;
 
     outputMsg(lineSepStr);
     outputMsg('Prl extraction done. ' +
@@ -127,14 +142,14 @@ gcsExtractTelemetry = function (filenames, values) {
 }
 
 /*********************************** .PRL FUNCTIONS */
-telemByProc = function(arr) {
+telemByProc = function (arr) {
     /*
     Expects an array of objects in format from extractFromPrlExpanded
     Go through arr, get path and add as an object key to the objTelemByProc
     */
     objTelemByProc = {};
     for (let i = 0; i < arr.length; i++) {
-        console.log('arr[i]',arr[i].path);
+        // console.log('arr[i]',arr[i].path);
         const curPath = arr[i].path;
         if (!Object.keys(objTelemByProc).includes(curPath)) {
             objTelemByProc[curPath] = {
@@ -151,10 +166,59 @@ telemByProc = function(arr) {
                 'steps': []
             }
         }
-        objTelemByProc[curPath].procs[curProc].steps.push(arr[i].number.concat(' ',arr[i].desc));
+        objTelemByProc[curPath].procs[curProc].steps.push(arr[i].number.concat(' ', arr[i].desc));
     }
 
     return objTelemByProc;
+}
+
+telemByProcToArr = function (arr) {
+    /*
+    Expects an array of objects in format from telemByProc
+    Iterate through keys, and format a tabular CSV with these columns:
+    parameter
+    proc count
+    procs and steps
+    */
+
+    let tableArr = [];
+
+    // Headers
+    tableArr.push([
+        'parameter',
+        'proc count',
+        'procs and steps'
+    ]);
+
+    const keys = Object.keys(arr);
+    for (let i = 0; i < keys.length; i++) {
+        const curKey = keys[i];
+        const curProcsAndSteps = arr[curKey].procs;
+        /*
+        curProcsAndSteps is an array of keyed objects
+        The procedure name is the key, and holds an array of stepss
+         */
+
+        let curProcsAndStepsStr = '';
+        const keysProcs = Object.keys(curProcsAndSteps);
+        for (let j = 0; j < keysProcs.length; j++) {
+            const curProcKey = keysProcs[j];
+            // const curProcSteps = curProcsAndSteps[curProcKey].steps;
+            curProcsAndStepsStr = curProcsAndStepsStr
+                .concat('"')
+                .concat(curProcKey + '\r\n')
+                .concat(curProcsAndSteps[curProcKey].steps.join('\r\n'))
+                .concat('"');
+        }
+
+        tableArr.push([
+            curKey,
+            arr[curKey].procCount,
+            curProcsAndStepsStr
+        ]);
+    }
+
+    return tableArr;
 }
 
 extractTelemFromPrlDEPRECATED = function (strValue, filename) {
@@ -170,14 +234,14 @@ extractTelemFromPrlDEPRECATED = function (strValue, filename) {
 
     if (arrDataReferences.length > 0) {
         arrTelem = extractTelemFromPrlDataReferences(arrDataReferences);
-        console.log('arrTelem',arrTelem);
+        console.log('arrTelem', arrTelem);
         if (arrTelem.length > 0) {
             for (let i = 0; i < arrTelem.length; i++) {
                 const path = arrTelem[i];
                 addToArrUniquePaths(path);
                 if (!arrUniqueTelemForProc.includes(path)) {
                     arrUniqueTelemForProc.push(path);
-                    addToArrPathsAndRefs(escForCsv(path), filename,'DataReference');
+                    addToArrPathsAndRefs(escForCsv(path), filename, 'DataReference');
                 }
             }
         }
@@ -195,7 +259,7 @@ extractTelemFromPrlDEPRECATED = function (strValue, filename) {
                 addToArrUniquePaths(path);
                 if (!arrUniqueTelemForProc.includes(path)) {
                     arrUniqueTelemForProc.push(path);
-                    addToArrPathsAndRefs(escForCsv(path), filename,'DataNomenclature');
+                    addToArrPathsAndRefs(escForCsv(path), filename, 'DataNomenclature');
                 }
             }
         }
@@ -257,6 +321,8 @@ function getStrBetween(str, start, end) {
 
 function getStrBetweenRegex(str, regex) {
     const result = str.match(new RegExp(regex));
-    if (!result) { return undefined; }
+    if (!result) {
+        return undefined;
+    }
     return result[0];
 }
