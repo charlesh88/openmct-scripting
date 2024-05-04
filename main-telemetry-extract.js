@@ -97,13 +97,13 @@ prlExtractTelemetry = function (filenames, values) {
         outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
     }
 
-    console.log('arrAllProcsAndTelem', arrAllProcsAndTelem);
+    // console.log('arrAllProcsAndTelem', arrAllProcsAndTelem);
     const objTelemByProc = telemByProc(arrAllProcsAndTelem);
-    console.log('objTelemByProc', objTelemByProc);
+    // console.log('objTelemByProc', objTelemByProc);
 
     const outTelemByProcArr = telemByProcToArr(objTelemByProc);
 
-    console.log(outTelemByProcArr);
+    console.log('outTelemByProcArr',outTelemByProcArr);
 
     let outTelemByProcStrArr = [];
     outTelemByProcArr.forEach(row => {
@@ -182,41 +182,57 @@ telemByProcToArr = function (arr) {
     */
 
     let tableArr = [];
+    const LINE_BREAK = '\r\n';
 
-    // Headers
-    tableArr.push([
+    let tableHdrArr = [
         'parameter',
-        'proc count',
-        'procs and steps'
-    ]);
+        'proc count'
+    ];
 
-    const keys = Object.keys(arr);
-    for (let i = 0; i < keys.length; i++) {
-        const curKey = keys[i];
+    const tableHdrIndexOffset = tableHdrArr.length;
+
+    const pathKeys = Object.keys(arr);
+    for (let i = 0; i < pathKeys.length; i++) {
+        const curKey = pathKeys[i];
+
+        let tableRowArr = [
+            curKey,
+            arr[curKey].procCount
+        ];
+
         const curProcsAndSteps = arr[curKey].procs;
         /*
-        curProcsAndSteps is an array of keyed objects
-        The procedure name is the key, and holds an array of stepss
+        curProcsAndSteps is an array of keyed objects, each with an array of steps
          */
 
-        let curProcsAndStepsStr = '';
         const keysProcs = Object.keys(curProcsAndSteps);
+
+        // console.log('keysProcs',keysProcs);
+
+
         for (let j = 0; j < keysProcs.length; j++) {
             const curProcKey = keysProcs[j];
-            // const curProcSteps = curProcsAndSteps[curProcKey].steps;
-            curProcsAndStepsStr = curProcsAndStepsStr
-                .concat('"')
-                .concat(curProcKey + '\r\n')
-                .concat(curProcsAndSteps[curProcKey].steps.join('\r\n'))
+
+            if (!tableHdrArr.includes(curProcKey)) {
+                tableHdrArr.push(curProcKey);
+            }
+
+            const colIndex = findIndexInArray(tableHdrArr,curProcKey);
+
+            let curStepsStr = '"'
+                .concat(curProcsAndSteps[curProcKey].steps.join(LINE_BREAK))
                 .concat('"');
+
+            tableRowArr = insertValueIntoArrayAtIndex(tableRowArr,colIndex,curStepsStr);
         }
 
-        tableArr.push([
-            curKey,
-            arr[curKey].procCount,
-            curProcsAndStepsStr
-        ]);
+        tableArr.push(tableRowArr);
     }
+
+    // tableArr = tableHdrArr.push(...tableArr);
+    tableArr.unshift(tableHdrArr);
+
+    console.log(tableHdrArr);
 
     return tableArr;
 }

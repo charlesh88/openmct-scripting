@@ -72,3 +72,20 @@ function strClean(str) {
 function getCurrentTimeEpoch() {
     return Math.floor(Date.now() / 1000); // Convert milliseconds to seconds
 }
+
+function findIndexInArray(array, member) {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] === member) {
+            return i;
+        }
+    }
+    return -1; // Return -1 if the member is not found in the array
+}
+
+function insertValueIntoArrayAtIndex(array, index, value) {
+    while (index >= array.length) {
+        array.push(undefined); // Add empty values to the array until the index is within bounds
+    }
+    array.splice(index, 0, value); // Insert the value at the specified index
+    return array;
+}
