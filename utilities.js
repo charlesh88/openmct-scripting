@@ -36,6 +36,19 @@ function getFormNumericVal(id) {
     return (v) ? parseInt(v) : null;
 }
 
+function getStrBetween(str, start, end) {
+    const result = str.match(new RegExp(start + "(.*?)" + end));
+    return result[1];
+}
+
+function getStrBetweenRegex(str, regex) {
+    const result = str.match(new RegExp(regex));
+    if (!result) {
+        return undefined;
+    }
+    return result[0];
+}
+
 toggleHiddenClass = function (arrIDs) {
     for (let i = 0; i < arrIDs.length; i++) {
         if (arrIDs[i].className.includes('--hidden')) {

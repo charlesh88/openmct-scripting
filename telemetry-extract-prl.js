@@ -5,6 +5,13 @@ const VALID_TELEM_PATH = [
 
 const BRACKET_PATH_ROOT = 'ViperRover';
 
+extractFromPrlCrawl = function(str, filename) {
+    let xmlDoc = new DOMParser().parseFromString(str, "text/xml");
+    const steps = xmlDoc.getElementsByTagName("prl:Step");
+    let arrPrlTelem = [];
+
+}
+
 extractFromPrlExpanded = function (str, filename) {
     /*
     Compiles an array of telem objs as follows:
@@ -103,73 +110,6 @@ extractFromPrlExpanded = function (str, filename) {
     return arrPrlTelem;
 }
 
-extractFromPrl = function (str) {
-    /*
-    * MOVED FROM main-telemetry-extract.js, replaces extractTelemFromPrl
-     */
-
-    // TODO; THIS IS NOT WORKING RIGHT NOW! FIX!!
-
-    let xmlDoc = new DOMParser().parseFromString(str, "text/xml");
-    const steps = xmlDoc.getElementsByTagName("prl:Step");
-    let arrStepsAndTelemForDisplay = [];
-    let arrUniqueTelemForProc = [];
-
-    for (let s = 0; s < steps.length; s++) {
-        // Collect all telem path references for a given step
-        const arrDataReferences = steps[s].getElementsByTagName("prl:DataReference");
-        const arrDataNomenclature = steps[s].getElementsByTagName("prl:DataNomenclature");
-        const arrVerifyGoals = steps[s].getElementsByTagName("prl:VerifyGoal");
-        const nodeStepTitle = steps[s].getElementsByTagName("prl:StepTitle")[0];
-
-        let arrUniquePathsForStep = [];
-
-        if (arrDataReferences && arrDataReferences.length > 0) {
-            const arrPaths = extractTelemFromPrlDataReferences(arrDataReferences);
-            for (let i = 0; i < arrPaths.length; i++) {
-                let path = arrPaths[i];
-                if (!arrUniquePathsForStep.includes(path)) {
-                    arrUniquePathsForStep.push([path, 'DataReference']);
-                }
-            }
-        }
-
-        if (arrDataNomenclature && arrDataNomenclature.length > 0) {
-            const arrPaths = extractTelemFromPrlDataNomenclature(arrDataNomenclature);
-            for (let i = 0; i < arrPaths.length; i++) {
-                let path = arrPaths[i];
-                if (!arrUniquePathsForStep.includes(path)) {
-                    arrUniquePathsForStep.push([path, 'DataNomenclature']);
-                }
-            }
-        }
-
-        if (arrVerifyGoals && arrVerifyGoals.length > 0) {
-            const arrPaths = extractTelemFromPrlVerifications(arrVerifyGoals);
-            for (let i = 0; i < arrPaths.length; i++) {
-                let path = arrPaths[i];
-                if (!arrUniquePathsForStep.includes(path)) {
-                    arrUniquePathsForStep.push([path, 'VerifyGoal']);
-                }
-            }
-        }
-
-        if (arrUniquePathsForStep.length > 0) {
-            // Add a step label
-            arrStepsAndTelemForDisplay.push(createTableObj('label', 'STEP '.concat(nodeStepTitle.getElementsByTagName("prl:StepNumber")[0].textContent)), '');
-
-            for (let i = 0; i < arrUniquePathsForStep.length; i++) {
-                const path = arrUniquePathsForStep[i][0];
-                const refType = arrUniquePathsForStep[i][1];
-                addToArrUniquePaths(path);
-                arrStepsAndTelemForDisplay.push(createTableObj('path', path, refType));
-            }
-        }
-    }
-
-    return arrStepsAndTelemForDisplay;
-}
-
 extractTelemFromPrlDataReferences = function (prlNodesArr) {
     let arrTelemOut = [];
 
@@ -239,43 +179,4 @@ function convertPrideBracketPath(path) {
     // Converts paths like [Subsystem] parameterName
     const pathConverted = path.replaceAll('[', '/' + BRACKET_PATH_ROOT + '/').replaceAll(']', '/');
     return pathConverted.replaceAll(' ', '');
-}
-
-function arrPathsFromString(str) {
-    // Take in ANY string. If it has anything that matches a telem path, like 'Verify /foo.bar and /bar.foo' or
-    // 'Verify [foo] bar', extract it and add it to an array
-    // console.log('arrPathsFromString', str);
-
-    let arrMatches = [];
-    let strElems = [];
-
-    if (str.includes(' ')) {
-        strElems = str.split(' ');
-    } else {
-        strElems.push(str);
-    }
-
-    for (let i = 0; i < strElems.length; i++) {
-        const curElem = strElems[i];
-        if (curElem.includes('/') && validatePath(curElem)) {
-            arrMatches.push(strClean(curElem));
-        } else if (curElem.includes('[')) {
-            // This will be a subsystem, like '[sys]'.
-            // The very next item in the array will be a path to a parameter
-            arrMatches.push(strClean(convertPrideBracketPath(
-                curElem.concat(strElems[i + 1])
-            )));
-        }
-    }
-
-    return arrMatches;
-}
-
-function escForCsv(str) {
-    // TODO: determine why this is needed and if so
-    // Change all commas; change double-quotes to double-double-quotes
-    let o = '"'.concat(str.replace(/,/g, ';;').replace(/"/g, '""')).concat('"');
-
-    // Restore commas
-    return o.replace(/;;/g, ',');
 }
