@@ -5,165 +5,209 @@ const VALID_TELEM_PATH = [
 
 const BRACKET_PATH_ROOT = 'ViperRover';
 
-extractFromPrlCrawl = function(str, filename) {
-    let xmlDoc = new DOMParser().parseFromString(str, "text/xml");
-    const steps = xmlDoc.getElementsByTagName("prl:Step");
-    let arrPrlTelem = [];
-
-}
-
-extractFromPrlExpanded = function (str, filename) {
+extractFromPrlTraverse = function (str, filename) {
     /*
-    Compiles an array of telem objs as follows:
-    path: / sepped path to the telem in use
-    refType: reference, nomenclature, verify, etc.
-    refDesc: text description for the instruction - sub-element of a step
-    stepNumber: prl:Number of the step
-    stepDesc: prl:StepTitle > prl:Text of the step
-    crewMembers: crewMembers property of prl:Step. Note that crewMembers is a property on numerous other node types than :Step.
+    WHAT ARE ALL THE CONSTRUCTS THAT HAVE TELEMETRY IN THEM?
+    prl:RecordInstruction <crewMembers>
+    prl:Description
+        prl:Text <TELEM>
+    prl:Number <#.#>
 
-    Will look at prl:DataReference > prl:Identifier - this should capture telem in prl:RecordInstructions AND prl:VerifyGoals
-    Purposefully ignoring DataNomenclature for now
+    prl:VerifyInstruction <crewMembers>
+    prl:Description
+        prl:Text
+    prl:Number <#.#>
+    prl:And
+        prl:VerifyGoal
+            prl:CurrentValue
+                prl:DataReference
+                    prl:Identifier <TELEM>
     */
 
-    let xmlDoc = new DOMParser().parseFromString(str, "text/xml");
-    const steps = xmlDoc.getElementsByTagName("prl:Step");
-    let arrPrlTelem = [];
-
-
-    for (let s = 0; s < steps.length; s++) {
-        const curStep = steps[s];
-        let stepNumber = curStep.getElementsByTagName("prl:StepNumber")[0].textContent;
-        const stepTitleText = curStep
-            .getElementsByTagName("prl:StepTitle")[0]
+    function getText(node) {
+        return node
+            .getElementsByTagName("prl:Description")[0]
             .getElementsByTagName("prl:Text")[0]
             .textContent;
+    }
 
-        // VERIFICATIONS
-        const verifyIns = curStep.getElementsByTagName("prl:VerifyInstruction");
-        if (verifyIns && verifyIns.length > 0) {
-            for (let vi = 0; vi < verifyIns.length; vi++) {
-                const verifyIn = verifyIns[vi];
-                const verifyNum = verifyIn.getElementsByTagName("prl:Number")[0].textContent;
-                const verifyGoals = verifyIn.getElementsByTagName("prl:VerifyGoal");
-                if (verifyGoals && verifyGoals.length > 0) {
-                    for (let vg = 0; vg < verifyGoals.length; vg++) {
-                        const verifyGoal = verifyGoals[vg];
-                        const targDesc = verifyGoal
-                            .getElementsByTagName("prl:TargetDescription")[0]
-                            .getElementsByTagName("prl:Text")[0].textContent;
-                        const dataRefs = verifyGoal.getElementsByTagName("prl:DataReference");
-                        if (dataRefs && dataRefs.length > 0) {
-                            const dataRefDesc = dataRefs[0].getElementsByTagName("prl:Description")[0].textContent;
-                            if (dataRefDesc) {
-                                arrPrlTelem.push({
-                                    'procedure': filename,
-                                    'path': convertPrideBracketPath(dataRefDesc),
-                                    'pathRef': dataRefDesc,
-                                    'refType': 'Verify DataReference',
-                                    'number': verifyNum,
-                                    'parentNumber': stepNumber,
-                                    'desc': targDesc
-                                });
-                            }
-                        }
+    function getCrewMembers(node, curCrewMembers) {
+        const crewMembers = node.getAttribute("crewMembers");
+        if (crewMembers && crewMembers.length > 0) {
+            curCrewMembers = crewMembers;
+        }
+
+        return curCrewMembers;
+    }
+
+    function getPathObjects(str, filename, nodeName, number, crewMembers) {
+        let paths = [];
+        if (isPath(str)) {
+            const strPaths = arrPathsFromString(str);
+            if (strPaths && strPaths.length > 0) {
+                for (let i = 0; i < strPaths.length; i++) {
+                    paths.push({
+                        'procedure': filename,
+                        'path': strPaths[i],
+                        'refType': nodeName,
+                        'number': number,
+                        'crewMembers': curCrewMembers
+                    });
+                }
+            }
+        }
+
+        return paths;
+    }
+
+    let curCrewMembers = '';
+    let curNumber = '';
+
+    function traverseXML(node, paths = []) {
+        const nodeName = node.nodeName; // prl:Step, etc.
+        let telemNodes = [];
+        let arrTelemPathsForNode = [];
+        let pathStr = '';
+
+        // Continually look for and track crewMembers values
+        curCrewMembers = getCrewMembers(node, curCrewMembers);
+
+        if (nodeName === 'prl:RecordInstruction') {
+            // RecordInstruction
+            curNumber = node.getElementsByTagName("prl:Number")[0].textContent;
+            pathStr = getText(node);
+            if (isPath(pathStr)) {
+                arrTelemPathsForNode.push(...getPathObjects(
+                    pathStr, filename, nodeName, curNumber, curCrewMembers
+                ));
+                // console.log(arrTelemPathsForNode);
+            }
+        }
+        if (nodeName === 'prl:VerifyInstruction') {
+            // VerifyInstruction
+            curNumber = node.getElementsByTagName("prl:Number")[0].textContent;
+            telemNodes = node.getElementsByTagName("prl:Identifier");
+            if (telemNodes && telemNodes.length > 0) {
+                for (let i = 0; i < telemNodes.length; i++) {
+                    pathStr = telemNodes[i].textContent;
+                    if (isPath(pathStr)) {
+                        arrTelemPathsForNode.push(...getPathObjects(
+                            pathStr, filename, nodeName, curNumber, curCrewMembers
+                        ));
+                        // console.log(arrTelemPathsForNode);
                     }
                 }
             }
-
         }
 
-        // RECORDS
-        const recordIns = curStep.getElementsByTagName("prl:RecordInstruction");
-        if (recordIns && recordIns.length > 0) {
-            for (let ri = 0; ri < recordIns.length; ri++) {
-                const recordIn = recordIns[ri];
-                const recordNum = recordIn.getElementsByTagName("prl:Number")[0].textContent;
-                const recordDesc = recordIn
-                    .getElementsByTagName("prl:Description")[0]
-                    .getElementsByTagName("prl:Text")[0].textContent;
-                const recordDataNs = recordIn.getElementsByTagName("prl:DataNomenclature");
-                if (recordDataNs && recordDataNs.length > 0) {
-                    for (let rn = 0; rn < recordDataNs.length; rn++) {
-                        const recordDataNText = recordDataNs[rn].textContent;
-                        // This could be a string that contains a parameter path like: "Current uplink rate, in SPS,
-                        // from /Spacesystem/Subsystem/rxDemodulation"
-                        const paths = arrPathsFromString(recordDataNText);
-                        if (paths && paths.length > 0) {
-                            for (let p = 0; p < paths.length; p++) {
-                                arrPrlTelem.push({
-                                    'procedure': filename,
-                                    'path': paths[p],
-                                    'pathRef': recordDataNText,
-                                    'refType': 'Record DataNomenclature',
-                                    'number': recordNum,
-                                    'parentNumber': stepNumber,
-                                    'desc': recordDesc
-                                });
-                            }
-                        }
-                    }
-                }
+        paths.push(...arrTelemPathsForNode);
+
+        // Recursively traverse child nodes
+        for (let i = 0; i < node.childNodes.length; i++) {
+            const childNode = node.childNodes[i];
+            // Only traverse element nodes
+            if (childNode.nodeType === 1) {
+                traverseXML(childNode, paths);
             }
         }
+        return paths;
     }
-    return arrPrlTelem;
+
+    const xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
+    const arrTelemPathObjs = traverseXML(xmlDoc.documentElement, []);
+    // console.log('arrTelemPathObjs', arrTelemPathObjs);
+
+    return arrTelemPathObjs;
 }
 
-extractTelemFromPrlDataReferences = function (prlNodesArr) {
-    let arrTelemOut = [];
-
-    for (let i = 0; i < prlNodesArr.length; i++) {
-        if (prlNodesArr[i].getElementsByTagName("prl:Description")[0]) {
-            const description = prlNodesArr[i].getElementsByTagName("prl:Description")[0].textContent;
-            const arrPaths = arrPathsFromString(description);
-            if (arrPaths.length > 0) {
-                for (let p = 0; p < arrPaths.length; p++) {
-                    arrTelemOut.push(arrPaths[p]);
-                }
+/*********************************** .PRL FUNCTIONS */
+telemByProc = function (arr) {
+    /*
+    Expects an array of objects in format from extractFromPrlTraverse
+    Go through arr, get path and add as an object key to the objTelemByProc
+    */
+    objTelemByProc = {};
+    for (let i = 0; i < arr.length; i++) {
+        // console.log('arr[i]',arr[i].path);
+        const curPath = arr[i].path;
+        if (!Object.keys(objTelemByProc).includes(curPath)) {
+            objTelemByProc[curPath] = {
+                'refType': arr[i].refType,
+                'procs': {},
+                'procCount': 0
             }
         }
+        const objCurTelemProcs = objTelemByProc[curPath].procs;
+        const curProc = arr[i].procedure;
+        if (!Object.keys(objCurTelemProcs).includes(curProc)) {
+            objTelemByProc[curPath].procCount += 1;
+            objTelemByProc[curPath].procs[curProc] = {
+                'steps': []
+            }
+        }
+        objTelemByProc[curPath].procs[curProc].steps.push(
+            arr[i].number
+                .concat(' ', arr[i].crewMembers)
+        );
     }
 
-    return arrTelemOut;
+    return objTelemByProc;
 }
 
-extractTelemFromPrlDataNomenclature = function (prlNodesArr) {
-    let arrTelemOut = [];
+telemByProcToArr = function (arr) {
+    /*
+    Expects an array of objects in format from telemByProc or telemByGcs
+    Iterate through keys, and format a tabular CSV with these columns:
+    parameter
+    proc count
+    procs and steps
+    */
 
-    for (let i = 0; i < prlNodesArr.length; i++) {
-        let path = prlNodesArr[i].textContent;
-        const arrPaths = arrPathsFromString(path);
+    let tableArr = [];
+    const LINE_BREAK = '\r\n';
 
-        if (arrPaths.length > 0) {
-            for (let p = 0; p < arrPaths.length; p++) {
-                arrTelemOut.push(arrPaths[p]);
+    let tableHdrArr = [
+        'parameter',
+        'proc count'
+    ];
+
+    const tableHdrIndexOffset = tableHdrArr.length;
+
+    const pathKeys = Object.keys(arr);
+    for (let i = 0; i < pathKeys.length; i++) {
+        const curKey = pathKeys[i];
+
+        let tableRowArr = [
+            curKey,
+            arr[curKey].procCount
+        ];
+
+        const curProcsAndSteps = arr[curKey].procs;
+
+        // curProcsAndSteps is an array of keyed objects, each with an array of steps
+        const keysProcs = Object.keys(curProcsAndSteps);
+
+        for (let j = 0; j < keysProcs.length; j++) {
+            const curProcKey = keysProcs[j];
+
+            if (!tableHdrArr.includes(curProcKey)) {
+                tableHdrArr.push(curProcKey);
             }
+
+            const colIndex = findIndexInArray(tableHdrArr,curProcKey);
+            let curStepsStr = '"'
+                .concat(curProcsAndSteps[curProcKey].steps.join(LINE_BREAK))
+                .concat('"');
+
+            tableRowArr = insertValueIntoArrayAtIndex(tableRowArr,colIndex,curStepsStr);
         }
+
+        tableArr.push(tableRowArr);
     }
 
-    return arrTelemOut;
-}
+    tableArr.unshift(tableHdrArr);
 
-extractTelemFromPrlVerifications = function (prlNodesArr) {
-    // VerifyGoals holds the telem path in prl:Description > prl:Text
-    let arrTelemOut = [];
-
-    for (let i = 0; i < prlNodesArr.length; i++) {
-        if (prlNodesArr[i].getElementsByTagName("prl:Text")[0]) {
-            const text = prlNodesArr[i].getElementsByTagName("prl:Text")[0].textContent;
-
-            const arrPaths = arrPathsFromString(text);
-
-            if (arrPaths.length > 0) {
-                for (let p = 0; p < arrPaths.length; p++) {
-                    arrTelemOut.push(arrPaths[p]);
-                }
-            }
-        }
-    }
-
-    return arrTelemOut;
+    return tableArr;
 }
 
 function validatePath(path) {

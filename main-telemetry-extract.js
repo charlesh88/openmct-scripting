@@ -89,7 +89,7 @@ prlExtractTelemetry = function (filenames, values) {
     arrAllProcsAndTelem = [];
 
     for (let i = 0; i < filenames.length; i++) {
-        const arrStepsAndTelem = extractFromPrlExpanded(values[i], filenames[i]);
+        const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
         arrAllProcsAndTelem.push(...arrStepsAndTelem);
 
         const telemCnt = arrStepsAndTelem.length;
@@ -139,37 +139,6 @@ gcsExtractTelemetry = function (filenames, values) {
         'Total uniques = ' + globalArrUniquePaths.length);
     btnDownloadTelemList.removeAttribute('disabled');
     btnDownloadTelemAndRefsList.removeAttribute('disabled');
-}
-
-/*********************************** .PRL FUNCTIONS */
-telemByProc = function (arr) {
-    /*
-    Expects an array of objects in format from extractFromPrlExpanded
-    Go through arr, get path and add as an object key to the objTelemByProc
-    */
-    objTelemByProc = {};
-    for (let i = 0; i < arr.length; i++) {
-        // console.log('arr[i]',arr[i].path);
-        const curPath = arr[i].path;
-        if (!Object.keys(objTelemByProc).includes(curPath)) {
-            objTelemByProc[curPath] = {
-                'refType': arr[i].refType,
-                'procs': {},
-                'procCount': 0
-            }
-        }
-        const objCurTelemProcs = objTelemByProc[curPath].procs;
-        const curProc = arr[i].procedure;
-        if (!Object.keys(objCurTelemProcs).includes(curProc)) {
-            objTelemByProc[curPath].procCount += 1;
-            objTelemByProc[curPath].procs[curProc] = {
-                'steps': []
-            }
-        }
-        objTelemByProc[curPath].procs[curProc].steps.push(arr[i].number.concat(' ', arr[i].desc));
-    }
-
-    return objTelemByProc;
 }
 
 function addToArrUniquePaths(path) {
