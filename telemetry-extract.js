@@ -1,3 +1,4 @@
+// COMMON FUNCTIONS FOR TELEMETRY EXTRACTION
 function arrPathsFromString(str) {
     // Take in ANY string. If it has anything that matches a telem path, like 'Verify /foo.bar and /bar.foo' or
     // 'Verify [foo] bar', extract it and add it to an array
@@ -28,10 +29,13 @@ function arrPathsFromString(str) {
     return arrMatches;
 }
 
-function isPath(str) {
-    // Look for brackets or / in textContent of str
-    const bracketRegex = /\[.*\]/;
-    return (bracketRegex.test(str) || str.includes('/'));
+function addToArrUniquePaths(path) {
+    if (!globalArrUniquePaths.includes(path)) {
+        globalArrUniquePaths.push(path);
+        return true;
+    }
+
+    return false;
 }
 
 function escForCsv(str) {

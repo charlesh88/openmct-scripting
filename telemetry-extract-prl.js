@@ -80,7 +80,6 @@ extractFromPrlTraverse = function (str, filename) {
                 arrTelemPathsForNode.push(...getPathObjects(
                     pathStr, filename, nodeName, curNumber, curCrewMembers
                 ));
-                // console.log(arrTelemPathsForNode);
             }
         }
         if (nodeName === 'prl:VerifyInstruction') {
@@ -94,7 +93,6 @@ extractFromPrlTraverse = function (str, filename) {
                         arrTelemPathsForNode.push(...getPathObjects(
                             pathStr, filename, nodeName, curNumber, curCrewMembers
                         ));
-                        // console.log(arrTelemPathsForNode);
                     }
                 }
             }
@@ -115,12 +113,10 @@ extractFromPrlTraverse = function (str, filename) {
 
     const xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
     const arrTelemPathObjs = traverseXML(xmlDoc.documentElement, []);
-    // console.log('arrTelemPathObjs', arrTelemPathObjs);
 
     return arrTelemPathObjs;
 }
 
-/*********************************** .PRL FUNCTIONS */
 telemByProc = function (arr) {
     /*
     Expects an array of objects in format from extractFromPrlTraverse
@@ -171,8 +167,6 @@ telemByProcToArr = function (arr) {
         'proc count'
     ];
 
-    const tableHdrIndexOffset = tableHdrArr.length;
-
     const pathKeys = Object.keys(arr);
     for (let i = 0; i < pathKeys.length; i++) {
         const curKey = pathKeys[i];
@@ -208,6 +202,12 @@ telemByProcToArr = function (arr) {
     tableArr.unshift(tableHdrArr);
 
     return tableArr;
+}
+
+function isPath(str) {
+    // Look for brackets (prl files) or '/' in textContent of str
+    const bracketRegex = /\[.*\]/;
+    return (bracketRegex.test(str) || str.includes('/'));
 }
 
 function validatePath(path) {

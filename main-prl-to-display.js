@@ -10,7 +10,7 @@ let globalArrUniquePaths = [];
 storeOutputBaseName();
 loadLocalSettings();
 
-inputPrl.addEventListener("change", function(ev){
+inputPRL.addEventListener("change", function(ev){
     uploadFiles(ev.currentTarget.files, 'prl');
 }, false);
 
@@ -29,7 +29,7 @@ function getConfigFromForm() {
     return config;
 }
 
-processInputPrls = function (prlFilenames, prlContentArr) {
+processinputPRLs = function (prlFilenames, prlContentArr) {
     // For each elem in prlContentArr, create a LAD Table and Display Layout
     // Put the layouts into a Tab View
     initDomainObjects();

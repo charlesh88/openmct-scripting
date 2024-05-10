@@ -1,7 +1,8 @@
 const outputStatsDisplay = document.getElementById('output-stats');
+const defaultFileType = 'GCS';
 const inputType = document.getElementById("inputType");
 const inputGCS = document.getElementById("inputGCS");
-const inputPrl = document.getElementById("inputPrl");
+const inputPRL = document.getElementById("inputPRL");
 const btnDownloadTelemList = document.getElementById("btnDownloadTelemList");
 // const checkboxFilterParameters = document.getElementById("checkboxFilterParameters");
 const OUTPUT_BASE_NAME_KEY = '_TELEM_EXTRACT_BASE_NAME';
@@ -15,14 +16,14 @@ storeOutputBaseName();
 loadLocalSettings();
 
 inputType.addEventListener("change", function (ev) {
-    toggleHiddenClass([inputGCS, inputPrl]);
+    toggleHiddenClass([inputGCS, inputPRL]);
 }, false);
 
 inputGCS.addEventListener("change", function (ev) {
     uploadGCSFiles(ev.currentTarget.files);
 }, false);
 
-inputPrl.addEventListener("change", function (ev) {
+inputPRL.addEventListener("change", function (ev) {
     uploadPrlFiles(ev.currentTarget.files);
 }, false);
 
@@ -85,21 +86,17 @@ function uploadPrlFiles(files) {
 
 /*********************************** MULTIPLE FILE HANDLING */
 prlExtractTelemetry = function (filenames, values) {
-    let nonUniqueTelemCntr = 0;
     arrAllProcsAndTelem = [];
 
     for (let i = 0; i < filenames.length; i++) {
         const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
         arrAllProcsAndTelem.push(...arrStepsAndTelem);
 
-        const telemCnt = arrStepsAndTelem.length;
-        nonUniqueTelemCntr += telemCnt;
-        outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
+        outputMsg(filenames[i] + ' has ' + arrStepsAndTelem.length + ' telem ref(s)');
     }
 
-    // console.log('arrAllProcsAndTelem', arrAllProcsAndTelem);
     const objTelemByProc = telemByProc(arrAllProcsAndTelem);
-    // console.log('objTelemByProc', objTelemByProc);
+    // TODO: this is the point to iterate through objTelemByGcs keys and validate against the dictionary array
 
     const outTelemByProcArr = telemByProcToArr(objTelemByProc);
 
@@ -112,14 +109,12 @@ prlExtractTelemetry = function (filenames, values) {
         );
     })
 
-    console.log('outTelemByProcStrArr', outTelemByProcStrArr);
+    // console.log('outTelemByProcStrArr', outTelemByProcStrArr);
 
     globalArrPathsAndRefs = outTelemByProcStrArr;
 
     outputMsg(lineSepStr);
-    outputMsg('Prl extraction done. ' +
-        'Total telem count = ' + nonUniqueTelemCntr + '; ' +
-        'Total uniques = ' + globalArrUniquePaths.length);
+    outputMsg('prl extraction done.  Total telem count = ' + objTelemByProc.length);
 
     btnDownloadTelemList.removeAttribute('disabled');
     btnDownloadTelemAndRefsList.removeAttribute('disabled');
@@ -127,27 +122,31 @@ prlExtractTelemetry = function (filenames, values) {
 
 gcsExtractTelemetry = function (filenames, values) {
     let nonUniqueTelemCntr = 0;
+    arrAllProcsAndTelem = [];
 
     for (let i = 0; i < filenames.length; i++) {
-        const telemCnt = extractTelemFromGCS(values[i], filenames[i]);
+        const arrStepsAndTelem = extractFromGcs(values[i], filenames[i]);
+        arrAllProcsAndTelem.push(...arrStepsAndTelem);
+
+        const telemCnt = arrStepsAndTelem.length;
         nonUniqueTelemCntr += telemCnt;
         outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
     }
+
+    const objTelemByGcs = telemByGcs(arrAllProcsAndTelem);
+    // TODO: this is the point to iterate through objTelemByGcs keys and validate against the dictionary array
+
+    const outTelemByGcsArr = telemByGcsToArr(objTelemByGcs);
+
+    // console.log(outTelemByGcsArr);
+
+    globalArrPathsAndRefs = outTelemByGcsArr;
+
     outputMsg(lineSepStr);
-    outputMsg('GCS extraction done. ' +
-        'Total telem count = ' + nonUniqueTelemCntr + '; ' +
-        'Total uniques = ' + globalArrUniquePaths.length);
+    outputMsg('gcs extraction done.  Total telem count = ' + objTelemByGcs.length);
+
     btnDownloadTelemList.removeAttribute('disabled');
     btnDownloadTelemAndRefsList.removeAttribute('disabled');
-}
-
-function addToArrUniquePaths(path) {
-    if (!globalArrUniquePaths.includes(path)) {
-        globalArrUniquePaths.push(path);
-        return true;
-    }
-
-    return false;
 }
 
 function addToArrPathsAndRefs(path, filename, type) {
@@ -159,3 +158,16 @@ function addToArrPathsAndRefs(path, filename, type) {
 
     return true;
 }
+
+initPage = function() {
+    for (let i = 0; i < inputType.options.length; i++) {
+        if (inputType.options[i].value === defaultFileType.toLowerCase()) {
+            inputType.selectedIndex = i;
+            break;
+        }
+    }
+
+    document.getElementById('input' + defaultFileType).classList.remove('--hidden');
+}
+
+document.body.onload = initPage();
