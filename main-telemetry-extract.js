@@ -114,7 +114,7 @@ prlExtractTelemetry = function (filenames, values) {
     globalArrPathsAndRefs = outTelemByProcStrArr;
 
     outputMsg(lineSepStr);
-    outputMsg('prl extraction done.  Total telem count = ' + objTelemByProc.length);
+    outputMsg('prl extraction done.  Total telem count = ' + Object.keys(objTelemByProc).length);
 
     btnDownloadTelemList.removeAttribute('disabled');
     btnDownloadTelemAndRefsList.removeAttribute('disabled');
@@ -143,7 +143,7 @@ gcsExtractTelemetry = function (filenames, values) {
     globalArrPathsAndRefs = outTelemByGcsArr;
 
     outputMsg(lineSepStr);
-    outputMsg('gcs extraction done.  Total telem count = ' + objTelemByGcs.length);
+    outputMsg('gcs extraction done.  Total telem count = ' + Object.keys(objTelemByGcs).length);
 
     btnDownloadTelemList.removeAttribute('disabled');
     btnDownloadTelemAndRefsList.removeAttribute('disabled');
