@@ -5,25 +5,23 @@ If found, loads it.
 If not found, provides a link to the ingest page.
  */
 
-let mdbExtract = [];
 let mdbExtractPaths = [];
 
-showMdbStatus = function(haveMdb) {
+showMdbStatus = function (haveMdb) {
     const mdbStatus = document.getElementById('mdb-status');
     if (haveMdb) {
-        mdbStatus.innerText = 'MDB loaded';
+        mdbStatus.innerText = 'MDB loaded from local storage';
         mdbStatus.classList.add('--loaded');
     }
 }
 
-loadLocalStorageMDB = function() {
-    mdbExtract = JSON.parse(loadLocal('MDB_EXTRACT'));
-    // mdbExtract = storedLocalMdb;
-    console.log('mdbExtract',mdbExtract);
-    // for(const row in mdbExtract) {
-    //     mdbExtractPaths.push(row[0]);
-    // }
-    showMdbStatus(mdbExtract);
+loadLocalStorageMDB = function () {
+    const mdbExtract = JSON.parse(loadLocal('MDB_EXTRACT'));
+    for (let i = 0; i < mdbExtract.length; i++) {
+        mdbExtractPaths.push(mdbExtract[i][0]);
+    }
+    // console.log('mdbExtractPaths', mdbExtractPaths);
+    showMdbStatus(mdbExtractPaths);
 }
 
 document.body.onload = loadLocalStorageMDB();

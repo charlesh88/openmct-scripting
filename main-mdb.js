@@ -1,15 +1,19 @@
-/* TODOs
-- Add type per parameter if possible
-*/
-
 const OUTPUT_BASE_NAME_KEY = '_MDB_BASE_NAME';
 const lineSepStr = '------------------------------------------------';
-let globalArrUniquePaths = [];
+// let arrPathsAndRefs = [];
 let globalArrPathsAndRefs = [];
 const MDB_CONFIG = {
     // Stands in for config found in yamcs.viper.yaml
     'ground_systems': '/ViperGround',
     'rover_systems': '/ViperRover'
+}
+
+downLoadMDB = function () {
+    const filename = config.outputBaseName.concat(' - MDB.csv');
+    const list = globalArrPathsAndRefs.join('\n');
+    const file = new File([list], filename, {type: 'text/csv'});
+    downloadFile(file);
+    return false;
 }
 
 document.getElementById("inputXML").addEventListener("change", function (ev) {
@@ -24,17 +28,14 @@ function ingestXMLFiles(event) {
         readers.push(readFileAsText(file));
     }
 
-    outputMsg('Valid files found to process:');
-    // Trigger Promises
+    outputMsg('MDB file ingestion started started...');
     Promise.all(readers).then((values) => {
-        // values will be an array that contains an item
-        // with the text of every selected file
-        // ["File1 Content", "File2 Content" ... "FileN Content"]
         processInputXMLs(filePaths, values);
     });
 }
 
 processInputXMLs = function (filePaths, fileContentArr) {
+    let arrPathsAndRefs = [];
     let xmlFileCntr = 0;
 
     for (let i = 0; i < fileContentArr.length; i++) {
@@ -54,30 +55,34 @@ processInputXMLs = function (filePaths, fileContentArr) {
 
         if (filePath.includes('.xml')) {
             xmlFileCntr++;
-            outputMsg(filePath);
-            globalArrUniquePaths = globalArrUniquePaths.concat(processInputXML(fileContent, pathRoot));
+            outputMsg(filePath + ' ingested.');
+            arrPathsAndRefs.push(...processInputXML(fileContent, pathRoot));
         }
     }
 
-    globalArrUniquePaths.sort((a, b) => {
+    arrPathsAndRefs.sort((a, b) => {
         return a[0].localeCompare(b[0]);
     });
-    globalArrUniquePaths = ([['Path', 'Data Type']]).concat(globalArrUniquePaths);
-    outputMsg(globalArrUniquePaths.length.toString()
+
+    outputMsg(lineSepStr);
+    outputMsg('MDB file ingestion complete. '
+        .concat(arrPathsAndRefs.length.toString())
         .concat(' paths found in ')
         .concat(xmlFileCntr)
         .concat(' files.')
     );
-    console.log('globalArrUniquePaths', globalArrUniquePaths);
+
+    console.log('arrPathsAndRefs', arrPathsAndRefs);
     config.outputBaseName = 'MDB Extract';
-    if (!storeLocal(LOCALSTORE_MDB_EXTRACT, JSON.stringify(globalArrUniquePaths))) {
+    if (!storeLocal(LOCALSTORE_MDB_EXTRACT, JSON.stringify(arrPathsAndRefs))) {
        alert('Not enough room in localstorage to store extracted mdb data.');
     }
+
+    globalArrPathsAndRefs = arrPathsAndRefs;
     btnDownloadTelemList.removeAttribute('disabled');
     showMdbStatus(true);
 }
 
-/******************** CHATGPT START */
 function processInputXML(xmlString, pathRoot) {
     function traverseXML(node, path = '', paths = []) {
         const nodeName = node.nodeName;
@@ -90,13 +95,6 @@ function processInputXML(xmlString, pathRoot) {
             'Member',
             'Parameter'
         ];
-        /*        const unNamedNodes = [
-                    'root',
-                    'TelemetryMetaData',
-                    'ParameterTypeSet',
-                    'MemberList',
-                    'ParameterSet'
-                ];*/
 
         const endNodes = [
             'EnumeratedParameterType',
@@ -122,7 +120,6 @@ function processInputXML(xmlString, pathRoot) {
         for (let i = 0; i < node.childNodes.length; i++) {
             const childNode = node.childNodes[i];
             // Only traverse element nodes
-            // Could optimize here by adding a check for childNode.name against names we want
             if (childNode.nodeType === 1) {
                 traverseXML(childNode, currentPath, paths);
             }
