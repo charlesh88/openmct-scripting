@@ -103,6 +103,22 @@ function insertValueIntoArrayAtIndex(array, index, value) {
     return array;
 }
 
+function arrSortByKey(arr) {
+    // Convert the array of objects into an array of key-value pairs
+    const keyValuePairArray = arr.map(obj => Object.entries(obj)[0]);
+
+    // Sort the array of key-value pairs based on the key
+    keyValuePairArray.sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+
+    // Reconstruct the object from the sorted array of key-value pairs
+    const sortedObject = keyValuePairArray.reduce((acc, [key, value]) => {
+        acc[key] = value;
+        return acc;
+    }, {});
+
+    return sortedObject;
+}
+
 function arrSortByProperty(arr, property) {
     // Sort the array of objects by the specified property
     return arr.sort((a, b) => {

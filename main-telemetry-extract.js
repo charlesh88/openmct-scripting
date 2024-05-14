@@ -96,11 +96,13 @@ prlExtractTelemetry = function (filenames, values) {
     }
 
     const objTelemByProc = procByTelem(arrAllProcsAndTelem);
-    // TODO: this is the point to iterate through objTelemByGcs keys and validate against the dictionary array
+    // Iterate through objTelemByGcs keys and validate against the dictionary array
+
+    console.log('objTelemByProc',objTelemByProc);
+    // if (mdbExtract) { console.log('mdbExtractPaths',mdbExtractPaths); }
 
     const outTelemByProcArr = telemByProcToCsvArr(objTelemByProc);
 
-    console.log('outTelemByProcArr',outTelemByProcArr);
 
     let outTelemByProcStrArr = [];
     outTelemByProcArr.forEach(row => {
