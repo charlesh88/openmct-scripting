@@ -35,7 +35,7 @@ function uploadFiles(files, fileType) {
         // ["File1 Content", "File2 Content" ... "FileN Content"]
 
         if (fileType.includes('prl')) {
-            processinputPRLs(filenames, values);
+            processPrlFiles(filenames, values);
         } else if (fileType.includes('csv')) {
             processInputCsvs(filenames, values);
         }

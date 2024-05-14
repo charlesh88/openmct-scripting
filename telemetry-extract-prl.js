@@ -49,6 +49,7 @@ extractFromPrlTraverse = function (str, filename) {
                     paths.push({
                         'procedure': filename,
                         'path': strPaths[i],
+                        'pathShort': strPaths[i].replaceAll('/ViperRover/',''),
                         'refType': nodeName,
                         'number': number,
                         'crewMembers': curCrewMembers
@@ -117,42 +118,131 @@ extractFromPrlTraverse = function (str, filename) {
     return arrTelemPathObjs;
 }
 
-telemByProc = function (arr) {
+procByTelem = function (arr) {
     /*
     Expects an array of objects in format from extractFromPrlTraverse
-    Go through arr, get path and add as an object key to the objTelemByProc
+    Go through arr, get path and add as an object key to the objProcByTelem
     */
-    objTelemByProc = {};
+    objProcByTelem = {};
     for (let i = 0; i < arr.length; i++) {
         // console.log('arr[i]',arr[i].path);
         const curPath = arr[i].path;
-        if (!Object.keys(objTelemByProc).includes(curPath)) {
-            objTelemByProc[curPath] = {
+        if (!Object.keys(objProcByTelem).includes(curPath)) {
+            objProcByTelem[curPath] = {
                 'refType': arr[i].refType,
                 'procs': {},
                 'procCount': 0
             }
         }
-        const objCurTelemProcs = objTelemByProc[curPath].procs;
+        const objCurTelemProcs = objProcByTelem[curPath].procs;
         const curProc = arr[i].procedure;
         if (!Object.keys(objCurTelemProcs).includes(curProc)) {
-            objTelemByProc[curPath].procCount += 1;
-            objTelemByProc[curPath].procs[curProc] = {
+            objProcByTelem[curPath].procCount += 1;
+            objProcByTelem[curPath].procs[curProc] = {
                 'steps': []
             }
         }
-        objTelemByProc[curPath].procs[curProc].steps.push(
+        objProcByTelem[curPath].procs[curProc].steps.push(
             arr[i].number
                 .concat(' ', arr[i].crewMembers)
         );
     }
 
+    return objProcByTelem;
+}
+
+telemByProc = function (arrProcObjs) {
+    /*
+    Expects an array of objects in format from extractFromPrlTraverse, like
+    { procedure, path, refType, number, crewMembers }
+    Go through arrProcObjs, get proc and add as an object key to the objTelemByProc
+    */
+
+    objTelemByProc = {};
+    for (let i = 0; i < arrProcObjs.length; i++) {
+        const curProc = arrProcObjs[i].procedure;
+
+        if (!Object.keys(objTelemByProc).includes(curProc)) {
+            objTelemByProc[curProc] = {
+                'steps': []
+            }
+        }
+
+        objTelemByProc[curProc].steps.push({
+            'paths': arrProcObjs[i].path,
+            'stepNumber': arrProcObjs[i].number,
+            'stepDesc': 'Step description TK',
+            'refType': arrProcObjs[i].refType,
+            'crewMembers': arrProcObjs[i].crewMembers
+        })
+    }
+
     return objTelemByProc;
 }
 
-telemByProcToArr = function (arr) {
+telemByProcEnhanced = function (arrProcObjs) {
     /*
-    Expects an array of objects in format from telemByProc or telemByGcs
+    Expects an array of objects in format from extractFromPrlTraverse, like
+    { procedure, path, refType, number, crewMembers }
+    Go through arrProcObjs, get proc and add as an object key to the objTelemByProc
+    */
+
+    objTelemByProc = {};
+
+    // First, compile all telem by step into an object for a given procedure
+    for (let i = 0; i < arrProcObjs.length; i++) {
+        let curProcSteps = [];
+        const curProc = arrProcObjs[i];
+
+        if (!Object.keys(curProcSteps).includes(curProc.stepNumber)) {
+            curProcSteps[curProc.stepNumber] = {
+                'crewMembers': curProc.crewMembers,
+                'paths': []
+            };
+        }
+        curProcSteps[curProc.stepNumber].paths.push(
+            curProc.paths
+        );
+    }
+
+
+
+
+    for (let i = 0; i < arrProcObjs.length; i++) {
+        const curProcName = arrProcObjs[i].procedure;
+        let curProcSteps = []; // Will hold an array of step objects for this proc; each object will have a telem array
+
+        if (!Object.keys(objTelemByProc).includes(curProcName)) {
+            objTelemByProc[curProcName] = {
+                'steps': []
+            }
+        }
+
+        if (!Object.keys(curProcSteps).includes(arrProcObjs[i].number)) {
+            curProcSteps[arrProcObjs[i].number] = {
+                'paths': []
+            };
+        }
+        curProcSteps[arrProcObjs[i].number].paths.push(
+            arrProcObjs[i].path
+        )
+
+        objTelemByProc[curProcName].steps.push({
+            'paths': arrProcObjs[i].path,
+            'stepNumber': arrProcObjs[i].number,
+            'stepDesc': 'Step description TK',
+            'refType': arrProcObjs[i].refType,
+            'crewMembers': arrProcObjs[i].crewMembers
+        })
+    }
+
+    return objTelemByProc;
+}
+
+
+telemByProcToCsvArr = function (arr) {
+    /*
+    Expects an array of objects in format from procByTelem or telemByGcs
     Iterate through keys, and format a tabular CSV with these columns:
     parameter
     proc count
@@ -223,4 +313,14 @@ function convertPrideBracketPath(path) {
     // Converts paths like [Subsystem] parameterName
     const pathConverted = path.replaceAll('[', '/' + BRACKET_PATH_ROOT + '/').replaceAll(']', '/');
     return pathConverted.replaceAll(' ', '');
+}
+
+function getProcShortName(procName) {
+    const regex = /^(.*?)_(.*?)_/;
+    const match = procName.match(regex);
+    if (match) {
+        return match[1].concat('_').concat(match[2]);
+    } else {
+        return null; // Return null if no match is found
+    }
 }

@@ -10,7 +10,7 @@ let globalArrUniquePaths = [];
 storeOutputBaseName();
 loadLocalSettings();
 
-inputPRL.addEventListener("change", function(ev){
+inputPRL.addEventListener("change", function (ev) {
     uploadFiles(ev.currentTarget.files, 'prl');
 }, false);
 
@@ -29,69 +29,181 @@ function getConfigFromForm() {
     return config;
 }
 
-processinputPRLs = function (prlFilenames, prlContentArr) {
-    // For each elem in prlContentArr, create a LAD Table and Display Layout
-    // Put the layouts into a Tab View
-    initDomainObjects();
-    config = getConfigFromForm();
-    let root = objJson.openmct = new Container();
+/*********************************** MULTIPLE FILE HANDLING */
+processPrlFiles = function (filenames, values) {
+    let arrAllProcsAndTelem = [];
+    let responseObj = {};
 
-    // Clear out the outputMsgs display
-    outputMsgText.innerHTML = '';
 
-    // Create the root folder
-    let folderRoot = new Obj(config.outputBaseName, 'folder', true);
-    root.addJson(folderRoot);
-    objJson.rootId = folderRoot.identifier.key;
+    for (let i = 0; i < filenames.length; i++) {
+        const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
 
-    // Create a Display Layouts folder
-    let folderDL = new Obj('Display Layouts', 'folder', true);
-    root.addJson(folderDL);
-    folderRoot.addToComposition(folderDL.identifier.key);
-    folderDL.setLocation(folderRoot);
+        outputMsg(filenames[i] + ' has ' + arrStepsAndTelem.length + ' telem ref(s)');
 
-    // Create a Stacked Plots folder
-    let folderSP = new Obj('Stacked Plots', 'folder', true);
-    root.addJson(folderSP);
-    folderRoot.addToComposition(folderSP.identifier.key);
-    folderSP.setLocation(folderRoot);
+        let consolidatedTelemByStep = [];
+        let longestLabelCharCnt = 0;
 
-    // Create a Tabs view
-    let procTabs = new TabsView('Procedure Displays');
-    root.addJson(procTabs);
-    folderRoot.addToComposition(procTabs.identifier.key);
-    procTabs.setLocation(folderRoot);
+        if (arrStepsAndTelem && arrStepsAndTelem.length > 0) {
+            for (let j = 0; j < arrStepsAndTelem.length; j++) {
+                const curStep = arrStepsAndTelem[j];
+                // console.log('curStep',curStep);
+                const curStepNumber = curStep.number.toString();
+                if (!Object.keys(consolidatedTelemByStep).includes(curStepNumber)) {
+                    consolidatedTelemByStep[curStepNumber] = {
+                        'paths': [],
+                        'pathsShort': []
+                    };
+                }
+                if (curStep.pathShort.length > longestLabelCharCnt) {
+                    longestLabelCharCnt = curStep.pathShort.length;
+                }
+                consolidatedTelemByStep[curStepNumber].paths.push(curStep.path);
+                consolidatedTelemByStep[curStepNumber].pathsShort.push(curStep.pathShort);
+                consolidatedTelemByStep[curStepNumber].crewMembers = curStep.crewMembers;
+                consolidatedTelemByStep[curStepNumber].refType = curStep.refType;
+            }
 
-    for (let i = 0; i < prlFilenames.length; i++) {
-        if (i > 0) {
-            outputMsg('------------------------------------------------------------------------------------------------');
+            arrAllProcsAndTelem[filenames[i]] = {
+                'steps': consolidatedTelemByStep,
+                'longestLabelCharCnt': longestLabelCharCnt
+            };
         }
-        const procViews = prlToDisplay(prlFilenames[i], prlContentArr[i]);
+    }
 
-        if (Object.keys(procViews).length > 0) {
+    console.log('arrAllProcsAndTelem', arrAllProcsAndTelem);
+
+    const procKeys = Object.keys(arrAllProcsAndTelem);
+
+    if (procKeys && procKeys.length > 0) {
+        initDomainObjects();
+        config = getConfigFromForm();
+        let root = objJson.openmct = new Container();
+
+        // Clear out the outputMsgs display
+        outputMsgText.innerHTML = '';
+
+        // Create the root folder
+        let folderRoot = new Obj(config.outputBaseName, 'folder', true);
+        root.addJson(folderRoot);
+        objJson.rootId = folderRoot.identifier.key;
+
+        // Create a Display Layouts folder
+        let folderDL = new Obj('Display Layouts', 'folder', true);
+        root.addJson(folderDL);
+        folderRoot.addToComposition(folderDL.identifier.key);
+        folderDL.setLocation(folderRoot);
+
+        // Create a Stacked Plots folder
+        let folderSP = new Obj('Stacked Plots', 'folder', true);
+        root.addJson(folderSP);
+        folderRoot.addToComposition(folderSP.identifier.key);
+        folderSP.setLocation(folderRoot);
+
+        // Create a Tabs view
+        let procTabs = new TabsView('Procedure Displays');
+        root.addJson(procTabs);
+        folderRoot.addToComposition(procTabs.identifier.key);
+        procTabs.setLocation(folderRoot);
+
+        for (let i = 0; i < procKeys.length; i++) {
+            // Make a Display Layout for the current proc
+            const procName = procKeys[i];
+            const procNameShort = getProcShortName(procName);
+            const curProcObj = arrAllProcsAndTelem[procName];
+            const curProcObjSteps = curProcObj.steps; // Array of objects, keyed by step number
+            const stepKeys = Object.keys(curProcObjSteps);
+
+            //Create a Display Layout for alphas and add it to the root folder
+            let procDisplayLayout = new DisplayLayout({
+                'name': procNameShort,
+                'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
+                'itemMargin': config.itemMargin
+            });
+
+            initAlphasItemPlacementTracker();
+
+            for (let s = 0; s < stepKeys.length; s++) {
+                // Iterate through each step object
+                const curStepObj = curProcObjSteps[stepKeys[s]];
+                // console.log('curStepObj',curStepObj);
+
+                const curIndex = s;
+                const labelWidth = labelWidthFromChars(
+                    parseInt(config.layoutGrid[0]),
+                    curProcObj.longestLabelCharCnt
+                );
+
+                // Make a header that combines the step number and crewMembers
+                let dlItem = procDisplayLayout.addLabel(
+                    {
+                        index: curIndex,
+                        itemW: labelWidth + config.itemMargin + config.dlAlphas.itemW,
+                        itemH: config.dlAlphas.itemH,
+                        ident: stepKeys[s],
+                        text: stepKeys[s].concat(' ').concat(curStepObj.crewMembers),
+                        layoutStrategy: config.dlAlphas.layoutStrategy,
+                        layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
+                        placeIndex: alphasItemPlacementTracker.placeIndex,
+                        shiftIndex: alphasItemPlacementTracker.shiftIndex
+                    }
+                );
+
+                alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
+                alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
+
+                // Iterate through the pathsShort array and make label and alpha pairs for each
+                for (let p = 0; p < curStepObj.paths.length; p++) {
+                    const curStepPath = curStepObj.paths[p].replaceAll('/','~');
+
+                    dlItem = procDisplayLayout.addTextAndAlphaViewPair({
+                        index: curIndex,
+                        labelW: labelWidth,
+                        itemW: config.dlAlphas.itemW,
+                        itemH: config.dlAlphas.itemH,
+                        ident: curStepPath,
+                        text: curStepObj.pathsShort[p],
+                        layoutStrategy: config.dlAlphas.layoutStrategy,
+                        layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
+                        placeIndex: alphasItemPlacementTracker.placeIndex,
+                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
+                        alphaFormat: config.dlAlphas.alphaFormat,
+                        alphaShowsUnit: true
+                    });
+
+                    procDisplayLayout.addToComposition(curStepPath, getNamespace(curStepPath));
+                    // procStackedPlot.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
+                    alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
+                    alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
+
+                }
+
+
+            } // Closes steps context
+
             // Add the proc's Display Layout
-            const procDL = procViews.display_layout;
-            root.addJson(procDL);
-            procTabs.addToComposition(procDL.identifier.key);
-            folderDL.addToComposition(procDL.identifier.key);
-            procDL.setLocation(folderDL);
+            root.addJson(procDisplayLayout);
+            procTabs.addToComposition(procDisplayLayout.identifier.key);
+            folderDL.addToComposition(procDisplayLayout.identifier.key);
+            procDisplayLayout.setLocation(folderDL);
 
             // Add the proc's Stacked Plot
-            const procSP = procViews.stacked_plot;
-            root.addJson(procSP);
-            folderSP.addToComposition(procSP.identifier.key);
-            procSP.setLocation(folderSP);
-        }
+            // root.addJson(procStackedPlot);
+            // folderSP.addToComposition(procStackedPlot.identifier.key);
+            // procStackedPlot.setLocation(folderSP);
+
+
+        } // Closes single procedure context
     }
 
     outputJSON();
 }
 
+/*
 prlToDisplay = function (prlFilename, prlContents) {
     const procNameFull = removeExtension(prlFilename); // remove .prl
     // Shorten name by clipping at 2nd '_' in the proc name
     const procName = procNameFull.substring(0, procNameFull.indexOf('_', procNameFull.indexOf('_') + 1));
-    const prlObjects = extractFromPrl(prlContents);
+    const prlObjects = extractFromPrlTraverse(prlFilename, prlContents);
     let responseObj = {};
 
     if (prlObjects.length == 0) {
@@ -166,104 +278,9 @@ prlToDisplay = function (prlFilename, prlContents) {
 
     return responseObj;
 }
-
-/*************************************************** TELEM EXTRACTION METHODS */
-
-extractTelemFromDataReferences = function (arrToIterate, arrUniquePathsForStep) {
-    for (let i = 0; i < arrToIterate.length; i++) {
-        let description = '', identifier = ''; //
-
-        if (arrToIterate[i].getElementsByTagName("prl:Description")[0]) {
-            description = arrToIterate[i].getElementsByTagName("prl:Description")[0].textContent;
-            identifier = arrToIterate[i].getElementsByTagName("prl:Identifier")[0].textContent;
-            let path = identifier;
-
-            /*
-                Pride stores aggregates like this:
-                DataReference > Description: [EpsIo] SaciTelemetry.LIG_CTLR_CURR
-                DataReference > Idenfitier: /ViperRover/EpsIo/SaciTelemetry
-                So, we have to look for '.' in the Description to figure out if its an aggregate
-                If so, grab everything past the first '.' and append it to the Identifier
-                to get a valid path
-             */
-
-            if (description.includes('.')) {
-                const pathEnd = description.substring(description.indexOf('.'), description.length);
-                path = identifier.concat(pathEnd);
-            }
-
-            if (!path.includes(' ')) {
-                // If there are any spaces in the path, ignore it
-
-                if (!arrUniquePathsForStep.includes(path)) {
-                    arrUniquePathsForStep.push(path);
-
-                    if (!globalArrUniquePaths.includes(path)) {
-                        globalArrUniquePaths.push(path);
-                    }
-                }
-            }
-        }
-    }
-
-    return arrUniquePathsForStep;
-}
-
-extractTelemFromDataNomenclature = function (arrToIterate, arrUniquePathsForStep) {
-    for (let i = 0; i < arrToIterate.length; i++) {
-        let path = arrToIterate[i].textContent;
-
-        if (!path.includes(' ')) {
-            // If there are any spaces in the path, ignore it
-
-            if (!arrUniquePathsForStep.includes(path)) {
-                arrUniquePathsForStep.push(path);
-
-                if (!globalArrUniquePaths.includes(path)) {
-                    globalArrUniquePaths.push(path);
-                }
-            }
-        }
-    }
-
-    return arrUniquePathsForStep;
-}
-
-extractTelemFromVerifications = function (arrToIterate, arrUniquePathsForStep) {
-    // arrToIterate is an array of the following
-    // <prl:VerifyGoal>
-    //    <prl:TargetDescription>
-    //         <prl:Text>/ViperRover/MsoloIo/enabledFlag</prl:Text>
-    for (let i = 0; i < arrToIterate.length; i++) {
-        let path = arrToIterate[i]
-            .getElementsByTagName('prl:TargetDescription')[0]
-            .getElementsByTagName('prl:Text')[0].textContent;
-
-        if (!path.includes(' ')) {
-            // If there are any spaces in the path, ignore it
-
-            if (!arrUniquePathsForStep.includes(path)) {
-                arrUniquePathsForStep.push(path);
-
-                if (!globalArrUniquePaths.includes(path)) {
-                    globalArrUniquePaths.push(path);
-                }
-            }
-        }
-    }
-
-    return arrUniquePathsForStep;
-}
-
-convertSybilStyle = function (strSybilRef) {
-    // Converts telem refs like [EpsIo] SaciTelemetry.PAPI6B_BUS_VOLTAGE
-    // Replace first '[' with 'ViperRover/'
-    // Replace second '] ' with '/'
-    const pathRoot = '/ViperRover/';
-    return strSybilRef.replace('[', pathRoot).replace('] ', '/');
-}
-
-findLongestLabel = function(objArr) {
+*/
+/*
+findLongestLabel = function (objArr) {
     let maxLen = 0;
     let curLen = 0;
     for (let i = 0; i < objArr.length; i++) {
@@ -275,6 +292,7 @@ findLongestLabel = function(objArr) {
 
     return maxLen;
 }
+*/
 
 createTableObj = function (type, str, referenceType) {
     let tableObj = {};

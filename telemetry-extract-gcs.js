@@ -56,7 +56,7 @@ telemByGcs = function (arr) {
     return objTelemByProc;
 }
 
-telemByGcsToArr = function (arr) {
+telemByGcsToCsvArr = function (arr) {
     /*
     Expects an array of objects in format from telemByGcs
     Iterate through keys, and format a tabular CSV with these columns:

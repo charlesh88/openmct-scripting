@@ -102,3 +102,31 @@ function insertValueIntoArrayAtIndex(array, index, value) {
     array.splice(index, 0, value); // Insert the value at the specified index
     return array;
 }
+
+function arrSortByProperty(arr, property) {
+    // Sort the array of objects by the specified property
+    return arr.sort((a, b) => {
+        if (a[property] < b[property]) {
+            return -1;
+        }
+        if (a[property] > b[property]) {
+            return 1;
+        }
+        return 0;
+    });
+}
+
+function arrSortAndKeyByProperty(arr, property) {
+    arr = arrSortByProperty(arr, property);
+
+    // console.log('arrSortAndKeyByProperty sorted',arr);
+
+    // Create a new array of objects keyed to the specified property
+    const keyedArray = arr.map(obj => {
+        const newObj = {};
+        newObj[obj[property]] = obj;
+        return newObj;
+    });
+
+    return keyedArray;
+}

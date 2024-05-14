@@ -86,7 +86,7 @@ function uploadPrlFiles(files) {
 
 /*********************************** MULTIPLE FILE HANDLING */
 prlExtractTelemetry = function (filenames, values) {
-    arrAllProcsAndTelem = [];
+    let arrAllProcsAndTelem = [];
 
     for (let i = 0; i < filenames.length; i++) {
         const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
@@ -95,10 +95,10 @@ prlExtractTelemetry = function (filenames, values) {
         outputMsg(filenames[i] + ' has ' + arrStepsAndTelem.length + ' telem ref(s)');
     }
 
-    const objTelemByProc = telemByProc(arrAllProcsAndTelem);
+    const objTelemByProc = procByTelem(arrAllProcsAndTelem);
     // TODO: this is the point to iterate through objTelemByGcs keys and validate against the dictionary array
 
-    const outTelemByProcArr = telemByProcToArr(objTelemByProc);
+    const outTelemByProcArr = telemByProcToCsvArr(objTelemByProc);
 
     console.log('outTelemByProcArr',outTelemByProcArr);
 
@@ -136,7 +136,7 @@ gcsExtractTelemetry = function (filenames, values) {
     const objTelemByGcs = telemByGcs(arrAllProcsAndTelem);
     // TODO: this is the point to iterate through objTelemByGcs keys and validate against the dictionary array
 
-    const outTelemByGcsArr = telemByGcsToArr(objTelemByGcs);
+    const outTelemByGcsArr = telemByGcsToCsvArr(objTelemByGcs);
 
     // console.log(outTelemByGcsArr);
 
