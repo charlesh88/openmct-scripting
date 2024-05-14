@@ -24,6 +24,10 @@ const navArray = [
         "pathname": "index-find-replace.html"
     },
     {
+        "name": "Ingest MDB",
+        "pathname": "index-mdb.html"
+    },
+    {
         "name": "Help",
         "pathname": "index-help.html"
     }

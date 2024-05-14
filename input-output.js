@@ -238,7 +238,13 @@ function htmlGridFromArray(arr) {
 
 /************************************************* LOCAL STORAGE */
 function storeLocal(key, value) {
-    window.localStorage.setItem(key, value);
+    try {
+        window.localStorage.setItem(key, value);
+        window.localStorage.getItem(key);
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 function loadLocal(key) {

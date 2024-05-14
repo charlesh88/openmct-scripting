@@ -149,6 +149,17 @@ form {
   padding: 0 20px;
 }
 
+.head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+
+  > * {
+    flex: 0 0 auto;
+  }
+}
+
 .page {
   display: flex;
   flex-direction: row;
@@ -411,5 +422,16 @@ form {
     width: 100%;
     max-width: 1000px;
   }
+}
 
+.c-mdb-status {
+  padding: 2px 10px;
+  border-radius: 3px;
+  background: #c33b00;
+  color: #fff;
+  text-decoration: none;
+
+  &.--loaded {
+    background: #098700;
+  }
 }
