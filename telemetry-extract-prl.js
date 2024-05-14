@@ -10,7 +10,7 @@ extractFromPrlTraverse = function (str, filename) {
     WHAT ARE ALL THE CONSTRUCTS THAT HAVE TELEMETRY IN THEM?
     prl:RecordInstruction <crewMembers>
     prl:Description
-        prl:Text <TELEM>
+        prl:Text <TELEM path>
     prl:Number <#.#>
 
     prl:VerifyInstruction <crewMembers>
@@ -21,7 +21,8 @@ extractFromPrlTraverse = function (str, filename) {
         prl:VerifyGoal
             prl:CurrentValue
                 prl:DataReference
-                    prl:Identifier <TELEM>
+                    prl:Description <[app] TELEM.aggmember>
+                    prl:Identifier <TELEM path>
     */
 
     function getText(node) {
@@ -86,10 +87,12 @@ extractFromPrlTraverse = function (str, filename) {
         if (nodeName === 'prl:VerifyInstruction') {
             // VerifyInstruction
             curNumber = node.getElementsByTagName("prl:Number")[0].textContent;
-            telemNodes = node.getElementsByTagName("prl:Identifier");
+            telemNodes = node.getElementsByTagName("prl:DataReference");
             if (telemNodes && telemNodes.length > 0) {
                 for (let i = 0; i < telemNodes.length; i++) {
-                    pathStr = telemNodes[i].textContent;
+                    // Get the path from prl:DataReference > prl:Description instead of prl:Identifier
+                    // prl:Identifier won't include aggregate members
+                    pathStr = telemNodes[i].getElementsByTagName("prl:Description")[0].textContent;
                     if (isPath(pathStr)) {
                         arrTelemPathsForNode.push(...getPathObjects(
                             pathStr, filename, nodeName, curNumber, curCrewMembers
