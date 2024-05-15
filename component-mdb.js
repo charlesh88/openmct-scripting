@@ -5,7 +5,8 @@ If found, loads it.
 If not found, provides a link to the ingest page.
  */
 
-let mdbExtractPaths = [];
+let ARR_MDB_PATHS = [];
+let MDB_LOADED = false;
 
 showMdbStatus = function (haveMdb) {
     const mdbStatus = document.getElementById('mdb-status');
@@ -16,12 +17,15 @@ showMdbStatus = function (haveMdb) {
 }
 
 loadLocalStorageMDB = function () {
-    const mdbExtract = JSON.parse(loadLocal('MDB_EXTRACT'));
-    for (let i = 0; i < mdbExtract.length; i++) {
-        mdbExtractPaths.push(mdbExtract[i][0]);
+    const m = loadLocal('MDB_EXTRACT');
+    if (m) {
+        MDB_LOADED = true;
+        const mdbExtract = JSON.parse(m);
+        for (let i = 0; i < mdbExtract.length; i++) {
+            ARR_MDB_PATHS.push(mdbExtract[i][0]);
+        }
     }
-    // console.log('mdbExtractPaths', mdbExtractPaths);
-    showMdbStatus(mdbExtractPaths);
+    showMdbStatus(MDB_LOADED);
 }
 
 document.body.onload = loadLocalStorageMDB();

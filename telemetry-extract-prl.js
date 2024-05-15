@@ -50,7 +50,7 @@ extractFromPrlTraverse = function (str, filename) {
                     paths.push({
                         'procedure': filename,
                         'path': strPaths[i],
-                        'pathShort': strPaths[i].replaceAll('/ViperRover/',''),
+                        'pathShort': strPaths[i].replaceAll('/ViperRover/', ''),
                         'refType': nodeName,
                         'number': number,
                         'crewMembers': curCrewMembers
@@ -208,9 +208,6 @@ telemByProcEnhanced = function (arrProcObjs) {
         );
     }
 
-
-
-
     for (let i = 0; i < arrProcObjs.length; i++) {
         const curProcName = arrProcObjs[i].procedure;
         let curProcSteps = []; // Will hold an array of step objects for this proc; each object will have a telem array
@@ -260,6 +257,11 @@ telemByProcToCsvArr = function (arr) {
         'proc count'
     ];
 
+    if (MDB_LOADED) {
+        arr = validateAgainstDictionary(arr);
+        tableHdrArr.push('valid');
+    }
+
     const pathKeys = Object.keys(arr);
     for (let i = 0; i < pathKeys.length; i++) {
         const curKey = pathKeys[i];
@@ -268,6 +270,10 @@ telemByProcToCsvArr = function (arr) {
             curKey,
             arr[curKey].procCount
         ];
+
+        if (MDB_LOADED) {
+            tableRowArr.push(arr[curKey].valid)
+        }
 
         const curProcsAndSteps = arr[curKey].procs;
 
@@ -281,12 +287,12 @@ telemByProcToCsvArr = function (arr) {
                 tableHdrArr.push(curProcKey);
             }
 
-            const colIndex = findIndexInArray(tableHdrArr,curProcKey);
+            const colIndex = findIndexInArray(tableHdrArr, curProcKey);
             let curStepsStr = '"'
                 .concat(curProcsAndSteps[curProcKey].steps.join(LINE_BREAK))
                 .concat('"');
 
-            tableRowArr = insertValueIntoArrayAtIndex(tableRowArr,colIndex,curStepsStr);
+            tableRowArr = insertValueIntoArrayAtIndex(tableRowArr, colIndex, curStepsStr);
         }
 
         tableArr.push(tableRowArr);

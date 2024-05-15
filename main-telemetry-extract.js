@@ -1,5 +1,5 @@
 const outputStatsDisplay = document.getElementById('output-stats');
-const defaultFileType = 'GCS';
+const defaultFileType = 'PRL';
 const inputType = document.getElementById("inputType");
 const inputGCS = document.getElementById("inputGCS");
 const inputPRL = document.getElementById("inputPRL");
@@ -96,10 +96,7 @@ prlExtractTelemetry = function (filenames, values) {
     }
 
     const objTelemByProc = procByTelem(arrAllProcsAndTelem);
-    // Iterate through objTelemByGcs keys and validate against the dictionary array
-
-    console.log('objTelemByProc',objTelemByProc);
-    // if (mdbExtract) { console.log('mdbExtractPaths',mdbExtractPaths); }
+    console.log('objTelemByProc', objTelemByProc);
 
     const outTelemByProcArr = telemByProcToCsvArr(objTelemByProc);
 
@@ -161,7 +158,33 @@ function addToArrPathsAndRefs(path, filename, type) {
     return true;
 }
 
-initPage = function() {
+function validateAgainstDictionary(objArr) {
+    if (!MDB_LOADED) {
+        return objArr;
+    }
+
+    const keysObjArr = Object.keys(objArr);
+    let arrNotFound = [];
+
+    for (let i = 0; i < keysObjArr.length; i++) {
+        const testPath = keysObjArr[i];
+        objArr[testPath].valid = undefined;
+
+        if (!ARR_MDB_PATHS.includes(testPath)) {
+            arrNotFound.push(testPath);
+            objArr[testPath].valid = false;
+        } else {
+            objArr[testPath].valid = true;
+        }
+    }
+
+    console.log('objArr validated', objArr);
+    console.log('arrNotFound', arrNotFound);
+
+    return objArr;
+}
+
+initPage = function () {
     for (let i = 0; i < inputType.options.length; i++) {
         if (inputType.options[i].value === defaultFileType.toLowerCase()) {
             inputType.selectedIndex = i;
