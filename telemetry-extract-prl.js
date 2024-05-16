@@ -257,10 +257,10 @@ telemByProcToCsvArr = function (arr) {
         'proc count'
     ];
 
-    if (MDB_LOADED) {
-        arr = validateAgainstDictionary(arr);
-        tableHdrArr.push('valid');
-    }
+    // if (MDB_LOADED) {
+    //     arr = validateAgainstDictionary(arr);
+    //     tableHdrArr.push('valid');
+    // }
 
     const pathKeys = Object.keys(arr);
     for (let i = 0; i < pathKeys.length; i++) {
@@ -271,9 +271,9 @@ telemByProcToCsvArr = function (arr) {
             arr[curKey].procCount
         ];
 
-        if (MDB_LOADED) {
-            tableRowArr.push(arr[curKey].valid)
-        }
+        // if (MDB_LOADED) {
+        //     tableRowArr.push(arr[curKey].valid)
+        // }
 
         const curProcsAndSteps = arr[curKey].procs;
 

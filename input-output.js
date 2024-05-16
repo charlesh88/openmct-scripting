@@ -136,17 +136,17 @@ downloadJson = function () {
     downloadFile(file);
 }
 
-downloadTelemList = function () {
-    const filename = config.outputBaseName.concat(' - Uniques.csv');
-    const list = globalArrUniquePaths.join('\n');
-    const file = new File([list], filename, {type: 'text/csv'});
-    downloadFile(file);
-    return false;
-}
+// downloadTelemList = function () {
+//     const filename = config.outputBaseName.concat(' - Uniques.csv');
+//     const list = globalArrUniquePaths.join('\n');
+//     const file = new File([list], filename, {type: 'text/csv'});
+//     downloadFile(file);
+//     return false;
+// }
 
 downloadTelemAndRefsList = function () {
     const filename = config.outputBaseName.concat(' - Telemetry and Refs.csv');
-    const list = globalArrPathsAndRefs.join('\n');
+    const list = gArrStrPathsAndRefs.join('\n');
     const file = new File([list], filename, {type: 'text/csv'});
     downloadFile(file);
     return false;

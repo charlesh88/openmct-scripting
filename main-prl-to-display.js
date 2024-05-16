@@ -5,7 +5,7 @@ const STEP_LABEL_STYLE = {
     fgColor: '#ccc'
 }
 
-let globalArrUniquePaths = [];
+// let globalArrUniquePaths = [];
 
 storeOutputBaseName();
 loadLocalSettings();

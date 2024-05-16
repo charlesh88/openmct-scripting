@@ -4,13 +4,12 @@ const inputType = document.getElementById("inputType");
 const inputGCS = document.getElementById("inputGCS");
 const inputPRL = document.getElementById("inputPRL");
 const btnDownloadTelemList = document.getElementById("btnDownloadTelemList");
-// const checkboxFilterParameters = document.getElementById("checkboxFilterParameters");
 const OUTPUT_BASE_NAME_KEY = '_TELEM_EXTRACT_BASE_NAME';
 const btnDownloadTelemAndRefsList = document.getElementById("btnDownloadTelemAndRefsList");
 const outputMsgText = document.getElementById("outputMsg");
 const lineSepStr = '------------------------------------------------';
-let globalArrUniquePaths = [];
-let globalArrPathsAndRefs = [];
+// let globalArrUniquePaths = [];
+let gArrStrPathsAndRefs = [];
 
 storeOutputBaseName();
 loadLocalSettings();
@@ -37,8 +36,8 @@ function getConfigFromForm() {
 }
 
 function resetTelemetryExtract() {
-    globalArrUniquePaths = ['Unique Path'];
-    globalArrPathsAndRefs = ['Path,Filename,Type'];
+    // globalArrUniquePaths = ['Unique Path'];
+    gArrStrPathsAndRefs = ['Path,Filename,Type'];
     outputMsgText.innerHTML = '';
 }
 
@@ -96,27 +95,8 @@ prlExtractTelemetry = function (filenames, values) {
     }
 
     const objTelemByProc = procByTelem(arrAllProcsAndTelem);
-    console.log('objTelemByProc', objTelemByProc);
 
-    const outTelemByProcArr = telemByProcToCsvArr(objTelemByProc);
-
-
-    let outTelemByProcStrArr = [];
-    outTelemByProcArr.forEach(row => {
-        outTelemByProcStrArr.push(
-            row.join(',')
-        );
-    })
-
-    // console.log('outTelemByProcStrArr', outTelemByProcStrArr);
-
-    globalArrPathsAndRefs = outTelemByProcStrArr;
-
-    outputMsg(lineSepStr);
-    outputMsg('prl extraction done.  Total telem count = ' + Object.keys(objTelemByProc).length);
-
-    btnDownloadTelemList.removeAttribute('disabled');
-    btnDownloadTelemAndRefsList.removeAttribute('disabled');
+    prlPackageExtractedTelemetryForCsv(objTelemByProc);
 }
 
 gcsExtractTelemetry = function (filenames, values) {
@@ -132,30 +112,40 @@ gcsExtractTelemetry = function (filenames, values) {
         outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
     }
 
-    const objTelemByGcs = telemByGcs(arrAllProcsAndTelem);
-    // TODO: this is the point to iterate through objTelemByGcs keys and validate against the dictionary array
+    gcsPackageExtractedTelemetryForCsv(telemByGcs(arrAllProcsAndTelem));
+}
 
+prlPackageExtractedTelemetryForCsv = function (objTelemByProc) {
+    console.log('objTelemByProc',objTelemByProc);
+    const outTelemByProcArr = telemByProcToCsvArr(objTelemByProc);
+
+    let outTelemByProcStrArr = [];
+    outTelemByProcArr.forEach(row => {
+        outTelemByProcStrArr.push(
+            row.join(',')
+        );
+    })
+
+    gArrStrPathsAndRefs = outTelemByProcStrArr;
+
+    outputMsg(lineSepStr);
+    outputMsg('prl extraction done.  Total telem count = ' + outTelemByProcStrArr.length);
+
+    btnDownloadTelemList.removeAttribute('disabled');
+    btnDownloadTelemAndRefsList.removeAttribute('disabled');
+}
+
+gcsPackageExtractedTelemetryForCsv = function (objTelemByGcs) {
+    console.log('objTelemByGcs',objTelemByGcs);
     const outTelemByGcsArr = telemByGcsToCsvArr(objTelemByGcs);
 
-    // console.log(outTelemByGcsArr);
-
-    globalArrPathsAndRefs = outTelemByGcsArr;
+    gArrStrPathsAndRefs = outTelemByGcsArr;
 
     outputMsg(lineSepStr);
     outputMsg('gcs extraction done.  Total telem count = ' + Object.keys(objTelemByGcs).length);
 
     btnDownloadTelemList.removeAttribute('disabled');
     btnDownloadTelemAndRefsList.removeAttribute('disabled');
-}
-
-function addToArrPathsAndRefs(path, filename, type) {
-    let value = path.concat(",").concat(filename);
-    if (type) {
-        value += (",").concat(type);
-    }
-    globalArrPathsAndRefs.push(value);
-
-    return true;
 }
 
 function validateAgainstDictionary(objArr) {

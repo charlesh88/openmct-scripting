@@ -73,10 +73,10 @@ telemByGcsToCsvArr = function (arr) {
         'gcs count'
     ];
 
-    if (MDB_LOADED) {
-        arr = validateAgainstDictionary(arr);
-        tableHdrArr.push('valid');
-    }
+    // if (MDB_LOADED) {
+    //     arr = validateAgainstDictionary(arr);
+    //     tableHdrArr.push('valid');
+    // }
 
     const pathKeys = Object.keys(arr);
     const markerStr = 'Y';
@@ -89,9 +89,9 @@ telemByGcsToCsvArr = function (arr) {
             arr[curKey].gcsCount
         ];
 
-        if (MDB_LOADED) {
-            tableRowArr.push(arr[curKey].valid)
-        }
+        // if (MDB_LOADED) {
+        //     tableRowArr.push(arr[curKey].valid)
+        // }
 
         const gcsForThisPath = arr[curKey].gcs;
 

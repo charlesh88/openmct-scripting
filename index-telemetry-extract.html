@@ -11,15 +11,16 @@
 <div class="c-nav" id="nav"></div>
 <div class="head">
     <h1>Telemetry Extractor <span id="app-version" class="app-version"></span></h1>
-    <a href="index-mdb.html" id="mdb-status" class="c-mdb-status">MDB not loaded</a>
 </div>
 <div class="page">
     <div class="page-main --main">
+        <div id="component-mdb" class="contents"></div>
         <div class="page-section c-config-holder">
             <div class="c-config">
                 <h2>Settings</h2>
                 <div class="c-config__label">Output Base Name</div>
-                <div class="c-config__value"><input type="text" id="output-base-name" value="Telemetry Extract"/></div>
+                <div class="c-config__value"><input type="text" id="output-base-name" value="Telemetry Extract"/>
+                </div>
             </div>
             <div class="c-config">
                 <h2>Input Files</h2>
@@ -32,15 +33,19 @@
                 </div>
                 <div class="c-config__label">Input Files</div>
                 <div class="c-config__value">
-                    <input id="inputGCS" class="upload-file-btn --hidden" type="file" accept=".py" multiple/>
-                    <input id="inputPRL" class="upload-file-btn --hidden" type="file" accept=".prl" multiple/>
+                    <input id="inputGCS" class="upload-file-btn --hidden" type="file" accept=".py" title="foo" multiple/>
+                    <input id="inputPRL" class="upload-file-btn --hidden" type="file" accept=".prl" title="bar" multiple/>
                 </div>
             </div>
         </div>
 
         <div class="page-section">
-            <button id="btnDownloadTelemList" onclick="downloadTelemList();" disabled style="display: none;">DOWNLOAD UNIQUE TELEMETRY</button>
-            <button id="btnDownloadTelemAndRefsList" onclick="downloadTelemAndRefsList();" disabled>DOWNLOAD TELEMETRY AND REFS</button>
+            <button id="btnDownloadTelemList" onclick="downloadTelemList();" disabled style="display: none;">
+                DOWNLOAD UNIQUE TELEMETRY
+            </button>
+            <button id="btnDownloadTelemAndRefsList" onclick="downloadTelemAndRefsList();" disabled>DOWNLOAD
+                TELEMETRY AND REFS
+            </button>
             <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
         </div>
 
@@ -57,7 +62,8 @@
             <h2>What this does</h2>
             <ul>
                 <li>Crawls selected GCS .py files and finds telemetry in getval and checkval calls.</li>
-                <li>Crawls selected Pride .prl files and finds telemetry in DataReferences and DataNomenclatures.</li>
+                <li>Crawls selected Pride .prl files and finds telemetry in DataReferences and DataNomenclatures.
+                </li>
                 <li>Outputs .csv files of de-duped unique telemetry paths and a full table of paths with their file
                     references.
                 </li>
@@ -73,6 +79,7 @@
 <script src="telemetry-extract-prl.js"></script>
 <script src="telemetry-extract-gcs.js"></script>
 <script src="telemetry-extract.js"></script>
+<script src="telemetry-validate.js"></script>
 <script src="main-telemetry-extract.js"></script>
 <script src="nav.js"></script>
 <script src="main.js"></script>

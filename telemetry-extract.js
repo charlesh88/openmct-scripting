@@ -29,17 +29,17 @@ function arrPathsFromString(str) {
     return arrMatches;
 }
 
-function addToArrUniquePaths(path) {
-    if (!globalArrUniquePaths.includes(path)) {
-        globalArrUniquePaths.push(path);
-        return true;
-    }
-
-    return false;
-}
+// function addToArrUniquePaths(path) {
+//     if (!globalArrUniquePaths.includes(path)) {
+//         globalArrUniquePaths.push(path);
+//         return true;
+//     }
+//
+//     return false;
+// }
 
 function escForCsv(str) {
-    // TODO: determine why this is needed
+    // TODO: determine if/why this is needed
     // Change all commas; change double-quotes to double-double-quotes
     let o = '"'.concat(str.replace(/,/g, ';;').replace(/"/g, '""')).concat('"');
 

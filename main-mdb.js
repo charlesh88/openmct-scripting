@@ -1,7 +1,7 @@
 const OUTPUT_BASE_NAME_KEY = '_MDB_BASE_NAME';
 const lineSepStr = '------------------------------------------------';
 // let arrPathsAndRefs = [];
-let globalArrPathsAndRefs = [];
+let gArrStrPathsAndRefs = [];
 const MDB_CONFIG = {
     // Stands in for config found in yamcs.viper.yaml
     'ground_systems': '/ViperGround',
@@ -10,7 +10,7 @@ const MDB_CONFIG = {
 
 downLoadMDB = function () {
     const filename = config.outputBaseName.concat(' - MDB.csv');
-    const list = globalArrPathsAndRefs.join('\n');
+    const list = gArrStrPathsAndRefs.join('\n');
     const file = new File([list], filename, {type: 'text/csv'});
     downloadFile(file);
     return false;
@@ -78,7 +78,7 @@ processInputXMLs = function (filePaths, fileContentArr) {
        alert('Not enough room in localstorage to store extracted mdb data.');
     }
 
-    globalArrPathsAndRefs = arrPathsAndRefs;
+    gArrStrPathsAndRefs = arrPathsAndRefs;
     btnDownloadTelemList.removeAttribute('disabled');
     showMdbStatus(true);
 }
