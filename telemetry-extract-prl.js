@@ -41,25 +41,24 @@ extractFromPrlTraverse = function (str, filename) {
         return curCrewMembers;
     }
 
-    function getPathObjects(str, filename, nodeName, number, crewMembers) {
+    function getPathObjects(strPaths, filename, nodeName, number, crewMembers) {
         let paths = [];
-        if (isPath(str)) {
-            const strPaths = arrPathsFromString(str);
-            if (strPaths && strPaths.length > 0) {
-                for (let i = 0; i < strPaths.length; i++) {
-                    paths.push({
-                        'procedure': filename,
-                        'path': strPaths[i],
-                        'pathShort': strPaths[i].replaceAll('/ViperRover/', ''),
-                        'refType': nodeName,
-                        'number': number,
-                        'crewMembers': curCrewMembers
-                    });
-                }
+        if (strPaths && strPaths.length > 0) {
+            for (let i = 0; i < strPaths.length; i++) {
+                paths.push({
+                    'procedure': filename,
+                    'path': strPaths[i],
+                    'pathShort': strPaths[i].replaceAll('/ViperRover/', ''),
+                    'refType': nodeName,
+                    'number': number,
+                    'crewMembers': curCrewMembers
+                });
             }
+
+            return paths;
         }
 
-        return paths;
+        return false;
     }
 
     let curCrewMembers = '';
@@ -80,7 +79,11 @@ extractFromPrlTraverse = function (str, filename) {
             pathStr = getText(node);
             if (isPath(pathStr)) {
                 arrTelemPathsForNode.push(...getPathObjects(
-                    pathStr, filename, nodeName, curNumber, curCrewMembers
+                    arrPathsFromString(pathStr),
+                    filename,
+                    nodeName,
+                    curNumber,
+                    curCrewMembers
                 ));
             }
         }
@@ -90,14 +93,13 @@ extractFromPrlTraverse = function (str, filename) {
             telemNodes = node.getElementsByTagName("prl:DataReference");
             if (telemNodes && telemNodes.length > 0) {
                 for (let i = 0; i < telemNodes.length; i++) {
-                    // Get the path from prl:DataReference > prl:Description instead of prl:Identifier
-                    // prl:Identifier won't include aggregate members
-                    pathStr = telemNodes[i].getElementsByTagName("prl:Description")[0].textContent;
-                    if (isPath(pathStr)) {
-                        arrTelemPathsForNode.push(...getPathObjects(
-                            pathStr, filename, nodeName, curNumber, curCrewMembers
-                        ));
-                    }
+                    arrTelemPathsForNode.push(...getPathObjects(
+                        [telemFromPrlDataReference(telemNodes[i])],
+                        filename,
+                        nodeName,
+                        curNumber,
+                        curCrewMembers
+                    ));
                 }
             }
         }
@@ -112,6 +114,7 @@ extractFromPrlTraverse = function (str, filename) {
                 traverseXML(childNode, paths);
             }
         }
+
         return paths;
     }
 
@@ -181,63 +184,6 @@ telemByProc = function (arrProcObjs) {
 
     return objTelemByProc;
 }
-
-telemByProcEnhanced = function (arrProcObjs) {
-    /*
-    Expects an array of objects in format from extractFromPrlTraverse, like
-    { procedure, path, refType, number, crewMembers }
-    Go through arrProcObjs, get proc and add as an object key to the objTelemByProc
-    */
-
-    objTelemByProc = {};
-
-    // First, compile all telem by step into an object for a given procedure
-    for (let i = 0; i < arrProcObjs.length; i++) {
-        let curProcSteps = [];
-        const curProc = arrProcObjs[i];
-
-        if (!Object.keys(curProcSteps).includes(curProc.stepNumber)) {
-            curProcSteps[curProc.stepNumber] = {
-                'crewMembers': curProc.crewMembers,
-                'paths': []
-            };
-        }
-        curProcSteps[curProc.stepNumber].paths.push(
-            curProc.paths
-        );
-    }
-
-    for (let i = 0; i < arrProcObjs.length; i++) {
-        const curProcName = arrProcObjs[i].procedure;
-        let curProcSteps = []; // Will hold an array of step objects for this proc; each object will have a telem array
-
-        if (!Object.keys(objTelemByProc).includes(curProcName)) {
-            objTelemByProc[curProcName] = {
-                'steps': []
-            }
-        }
-
-        if (!Object.keys(curProcSteps).includes(arrProcObjs[i].number)) {
-            curProcSteps[arrProcObjs[i].number] = {
-                'paths': []
-            };
-        }
-        curProcSteps[arrProcObjs[i].number].paths.push(
-            arrProcObjs[i].path
-        )
-
-        objTelemByProc[curProcName].steps.push({
-            'paths': arrProcObjs[i].path,
-            'stepNumber': arrProcObjs[i].number,
-            'stepDesc': 'Step description TK',
-            'refType': arrProcObjs[i].refType,
-            'crewMembers': arrProcObjs[i].crewMembers
-        })
-    }
-
-    return objTelemByProc;
-}
-
 
 telemByProcToCsvArr = function (arr) {
     /*
@@ -335,4 +281,17 @@ function getProcShortName(procName) {
     } else {
         return null; // Return null if no match is found
     }
+}
+
+function telemFromPrlDataReference(drNode) {
+    // If the DR includes a structurePath attribute value, it's an aggregate.
+    const sPath = drNode.getAttribute('structurePath');
+    const identifier = drNode.getElementsByTagName('prl:Identifier')[0].textContent;
+    if (sPath) {
+        return identifier
+            .concat('.')
+            .concat(sPath);
+    }
+
+    return identifier;
 }
