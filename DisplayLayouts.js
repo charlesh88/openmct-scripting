@@ -29,9 +29,7 @@ const DisplayLayout = function (args) {
             'y': 0,
             'width': parseInt(args.itemW),
             'height': parseInt(args.itemH),
-            "stroke": '',
-            "fill": '',
-            "color": '',
+            "stroke": 'transparent',
             'fontSize': 'default',
             'font': 'default'
         };
