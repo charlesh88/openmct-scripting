@@ -128,7 +128,6 @@ procByTelem = function (arr) {
     */
     objProcByTelem = {};
     for (let i = 0; i < arr.length; i++) {
-        // console.log('arr[i]',arr[i].path);
         const curPath = arr[i].path;
         if (!Object.keys(objProcByTelem).includes(curPath)) {
             objProcByTelem[curPath] = {
@@ -242,7 +241,7 @@ telemByProcEnhanced = function (arrProcObjs) {
 
 telemByProcToCsvArr = function (arr) {
     /*
-    Expects an array of objects in format from procByTelem or telemByGcs
+    Expects an array of objects in format from procByTelem or gcsByTelem
     Iterate through keys, and format a tabular CSV with these columns:
     parameter
     proc count
@@ -257,12 +256,16 @@ telemByProcToCsvArr = function (arr) {
         'proc count'
     ];
 
-    // if (MDB_LOADED) {
-    //     arr = validateAgainstDictionary(arr);
-    //     tableHdrArr.push('valid');
-    // }
-
     const pathKeys = Object.keys(arr);
+
+    // Check the first entry for a valid property
+    const validation = (arr[pathKeys[0]].valid);
+
+    if (validation) {
+        tableHdrArr.push('valid');
+    }
+
+
     for (let i = 0; i < pathKeys.length; i++) {
         const curKey = pathKeys[i];
 
@@ -271,9 +274,9 @@ telemByProcToCsvArr = function (arr) {
             arr[curKey].procCount
         ];
 
-        // if (MDB_LOADED) {
-        //     tableRowArr.push(arr[curKey].valid)
-        // }
+        if (validation) {
+            tableRowArr.push(arr[curKey].valid)
+        }
 
         const curProcsAndSteps = arr[curKey].procs;
 

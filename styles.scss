@@ -426,11 +426,14 @@ form {
 .c-mdb-status {
   padding: 2px 10px;
   border-radius: 3px;
-  background: #c33b00;
+  border: 1px solid #877842;
   color: #fff;
+  font-size: 0.9em;
   text-decoration: none;
+  text-transform: uppercase;
 
   &.--loaded {
     background: #098700;
+    border: none;
   }
 }

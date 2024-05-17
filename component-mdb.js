@@ -5,7 +5,6 @@ If found, loads it.
 If not found, provides a link to the ingest page.
  */
 
-let ARR_MDB_PATHS = [];
 let MDB_CONNECTED = false;
 let inputHost;
 let inputMdbPath;
@@ -20,7 +19,7 @@ const htmlElement = '\n' +
     '                <div class="c-config__value">\n' +
     '                    <input type="text" id="yamcs-server-url-root" value=""/>\n' +
     '                    <input type="text" id="yamcs-server-url-mdb-path" value="" style="width: 250px;"/>\n' +
-    '                    <button id="mdb-status" class="c-mdb-status">Not connected</button>\n' +
+    '                    <span id="mdb-status" class="c-mdb-status">...</span>\n' +
     '                </div>\n' +
     '            </div>\n' +
     '        </div>';
@@ -36,8 +35,6 @@ setMdbConnectionStatus = function (haveMdb) {
         mdbConnStatusHtmlElem.innerText = 'Not connected';
         mdbConnStatusHtmlElem.classList.remove('--loaded');
     }
-
-    console.log('MDB_CONNECTED', haveMdb);
 }
 
 async function validateParameter(url = '') {
@@ -45,7 +42,6 @@ async function validateParameter(url = '') {
 
     try {
         const response = await fetch(fullUrl);
-        // console.log(fullUrl, response);
         return response.status === 200;
     } catch (error) {
         console.error(fullUrl, error);
@@ -90,4 +86,3 @@ function initComponent() {
 }
 
 document.body.onload = initComponent();
-

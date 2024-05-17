@@ -10,5 +10,5 @@ const formSectionMatrixLayout = document.getElementById("configFormSectionMatrix
 const howCsv = document.getElementById("howCsv");
 const howPrl = document.getElementById("howPrl");
 const btnDownloadJson = document.getElementById("btnDownloadJson");
-const btnDownloadTelemList = document.getElementById("btnDownloadTelemList");
+const btnDownloadTelem = document.getElementById("btnDownloadTelem");
 const outputMsgText = document.getElementById("outputMsg");

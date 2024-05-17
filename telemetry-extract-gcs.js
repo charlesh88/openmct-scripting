@@ -29,36 +29,35 @@ extractFromGcs = function(str, filename) {
     return paths;
 }
 
-telemByGcs = function (arr) {
+gcsByTelem = function (arr) {
     /*
     Expects an array of objects in format from extractFromGcs
-    Go through arr, get path and add as an object key to the objTelemByGcs
+    Go through arr, get path and add as an object key to the objGcsByTelem
     */
-    objTelemByProc = {};
+    objGcsByTelem = {};
     for (let i = 0; i < arr.length; i++) {
-        // console.log('arr[i]',arr[i].path);
         const curPath = arr[i].path;
-        if (!Object.keys(objTelemByProc).includes(curPath)) {
-            objTelemByProc[curPath] = {
+        if (!Object.keys(objGcsByTelem).includes(curPath)) {
+            objGcsByTelem[curPath] = {
                 'refType': arr[i].refType,
                 'gcs': {},
                 'gcsCount': 0
             }
         }
-        const objCurTelemGcs = objTelemByProc[curPath].gcs;
+        const objCurTelemGcs = objGcsByTelem[curPath].gcs;
         const gcsForThisPath = arr[i].gcs;
         if (!Object.keys(objCurTelemGcs).includes(gcsForThisPath)) {
-            objTelemByProc[curPath].gcsCount += 1;
-            objTelemByProc[curPath].gcs[gcsForThisPath] = {}; // This should probably just be an array
+            objGcsByTelem[curPath].gcsCount += 1;
+            objGcsByTelem[curPath].gcs[gcsForThisPath] = {}; // This should probably just be an array
         }
     }
 
-    return objTelemByProc;
+    return objGcsByTelem;
 }
 
-telemByGcsToCsvArr = function (arr) {
+gcsByTelemToCsvArr = function (arr) {
     /*
-    Expects an array of objects in format from telemByGcs
+    Expects an array of objects in format from gcsByTelem
     Iterate through keys, and format a tabular CSV with these columns:
     parameter
     gcs count
@@ -67,19 +66,22 @@ telemByGcsToCsvArr = function (arr) {
 
     let tableArr = [];
     const LINE_BREAK = '\r\n';
+    const markerStr = 'Y';
 
     let tableHdrArr = [
         'parameter',
         'gcs count'
     ];
 
-    // if (MDB_LOADED) {
-    //     arr = validateAgainstDictionary(arr);
-    //     tableHdrArr.push('valid');
-    // }
-
     const pathKeys = Object.keys(arr);
-    const markerStr = 'Y';
+
+    // Check the first entry for a valid property
+    const validation = (arr[pathKeys[0]].valid);
+
+    if (validation) {
+        tableHdrArr.push('valid');
+    }
+
 
     for (let i = 0; i < pathKeys.length; i++) {
         const curKey = pathKeys[i];
@@ -89,9 +91,9 @@ telemByGcsToCsvArr = function (arr) {
             arr[curKey].gcsCount
         ];
 
-        // if (MDB_LOADED) {
-        //     tableRowArr.push(arr[curKey].valid)
-        // }
+        if (validation) {
+            tableRowArr.push(arr[curKey].valid)
+        }
 
         const gcsForThisPath = arr[curKey].gcs;
 

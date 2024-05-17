@@ -79,7 +79,7 @@ processInputXMLs = function (filePaths, fileContentArr) {
     }
 
     gArrStrPathsAndRefs = arrPathsAndRefs;
-    btnDownloadTelemList.removeAttribute('disabled');
+    btnDownloadTelem.removeAttribute('disabled');
     showMdbStatus(true);
 }
 
