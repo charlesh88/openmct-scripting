@@ -146,3 +146,7 @@ function arrSortAndKeyByProperty(arr, property) {
 
     return keyedArray;
 }
+
+function strRemoveRegex(str, regex) {
+    return str.replace(regex, '');
+}

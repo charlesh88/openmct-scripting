@@ -41,26 +41,6 @@ extractFromPrlTraverse = function (str, filename) {
         return curCrewMembers;
     }
 
-    function getPathObjects(strPaths, filename, nodeName, number, crewMembers) {
-        let paths = [];
-        if (strPaths && strPaths.length > 0) {
-            for (let i = 0; i < strPaths.length; i++) {
-                paths.push({
-                    'procedure': filename,
-                    'path': strPaths[i],
-                    'pathShort': strPaths[i].replaceAll('/ViperRover/', ''),
-                    'refType': nodeName,
-                    'number': number,
-                    'crewMembers': curCrewMembers
-                });
-            }
-
-            return paths;
-        }
-
-        return false;
-    }
-
     let curCrewMembers = '';
     let curNumber = '';
 
@@ -78,13 +58,14 @@ extractFromPrlTraverse = function (str, filename) {
             curNumber = node.getElementsByTagName("prl:Number")[0].textContent;
             pathStr = getText(node);
             if (isPath(pathStr)) {
-                arrTelemPathsForNode.push(...getPathObjects(
+                const pathObjs = getPathObjects(
                     arrPathsFromString(pathStr),
                     filename,
                     nodeName,
                     curNumber,
-                    curCrewMembers
-                ));
+                    curCrewMembers);
+
+                if (pathObjs) { arrTelemPathsForNode.push(...pathObjs) };
             }
         }
         if (nodeName === 'prl:VerifyInstruction') {
@@ -93,13 +74,14 @@ extractFromPrlTraverse = function (str, filename) {
             telemNodes = node.getElementsByTagName("prl:DataReference");
             if (telemNodes && telemNodes.length > 0) {
                 for (let i = 0; i < telemNodes.length; i++) {
-                    arrTelemPathsForNode.push(...getPathObjects(
+                    const pathObjs = getPathObjects(
                         [telemFromPrlDataReference(telemNodes[i])],
                         filename,
                         nodeName,
                         curNumber,
-                        curCrewMembers
-                    ));
+                        curCrewMembers);
+
+                    if (pathObjs) { arrTelemPathsForNode.push(...pathObjs) };
                 }
             }
         }
@@ -258,6 +240,26 @@ function isPath(str) {
     return (bracketRegex.test(str) || str.includes('/'));
 }
 
+function getPathObjects(strPaths, filename, nodeName, number, crewMembers) {
+    let paths = [];
+    if (strPaths && strPaths.length > 0) {
+        for (let i = 0; i < strPaths.length; i++) {
+            paths.push({
+                'procedure': filename,
+                'path': strPaths[i],
+                'pathShort': strPaths[i].replaceAll('/ViperRover/', ''),
+                'refType': nodeName,
+                'number': number,
+                'crewMembers': crewMembers
+            });
+        }
+
+        return paths;
+    }
+
+    return false;
+}
+
 function validatePath(path) {
     for (let i = 0; i < VALID_TELEM_PATH.length; i++) {
         if (path.includes(VALID_TELEM_PATH[i])) {
@@ -285,11 +287,13 @@ function getProcShortName(procName) {
 
 function telemFromPrlDataReference(drNode) {
     // If the DR includes a structurePath attribute value, it's an aggregate.
+    // structurePath sometimes holds an array index, like '[1]'. In that case, don't separate it with a period.
     const sPath = drNode.getAttribute('structurePath');
     const identifier = drNode.getElementsByTagName('prl:Identifier')[0].textContent;
     if (sPath) {
+        const sep = sPath.includes('[')? '' : '.';
         return identifier
-            .concat('.')
+            .concat(sep)
             .concat(sPath);
     }
 
