@@ -172,7 +172,8 @@ addValidationResult = function(obj, arrValidation) {
 
     for (let i = 0; i < arrTelemPaths.length; i++) {
         const telemPath = arrTelemPaths[i];
-        const pathValid = arrValidation[telemPath].includes("OK");
+        const pathValid = arrValidation[telemPath].validated;
+        obj[telemPath].testPath = arrValidation[telemPath].testPath;
         obj[telemPath].valid = pathValid;
         invalidCnt = pathValid ? invalidCnt : invalidCnt + 1;
     }
@@ -183,6 +184,7 @@ addValidationResult = function(obj, arrValidation) {
         .concat((arrTelemPaths.length - invalidCnt).toString())
         .concat(' valid paths found.'));
 
+    console.log('addValidationResult', obj);
     return obj;
 }
 

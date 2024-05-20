@@ -1,48 +1,37 @@
 // COMMON FUNCTIONS FOR TELEMETRY EXTRACTION
-function arrPathsFromString(str) {
-    // Take in ANY string. If it has anything that matches a telem path, like 'Verify /foo.bar and /bar.foo' or
-    // 'Verify [foo] bar', extract it and add it to an array
-    // console.log('arrPathsFromString', str);
+function pathFromString(str) {
+    /*
+     Take in ANY string. If it has anything that matches a telem path, like 'Verify /foo.bar and /bar.foo' or
+    'Verify [foo] bar', extract it and add it to an array
+     Examples:
+     [App] Parameter.aggregateMember
+     /Spacesystem/App/Parameter [0]
+     Rover foo (/Spacesystem/App/Parameter.aggregateMember)
+     Current foo rate, in SPS, from /Spacesystem/App/Parameter
+     */
+    const bracketRegex = /\[.*]/;
+    let arrWords = str.split(' ');
+    let strOut = '';
 
-    let arrMatches = [];
-    let strElems = [];
-
-    if (str.includes(' ')) {
-        strElems = str.split(' ');
-    } else {
-        strElems.push(str);
+    if (bracketRegex.test(arrWords[0])) {
+        // If the first word has brackets, the whole str is like [App] Parameter.aggregateMember
+        strOut = convertPrideBracketPath(str);
+        arrWords.shift();
     }
 
-    for (let i = 0; i < strElems.length; i++) {
-        const curElem = strElems[i];
-        if (curElem.includes('/') && validatePath(curElem)) {
-            arrMatches.push(strClean(curElem));
-        } else if (curElem.includes('[')) {
-            // This will be a subsystem, like '[sys]'.
-            // The very next item in the array will be a path to a parameter
-            arrMatches.push(strClean(convertPrideBracketPath(
-                curElem.concat(strElems[i + 1])
-            )));
+    for (let w = 0; w < arrWords.length; w++) {
+        if (arrWords[w].includes('/')) {
+            strOut = arrWords[w];
+        } else {
+            if (bracketRegex.test(arrWords[w])) {
+                // Find elements like trailing [0]
+                strOut = strOut.concat(arrWords[w]);
+            }
         }
     }
+    strOut = strOut
+        .replaceAll('(','')
+        .replaceAll(')','');
 
-    return arrMatches;
-}
-
-// function addToArrUniquePaths(path) {
-//     if (!globalArrUniquePaths.includes(path)) {
-//         globalArrUniquePaths.push(path);
-//         return true;
-//     }
-//
-//     return false;
-// }
-
-function escForCsv(str) {
-    // TODO: determine if/why this is needed
-    // Change all commas; change double-quotes to double-double-quotes
-    let o = '"'.concat(str.replace(/,/g, ';;').replace(/"/g, '""')).concat('"');
-
-    // Restore commas
-    return o.replace(/;;/g, ',');
+    return (isPath(strOut)) ? strOut : false;
 }

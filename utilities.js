@@ -150,3 +150,21 @@ function arrSortAndKeyByProperty(arr, property) {
 function strRemoveRegex(str, regex) {
     return str.replace(regex, '');
 }
+
+function extractStrBetweenStrings(str, startStr, endStr) {
+    let startIndex = 0;
+    let endIndex = 0;
+
+    if (str.includes(startStr)) {
+        startIndex = str.indexOf(startStr) + startStr.length;
+
+        if (str.includes(endStr)) {
+            endIndex = str.indexOf(endStr, startIndex);
+            return str.substring(startIndex, endIndex)
+        } else {
+            return str.substring(startIndex)
+        }
+    }
+
+    return str;
+}
