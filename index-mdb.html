@@ -8,43 +8,44 @@
 </head>
 
 <body translate="no">
-<div class="c-nav" id="nav"></div>
-<div class="head">
-    <h1>Ingest MDB <span id="app-version" class="app-version"></span></h1>
-    <a href="index-mdb.html" id="mdb-status" class="c-mdb-status">Yamcs MDB not accessible</a>
-</div>
-<div class="page">
-    <div class="page-main --main">
-        <div class="page-section c-config-holder">
-            <div class="c-config">
-                <h2>Inputs</h2>
-                <div class="c-config__label">MDB Directory</div>
-                <div class="c-config__value">
-                    <input class="upload-file-btn" type="file" id="inputXML" webkitdirectory multiple />
+<div class="c-app">
+    <div class="c-nav" id="nav"></div>
+    <div class="head">
+        <h1>Ingest MDB <span id="app-version" class="app-version"></span></h1>
+        <a href="index-mdb.html" id="mdb-status" class="c-mdb-status">Yamcs MDB not accessible</a>
+    </div>
+    <div class="page">
+        <div class="page-main --main">
+            <div class="page-section c-config-holder">
+                <div class="c-config">
+                    <h2>Inputs</h2>
+                    <div class="c-config__label">MDB Directory</div>
+                    <div class="c-config__value">
+                        <input class="upload-file-btn" type="file" id="inputXML" webkitdirectory multiple/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-section">
+                <button id="btnDownloadTelemList" onclick="downLoadMDB();" disabled>DOWNLOAD CSV</button>
+                <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
+            </div>
+
+            <div class="page-section --expands">
+                <h2>Output</h2>
+                <div class="c-msg" id="outputMsg">
                 </div>
             </div>
         </div>
 
-        <div class="page-section">
-            <button id="btnDownloadTelemList" onclick="downLoadMDB();" disabled>DOWNLOAD CSV</button>
-            <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
-        </div>
-
-        <div class="page-section --expands">
-            <h2>Output</h2>
-            <div id="output-stats" class="message"></div>
-            <div class="c-msg" id="outputMsg">
+        <div class="page-main --sidebar">
+            <div class="page-section --can-shrink" id="howCsv">
+                <h2>What this does</h2>
+                <ul>
+                    <li>Content TK
+                    </li>
+                </ul>
             </div>
-        </div>
-    </div>
-
-    <div class="page-main --sidebar">
-        <div class="page-section --can-shrink" id="howCsv">
-            <h2>What this does</h2>
-            <ul>
-                <li>Content TK
-                </li>
-            </ul>
         </div>
     </div>
 </div>

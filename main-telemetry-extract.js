@@ -1,5 +1,3 @@
-const outputStatsDisplay = document.getElementById('output-stats');
-
 const inputType = document.getElementById("inputType");
 const inputGCS = document.getElementById("inputGCS");
 const inputPRL = document.getElementById("inputPRL");
@@ -84,7 +82,7 @@ function uploadPrlFiles(files) {
 }
 
 downloadTelemCsv = function () {
-    const filename = config.outputBaseName.concat(' - Telemetry and Refs.csv');
+    const filename = config.outputBaseName;
     const list = gStrArrByTelem.join('\n');
     const file = new File([list], filename, {type: 'text/csv'});
     downloadFile(file);

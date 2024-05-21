@@ -8,47 +8,48 @@
 </head>
 
 <body translate="no">
-<div class="c-nav" id="nav"></div>
-<div class="head">
-    <h1>Open MCT Find / Replace <span id="app-version" class="app-version"></span></h1>
-</div>
-<div class="page">
-    <div class="page-main --main">
-        <div class="page-section c-config-holder">
-            <div class="c-config">
-                <h2>Inputs</h2>
-                <div class="c-config__label">Open MCT JSON file</div>
-                <div class="c-config__value"><input class="upload-file-btn" type="file" id="inputJson" />
-                </div>
-                <div class="c-config__label">Find/Replace CSV</div>
-                <div class="c-config__value">
-                    <input class="upload-file-btn" type="file" id="inputCsv"
-                           accept=".csv" disabled/></div>
-            </div>
-        </div>
-
-        <div class="page-section">
-            <button id="btnDownloadJson" onclick="downloadReplaced();" disabled>DOWNLOAD</button>
-            <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
-        </div>
-
-        <div class="page-section --expands">
-            <h2>Output</h2>
-            <div id="output-stats" class="message"></div>
-            <div class="c-msg" id="outputMsg">
-            </div>
-        </div>
+<div class="c-app">
+    <div class="c-nav" id="nav"></div>
+    <div class="head">
+        <h1>Open MCT Find / Replace <span id="app-version" class="app-version"></span></h1>
     </div>
+    <div class="page">
+        <div class="page-main --main">
+            <div class="page-section c-config-holder">
+                <div class="c-config">
+                    <h2>Inputs</h2>
+                    <div class="c-config__label">Open MCT JSON file</div>
+                    <div class="c-config__value"><input class="upload-file-btn" type="file" id="inputJson"/>
+                    </div>
+                    <div class="c-config__label">Find/Replace CSV</div>
+                    <div class="c-config__value">
+                        <input class="upload-file-btn" type="file" id="inputCsv"
+                               accept=".csv" disabled/></div>
+                </div>
+            </div>
 
-    <div class="page-main --sidebar">
-        <div class="page-section --can-shrink" id="howCsv">
-            <h2>What this does</h2>
-            <ul>
-                <li>Allows bulk replacement of strings within an Open MCT JSON export file.
-                </li>
-            </ul>
-            <h2>How to use</h2>
+            <div class="page-section">
+                <button id="btnDownloadJson" onclick="downloadReplaced();" disabled>DOWNLOAD</button>
+                <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
+            </div>
 
+            <div class="page-section --expands">
+                <h2>Output</h2>
+                <div class="c-msg" id="outputMsg">
+                </div>
+            </div>
+        </div>
+
+        <div class="page-main --sidebar">
+            <div class="page-section --can-shrink" id="howCsv">
+                <h2>What this does</h2>
+                <ul>
+                    <li>Allows bulk replacement of strings within an Open MCT JSON export file.
+                    </li>
+                </ul>
+                <h2>How to use</h2>
+
+            </div>
         </div>
     </div>
 </div>

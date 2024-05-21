@@ -73,7 +73,7 @@ extractFromPrlTraverse = function (str, filename) {
                 pathArr = [pathFromString(getDataNomenclature(node))];
             }
 
-            console.log('prl:RecordInstruction', curNumber, pathArr);
+            // console.log('prl:RecordInstruction', curNumber, pathArr);
 
             if (pathArr && pathArr.length > 0) {
                 for (let i = 0; i < pathArr.length; i++) {

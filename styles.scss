@@ -1,15 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
-
+/**************************************************************** HTML ELEMENTS */
 body {
   background: #333;
   color: #999;
   font-family: "IBM Plex Sans", Helvetica, sans serif;
   font-size: 0.8em;
   margin: 0;
-}
-
-body > * + * {
-  margin-top: 10px;
 }
 
 a {
@@ -19,11 +15,13 @@ a {
 
 div {
   box-sizing: border-box;
+  position: relative;
 }
 
 h1 {
   color: white;
   font-size: 1.5em;
+  margin: 0;
 }
 
 .app-version {
@@ -36,7 +34,8 @@ ol, ul {
   padding: 0 20px;
 }
 
-.--main {
+.--main,
+.c-output {
   h2, h3 {
     font-size: inherit;
     text-transform: uppercase;
@@ -50,27 +49,6 @@ ol, ul {
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
   }
-
-  p {
-    display: block;
-    padding: 4px 6px;
-  }
-
-}
-
-.--sidebar {
-  /*background: rgba(255, 255, 255, 0.05);*/
-  /*border-radius: 3px;*/
-  padding: 5px;
-}
-
-.--sidebar h2 {
-  font-size: 1em;
-  margin-top: 20px;
-}
-
-.--sidebar h2:first-child {
-  margin-top: 0;
 }
 
 h3 {
@@ -98,6 +76,10 @@ textarea {
 
 input[type="text"] {
   width: 200px;
+
+  &.--lg {
+    width: 400px;
+  }
 }
 
 button,
@@ -136,6 +118,10 @@ button,
   text-decoration: none;
 }
 
+.c-btn-run {
+  background: #ff8000;
+}
+
 button[class*='--minor'] {
   background: #999;
 }
@@ -144,13 +130,48 @@ form {
   display: contents;
 }
 
+.sm input {
+  width: 75px;
+}
+
+.c-file-input {
+  align-items: center;
+  display: flex;
+}
+
+.c-file-input input[type="file"] {
+  flex: 1 1 auto;
+}
+
+.c-file-input .c-btn {
+  flex: 0 0 max-content;
+}
+
 .contents {
   display: contents;
+}
+
+/**************************************************************** OVERALL LAYOUT */
+.c-app {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .page,
 .head {
   padding: 0 20px;
+}
+
+.c-nav,
+.head {
+  flex: 0 0 auto;
 }
 
 .head {
@@ -164,16 +185,53 @@ form {
   }
 }
 
+/**************************************************************** NAV */
+.c-nav {
+  background-color: black;
+  display: flex;
+  padding: 5px;
+}
+
+.c-nav a {
+  /*background: rgba(255, 255, 255, 0.1);*/
+  border-radius: 2px;
+  color: inherit;
+  /*font-weight: bold;*/
+  padding: 2px 10px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.c-nav a.--is-current {
+  background: #555; /*rgba(255, 128, 0, 0.3);*/
+  color: #fff;
+  pointer-events: none;
+}
+
+.c-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #eee;
+}
+
+.c-nav a + a {
+  /*border-left: 1px solid rgba(255, 255, 255, 0.2);*/
+  margin-left: 2px;
+}
+
+/**************************************************************** PAGE */
 .page {
+  padding-bottom: 10px;
   display: flex;
   flex-direction: row;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .page-main {
   display: flex;
   flex-direction: column;
   flex: 1 1 70%;
-  gap:10px;
+  gap: 10px;
 }
 
 .page-main + .page-main {
@@ -192,17 +250,11 @@ form {
   overflow: hidden;
 }
 
-.page-section.--can-shrink {
-  flex: 0 1 auto;
-  min-height: 15vh;
-}
-
 .page-section.--expands {
-  flex: 2 1 auto;
+  flex: 1 1 auto;
 }
 
-.page-section.--can-shrink .--scrolls,
-.page-section.--expands .--scrolls {
+.--scrolls {
   overflow: auto;
 }
 
@@ -210,24 +262,46 @@ form {
   min-height: min-content !important;
 }
 
-.c-btn-run {
-  background: #ff8000;
+.page-section--centered {
+  text-align: center;
 }
 
-.sm input {
-  width: 75px;
+.--main .page-section + .page-section {
+  margin-top: 10px;
+}
+
+.--hidden {
+  display: none !important;
+}
+
+.--callout {
+  color: #ffcc00;
 }
 
 [class*='-holder'] {
   display: flex;
+  gap: 10px;
 }
 
 [class*='-holder'] > * {
   flex: 1 1 50%;
 }
 
-[class*='-holder'] > * + * {
-  margin-left: 10px;
+.c-config {
+  align-items: start;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  grid-column-gap: 5px;
+  grid-row-gap: 5px;
+  height: min-content;
+}
+
+.c-config h2 {
+  grid-column: span 2;
+}
+
+.c-config__label {
+  padding: 5px 0;
 }
 
 .c-how {
@@ -236,13 +310,28 @@ form {
   padding: 0 10px;
 }
 
+/**************************************************************** OUTPUT */
+.c-output {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto !important;
+  gap: 5px;
+  height: 0; // Chrome overflow bug? Needed to force scrolling for c-msg
+  overflow: hidden;
+
+  > * {
+    flex: 0 0 auto;
+  }
+}
+
 .c-msg {
+  flex: 1 1 auto;
   line-height: 120%;
   overflow: auto;
 }
 
 .c-msg p {
-  margin-bottom: 5px;
+  margin: 2px;
   padding: 0;
 }
 
@@ -280,103 +369,21 @@ form {
   }
 }
 
-.c-config {
-  align-items: start;
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  grid-column-gap: 5px;
-  grid-row-gap: 5px;
-  height: min-content;
-}
-
-.c-config h2 {
-  grid-column: span 2;
-}
-
-.c-config__label {
-  padding: 5px 0;
-}
-
-.c-file-input {
-  align-items: center;
-  display: flex;
-}
-
-.c-file-input input[type="file"] {
-  flex: 1 1 auto;
-}
-
-.c-file-input .c-btn {
-  flex: 0 0 max-content;
-}
-
-.output, .message {
-  padding: 10px;
-}
-
-.output {
-  background: rgba(255, 255, 255, 0.1);
-  min-height: 1em;
-  max-height: 10em;
+/**************************************************************** SIDEBAR */
+.--sidebar {
   overflow: auto;
-  word-break: break-all;
+
+  h2 {
+    font-size: 1em;
+    margin-top: 20px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
 }
 
-.output.lg {
-  /*min-height: 100px;*/
-  /*max-height: 300px;*/
-}
-
-.page-section--centered {
-  text-align: center;
-}
-
-.--main .page-section + .page-section {
-  margin-top: 10px;
-}
-
-.--hidden {
-  display: none !important;
-}
-
-.--callout {
-  color: #ffcc00;
-}
-
-/*************************************** NAV */
-.c-nav {
-  background-color: black;
-  display: flex;
-  padding: 5px;
-}
-
-.c-nav a {
-  /*background: rgba(255, 255, 255, 0.1);*/
-  border-radius: 2px;
-  color: inherit;
-  /*font-weight: bold;*/
-  padding: 2px 10px;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-.c-nav a.--is-current {
-  background: #555; /*rgba(255, 128, 0, 0.3);*/
-  color: #fff;
-  pointer-events: none;
-}
-
-.c-nav a:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #eee;
-}
-
-.c-nav a + a {
-  /*border-left: 1px solid rgba(255, 255, 255, 0.2);*/
-  margin-left: 2px;
-}
-
-/*************************************** HELP */
+/**************************************************************** HELP */
 .--help {
   $c: rgba(white, 0.1);
 
@@ -395,7 +402,7 @@ form {
     }
   }
 
-  h2,h3 {
+  h2, h3 {
     margin-top: 1em;
   }
 
@@ -423,6 +430,7 @@ form {
   }
 }
 
+/**************************************************************** SPECIFIC ELEMENTS */
 .c-mdb-status {
   padding: 2px 10px;
   border-radius: 3px;

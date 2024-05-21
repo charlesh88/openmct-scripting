@@ -117,12 +117,13 @@ function outputJSON() {
     console.log('outputJSON', objJson);
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
-    outputStatsDisplay.innerHTML =
+    const oStr =
         'Generated ' +
         updateTime.getHours().toString().padStart(2, '0') + ':' +
         updateTime.getMinutes().toString().padStart(2, '0') + ':' +
         updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
+    outputMsg(oStr);
     btnDownloadJson.removeAttribute('disabled');
 }
 

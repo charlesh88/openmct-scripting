@@ -1,10 +1,4 @@
-const outputStatsDisplay = document.getElementById('output-stats');
-// const myForm = document.getElementById("inputForm");
-// const inputFile = document.getElementById("inputFile");
-// const inputStatsDisplay = document.getElementById("input-stats");
-// const inputType = document.getElementById("inputType");
 const inputPRL = document.getElementById("inputPRL");
-// const inputCsv = document.getElementById("inputCsv");
 const formSectionWidgets = document.getElementById("configFormSectionWidgets");
 const formSectionMatrixLayout = document.getElementById("configFormSectionMatrixLayout");
 const howCsv = document.getElementById("howCsv");
