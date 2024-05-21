@@ -1,3 +1,4 @@
+/**************************************************************** CONSTANTS */
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
 /**************************************************************** HTML ELEMENTS */
 body {
@@ -146,6 +147,26 @@ form {
 
 .contents {
   display: contents;
+}
+
+::-webkit-scrollbar {
+  box-sizing: border-box;
+  box-shadow: inset rgba(0, 0, 0, 0.2) 0 1px 2px;
+  background-color: rgba(0, 0, 0, 0.2);
+  height: 7px;
+  width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  box-sizing: border-box;
+  background: #666;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /**************************************************************** OVERALL LAYOUT */

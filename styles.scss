@@ -1,8 +1,18 @@
+/**************************************************************** CONSTANTS */
+// Scrollbar
+$colorBodyBg: #333;
+$colorBodyFg: #999;
+$scrollbarTrackSize: 7px;
+$scrollbarTrackShdw: rgba(#000, 0.2) 0 1px 2px;
+$scrollbarTrackColorBg: rgba(#000, 0.2);
+$scrollbarThumbColor: #666;
+$scrollbarThumbColorHov: #777;
+
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
 /**************************************************************** HTML ELEMENTS */
 body {
-  background: #333;
-  color: #999;
+  background: $colorBodyBg;
+  color: $colorBodyFg;
   font-family: "IBM Plex Sans", Helvetica, sans serif;
   font-size: 0.8em;
   margin: 0;
@@ -149,6 +159,26 @@ form {
 
 .contents {
   display: contents;
+}
+
+::-webkit-scrollbar {
+  box-sizing: border-box;
+  box-shadow: inset $scrollbarTrackShdw;
+  background-color: $scrollbarTrackColorBg;
+  height: $scrollbarTrackSize;
+  width: $scrollbarTrackSize;
+}
+
+::-webkit-scrollbar-thumb {
+  box-sizing: border-box;
+  background: $scrollbarThumbColor;
+  &:hover {
+    background: $scrollbarThumbColorHov;
+  }
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /**************************************************************** OVERALL LAYOUT */
