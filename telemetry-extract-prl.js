@@ -65,15 +65,13 @@ extractFromPrlTraverse = function (str, filename) {
             // RecordInstruction
             let pathArr = []
             curNumber = node.getElementsByTagName("prl:Number")[0].textContent;
-            const drNode = node.getElementsByTagName("prl:DataReference")[0];
+            const drNode = node.getElementsByTagName("prl:DataReference")[0]; // No more than 1 of these per RecIns
 
             if (drNode) {
-                pathArr = [telemFromPrlDataReference(node)];
+                pathArr = [telemFromPrlDataReference(drNode)];
             } else {
                 pathArr = [pathFromString(getDataNomenclature(node))];
             }
-
-            // console.log('prl:RecordInstruction', curNumber, pathArr);
 
             if (pathArr && pathArr.length > 0) {
                 for (let i = 0; i < pathArr.length; i++) {
@@ -128,6 +126,7 @@ extractFromPrlTraverse = function (str, filename) {
     const xmlDoc = new DOMParser().parseFromString(str, 'text/xml');
     const arrTelemPathObjs = traverseXML(xmlDoc.documentElement, []);
 
+    // console.log('arrTelemPathObjs', arrTelemPathObjs);
     return arrTelemPathObjs;
 }
 
@@ -328,5 +327,6 @@ function telemFromPrlDataReference(drNode) {
             .concat(sPath);
     }
 
+    // console.log('telemFromPrlDataReference', sPath, identifier);
     return identifier;
 }
