@@ -4,8 +4,7 @@ async function validateParamsAgainstYamcsMdb(arrParamPaths) {
     try {
         const promises = arrParamPaths.map(async (url, index) => {
             const testPath = url.replace(/\[\d*]/g, ''); // Remove any elements in brackets
-            const fullUrl = HOST_URL.concat(YAMCS_MDB_URL).concat(testPath);
-            // console.log('validateParamsAgainstYamcsMdb', url, testPath, fullUrl);
+            const fullUrl = YAMCS_URL.concat(testPath);
             const response = await fetch(fullUrl);
             return  arrV[url] = {
                 'testPath': testPath,

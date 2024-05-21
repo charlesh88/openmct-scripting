@@ -6,19 +6,17 @@ If not found, provides a link to the ingest page.
  */
 
 let MDB_CONNECTED = false;
-let inputHost;
-let inputMdbPath;
-let HOST_URL;
+let inputYamcsUrl;
+let YAMCS_URL;
 let YAMCS_MDB_URL;
 
 const htmlElement = '\n' +
-    '        <div class="page-section --expands">\n' +
+    '        <div class="page-section">\n' +
     '            <div class="c-config">\n' +
     '                <h2>Yamcs MDB Connection</h2>\n' +
     '                <div class="c-config__label">Yamcs URL</div>\n' +
     '                <div class="c-config__value">\n' +
-    '                    <input type="text" id="yamcs-server-url-root" value=""/>\n' +
-    '                    <input type="text" id="yamcs-server-url-mdb-path" value="" style="width: 250px;"/>\n' +
+    '                    <input class="--lg" type="text" id="yamcs-server-url" value=""/>\n' +
     '                    <span id="mdb-status" class="c-mdb-status">...</span>\n' +
     '                </div>\n' +
     '            </div>\n' +
@@ -38,7 +36,7 @@ setMdbConnectionStatus = function (haveMdb) {
 }
 
 async function validateParameter(url = '') {
-    const fullUrl = HOST_URL.concat(YAMCS_MDB_URL).concat(url);
+    const fullUrl = YAMCS_URL.concat(url);
 
     try {
         const response = await fetch(fullUrl);
@@ -59,28 +57,17 @@ function testYamcsConnection() {
 function initComponent() {
     const componentMdb = document.getElementById("component-mdb");
     componentMdb.innerHTML = htmlElement;
-    inputHost = document.getElementById("yamcs-server-url-root");
-    inputMdbPath = document.getElementById("yamcs-server-url-mdb-path");
+    inputYamcsUrl = document.getElementById("yamcs-server-url");
 
-    inputHost.addEventListener("blur", function (ev) {
-        storeLocal(LOCALSTORE_BASE_NAME.concat('YAMCS_HOST_URL'), inputHost.value);
-        HOST_URL = inputHost.value;
+    inputYamcsUrl.addEventListener("blur", function (ev) {
+        storeLocal(LOCALSTORE_BASE_NAME.concat('YAMCS_URL'), inputYamcsUrl.value);
+        YAMCS_URL = inputYamcsUrl.value;
         testYamcsConnection();
     }, false);
 
-    inputMdbPath.addEventListener("blur", function (ev) {
-        storeLocal(LOCALSTORE_BASE_NAME.concat('YAMCS_MDBPATH_URL'), inputMdbPath.value);
-        YAMCS_MDB_URL = inputMdbPath.value;
-        testYamcsConnection();
-    }, false);
-
-    const host = loadLocal(LOCALSTORE_BASE_NAME.concat('YAMCS_HOST_URL'));
-    HOST_URL = (host && host.length > 0) ? host : window.location.origin;
-    inputHost.value = HOST_URL;
-
-    const mdbPath = loadLocal(LOCALSTORE_BASE_NAME.concat('YAMCS_MDBPATH_URL'));
-    YAMCS_MDB_URL = (mdbPath && mdbPath.length > 0) ? mdbPath : '/yamcs/api/mdb/viper/parameters';
-    inputMdbPath.value = YAMCS_MDB_URL;
+    const yamcsUrl = loadLocal(LOCALSTORE_BASE_NAME.concat('YAMCS_URL'));
+    YAMCS_URL = (yamcsUrl && yamcsUrl.length > 0) ? yamcsUrl : window.location.origin;
+    inputYamcsUrl.value = YAMCS_URL;
 
     testYamcsConnection();
 }
