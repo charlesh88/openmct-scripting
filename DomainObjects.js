@@ -32,16 +32,16 @@ const Obj = function (name, type, hasComposition) {
 function createStyleObj(args) {
     let obj = {};
     obj.style = {};
-    obj.style.output = (args && args.output) ? args.output : '';
-    obj.style.border = (args && args.border) ? args.border : '';
-    obj.style.imageUrl = (args && args.url) ? args.url : '';
-    // Yes, this is really how it was done.
-    obj.style.isStyleInvisible = (args && args.isStyleInvisible) ? 'is-style-invisible' : '';
-    obj.style.backgroundColor = (args && args.bgColor) ? args.bgColor : '';
-    obj.style.color = (args && args.fgColor) ? args.fgColor : '';
-    if (args && args.id) {
-        // Used within a styles array for conditional styling
-        obj.conditionId = args.id;
+
+    if (args) {
+        obj.style.output = args.output ? args.output : '';
+        obj.style.isStyleInvisible = args.isStyleInvisible ? args.isStyleInvisible : '';
+        if (args.output) { obj.style.output = args.output; }
+        if (args.border) { obj.style.border = args.border; }
+        if (args.url) { obj.style.imageUrl = args.url; }
+        if (args.bgColor) { obj.style.backgroundColor = args.bgColor; }
+        if (args.fgColor) { obj.style.color = args.fgColor; }
+        if (args.id) { obj.conditionId = args.id; }
     }
 
     return obj;
