@@ -8,618 +8,695 @@
 </head>
 
 <body translate="no" class="help">
-<div class="c-nav" id="nav"></div>
-<div class="head">
-    <h1>How to Use This Tool <span id="app-version" class="app-version"></span></h1>
-</div>
-<div class="page">
-    <div class="page-main --help">
-        <p>Last updated: 12 Apr 2024</p>
-        <h2 id="overview">Overview</h2>
-        <p>Allows large scale creation of a variety of Open MCT views, many with integrated Conditional styling. Source
-            files include tabular CSV, PRIDE .prl files, and Python ground control scripts (GCS). The tool outputs JSON
-            files that are imported into Open MCT.</p>
-        <ol>
-            <li>Create and/or gather input files.</li>
-            <li>Run those inputs through this tool, which then outputs an Open MCT import-ready JSON file.</li>
-            <li>Import that JSON file into Open MCT in the environment and location desired.</li>
-        </ol>
-        <p>The tool also provides a capability to extract telemetry paths from GCS scripts and PRIDE PRL files into a
-            CSV output.</p>
-        <h2 id="links">Links</h2>
-        <ul>
-            <li>Release notes and change history: <a href="documentation/release-notes.md">Open MCT Scripting Tool
-                Release Notes</a></li>
-            <li>Online web tool: <a href="https://charlesh88.github.io/openmct-scripting/">https://charlesh88.github.io/openmct-scripting/</a>
-            </li>
-            <li>Code repo: <a href="https://github.com/charlesh88/openmct-scripting">https://github.com/charlesh88/openmct-scripting</a>
-            </li>
-        </ul>
-        <h2 class="feature-hdr" id="matrix-layout">Matrix Layout</h2>
-        <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-imported-result.png"
-                alt="Picture of tool interface" title="Matrix Layout imported result"></p>
-        <h3 id="what-it-does">What It Does</h3>
-        <ul>
-            <li>Uses two input CSV files, one for telemetry and conditions and the other for layout and creates a single
-                Display Layout as a result.
-                <ul>
-                    <li>The layout can display telemetry elements in the source file as alphanumerics or widgets,
-                        depending on the specification in the matrix layout CSV file.
-                    </li>
-                    <li>The matrix layout defines a grid with variable column widths and row heights.</li>
-                    <li>Each telemetry element can be conditionally styled.</li>
-                    <li>Static layout text elements can be added as labels; labels can span multiple columns.</li>
-                </ul>
-            </li>
-            <li>Creates Condition Sets for each specified row in the source file which are used by elements in the
-                Display Layout.
-            </li>
-            <li>Folders that contain the above elements.</li>
-        </ul>
-        <h3 id="interface">Interface</h3>
-        <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-matrix-layout.png" alt="Picture of tool interface"
-                title="Matrix Layout interface"></p>
-        <ul>
-            <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
-            <li><strong>Telemetry CSV Input</strong>: a CSV file that defines paths to telemetry parameters, properties
-                and condition properties.
-            </li>
-            <li><strong>Layout CSV</strong>: a CSV file that defines column widths, row heights, paths to telemetry
-                parameters and text labels.
-            </li>
-        </ul>
-        <h3 id="csv-input-files-common-capabilities">CSV Input Files Common Capabilities</h3>
-        <h4 id="escaping-text-in-the-input-files">Escaping Text in the Input Files</h4>
-        <p>The tool uses certain special characters (commas, tildes and backslashes) to separate arguments and define
-            telemetry paths - these characters can&#39;t be used in text labels without being escaped. To use these
-            characters for text, they must be escaped with a forward slash &quot;\&quot; as shown below.</p>
-        <table>
-            <thead>
-            <tr>
-                <th><strong>Character</strong></th>
-                <th><strong>Format</strong></th>
-                <th><strong>Example</strong></th>
-                <th><strong>Resulting Display</strong></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Comma</td>
-                <td>\,</td>
-                <td>STATE (A\, F == Arm\, Fire)</td>
-                <td>STATE (A, F == Arm, Fire)</td>
-            </tr>
-            <tr>
-                <td>Tilde</td>
-                <td>\~</td>
-                <td>TEMP \~10 - 20 deg</td>
-                <td>TEMP ~10 - 20 deg</td>
-            </tr>
-            <tr>
-                <td>Backslash</td>
-                <td>\/</td>
-                <td>Use \/ViperGround\/KLMIO</td>
-                <td>Use /ViperGround/KLMIO</td>
-            </tr>
-            </tbody>
-        </table>
-        <h3 id="matrix-layout-telemetry-csv-input-file">Matrix Layout Telemetry CSV Input File</h3>
-        <p>This file defines the telemetry points and associated Condition Sets to be used in the matrix Display Layout.
-            When the condition cells (columns G and on) are populated for a row, a Condition Set will be created that
-            incorporates and evaluates the telemetry parameter in column B &quot;dataSource&quot;.</p>
-        <p><img class="screenshot" src="documentation/images/openmct-scripting-csv-matrix-input-telemetry.png" alt="Picture of a CSV file"
-                title="Example Matrix Layout telemetry input file"></p>
-        <p>Row 1 must be these headers:</p>
-        <ul>
-            <li><strong>name:</strong> name of the parameter; used by generated Condition Widgets. See below for more.
-            </li>
-            <li><strong>dataSource:</strong> full path for the parameter using forward-slashes to denote containers and
-                periods for aggregates, like: &quot;/SpacecraftSystem/Subsystem/folder/aggregate.parameterName&quot;.
-                Can be copied directly from Yamcs or other mission spec documents.
-            </li>
-            <li><strong>alphaFormat:</strong> a printf string to be applied to numeric alphanumerics in a Display
-                Layout. For example, &quot;%.2f&quot; will round a numeric parameter to two decimal points.
-            </li>
-            <li><strong>alphaShowsUnit:</strong> either TRUE or FALSE to indicate if alphanumerics should include units
-                when they are available.
-            </li>
-            <li><strong>alphaUsesCond:</strong> either TRUE or FALSE to indicate if the resulting alphanumeric should
-                use a Condition Set and conditional styling. If TRUE, then at least one condition must be specified in
-                the table; see below for more.
-            </li>
-            <li><strong>condWidgetUsesOutputAsLabel:</strong> either TRUE or FALSE to indicate if generated Condition
-                Widgets should use a generated Condition Set output string as a label. For example, a switch state
-                widget could spec conditions that output &quot;ON&quot; and &quot;OFF&quot; and setting this to TRUE
-                would cause the widget to display that text when the relevant conditions are matched. Settiing to FALSE
-                will use the &quot;name&quot; property specified in that column.
-            </li>
-            <li><strong>condDefault:</strong> properties and styles for the Default condition in the row&#39;s Condition
-                Set.
-            </li>
-            <li><strong>cond1 through cond10:</strong> styles and evaluation properties for up to ten Conditions in a
-                Condition Set.
-                <ul>
-                    <li>Headers must be named exactly as &quot;cond1, cond2&quot;, etc.</li>
-                    <li>Not every row must have a condition definition, but a header for a column for which there is a
-                        condition defined. For example, if 99 of 100 rows only use two condition definitions, but a
-                        single row uses three conditions, the CSV must include headers for &quot;cond1&quot;, &quot;cond2&quot;
-                        and &quot;cond3&quot;.
-                    </li>
-                    <li>Each cell entry is style properties and a single criteria that evaluates the telemetry parameter
-                        in Column B, organized like this:
-                        <ul>
-                            <li><strong>Condition output</strong>: when the Condition matches, the Condition set can
-                                output a string, which can be used and displayed by a Condition Widget. The value here
-                                defines that string.
-                            </li>
-                            <li><strong>Background color:</strong> the background color to be applied for matching
-                                Conditions when using Conditional styling.
-                            </li>
-                            <li><strong>Foreground color:</strong> the foreground color to be applied for matching
-                                Conditions when using Conditional styling.
-                            </li>
-                            <li><strong>Match criteria:</strong> use &quot;any&quot; to match the defined Condition
-                                operation and Comparison input; use &quot;not&quot; to match all values not defined in
-                                the Condition operation and Comparison input.
-                                <ul>
-                                    <li>For example: given float telem X with a current value of 0.2:</li>
-                                </ul>
-                            </li>
-                            <li><strong>Condition operation</strong>: the operation to perform against telemetry values,
-                                e.g. equalTo, greaterThan, etc. See &quot;Defining Conditions in the Telemetry CSV&quot;
-                                below.
-                            </li>
-                            <li><strong>Comparison value(s)</strong>: what to compare the Condition evaluation to. Not
-                                all Condition evaluations have comparison values. See &quot;Defining Conditions in the
-                                Telemetry CSV&quot; below.
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-        <h4 id="defining-conditions-in-the-telemetry-csv">Defining Conditions in the Telemetry CSV</h4>
-        <table>
-            <thead>
-            <tr>
-                <th><strong>Telemetry Type</strong></th>
-                <th><strong>Operation</strong></th>
-                <th><strong>Description</strong></th>
-                <th><strong>Condition operation literals</strong></th>
-                <th><strong>Comparison input format</strong></th>
-                <th><strong>Example</strong></th>
-                <th><strong>Notes</strong></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>All</td>
-                <td>Is Defined</td>
-                <td>Matches if the telemetry endpoint is present and available from Yamcs, even when it doesn&#39;t have
-                    a value.
-                </td>
-                <td>isDefined, isUndefined</td>
-                <td>No comparison value</td>
-                <td>N/A</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>All</td>
-                <td>Data older than</td>
-                <td></td>
-                <td>isStale</td>
-                <td>Number of milliseconds</td>
-                <td>1500</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Float</td>
-                <td>Equality</td>
-                <td>Compares a current telemetry value to the Comparison value with equality.</td>
-                <td>equalTo</td>
-                <td>Single number</td>
-                <td>100</td>
-                <td>Note that Float and Integer telemetry types and comparisons are not compatible, i.e. a telem value
-                    of 0.000 will not match a comparison value of 0. Use Greater/less than comparisons in these cases.
-                </td>
-            </tr>
-            <tr>
-                <td>Float</td>
-                <td>Greater/less than</td>
-                <td></td>
-                <td>greaterThan, lessThan, greaterThanOrEq, lessThanOrEq</td>
-                <td>Single number</td>
-                <td>100</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Float</td>
-                <td>Between</td>
-                <td></td>
-                <td>between, notBetween</td>
-                <td>Two numbers separated by a comma</td>
-                <td>-100,100</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Enumeration</td>
-                <td>Enum value equality</td>
-                <td></td>
-                <td>enumValueIs, enumValueIsNot</td>
-                <td>Raw numeric of the enumeration, not the enumeration string</td>
-                <td>1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>String</td>
-                <td>Contains</td>
-                <td></td>
-                <td>textContains, textDoesNotContain</td>
-                <td>Text</td>
-                <td>ooba</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>String</td>
-                <td>Starts/Ends</td>
-                <td></td>
-                <td>textStartsWith, textEndsWith,</td>
-                <td>Text</td>
-                <td>Foo</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>String</td>
-                <td>Equality</td>
-                <td></td>
-                <td>textIsExactly</td>
-                <td>Text</td>
-                <td>Foobar</td>
-            </tr>
-            </tbody>
-        </table>
-        <h4 id="condition-examples">Condition Examples</h4>
-        <table>
-            <thead>
-            <tr>
-                <th><strong>Telemetry Type</strong></th>
-                <th><strong>Goal</strong></th>
-                <th><strong>Condition string</strong></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>All</td>
-                <td>If the telemetry is present on the server, output the string &quot;Defined&quot; with a medium gray
-                    background and white foreground.
-                </td>
-                <td>Defined,#666666,#ffffff,any,isDefined</td>
-            </tr>
-            <tr>
-                <td>Numeric</td>
-                <td>If the current float telemetry value is between than -0.1 and 0.2, output the string &quot;Nominal&quot;
-                    with an green background and white foreground.
-                </td>
-                <td>Nominal,#006600,#ffffff,any,between,-0.1,0.2</td>
-            </tr>
-            <tr>
-                <td>Numeric</td>
-                <td>If the current float telemetry value is greater than 0.2, output the string &quot;High&quot; with an
-                    orange background and white foreground.
-                </td>
-                <td>High,#ff6600,#ffffff,any,greaterThan,0.2</td>
-            </tr>
-            </tbody>
-        </table>
-        <h3 id="matrix-layout-layout-csv-input-file">Matrix Layout &quot;layout&quot; CSV Input File</h3>
-        <p>The matrix layout is simply a grid with variable column widths and row heights.</p>
-        <p><img class="screenshot" src="documentation/images/openmct-scripting-csv-matrix-input-layout.png" alt="Picture of a CSV file"
-                title="Example Matrix Layout layout input file"></p>
-        <ul>
-            <li>Row 1 defines the width of columns in the grid, in layout grid units.</li>
-            <li>Column A defines the height of each row in the grid, in layout grid units.</li>
-            <li>Cell A1 contains 3 comma-separated values that control the grid dimensions and item margin:
-                <ul>
-                    <li>The first two values are the desired layout grid dimensions, which are the basis for grid
-                        units.
-                    </li>
-                    <li>The last value is the amount of margin between columns and rows, in grid units.</li>
-                    <li>For example, &quot;1, 1, 4&quot; will create a Display Layout with settings of grid X = 1, grid
-                        Y = 1, and 4 &quot;grid units&quot; of margin between columns and rows.
-                    </li>
-                    <li>If values are not provided in A1, the tool will use the default settings of 1, 1, 4.</li>
-                </ul>
-            </li>
-            <li>Cells can contain text, or a path to a telemetry parameter.
-                <ul>
-                    <li>Text cells can contain optional &quot;flags&quot;; see below for more.</li>
-                    <li>Cells that start with &quot;/&quot; or &quot;~&quot; will be treated as parameter paths.</li>
-                    <li>You can use &quot;/&quot; or &quot;~&quot; if they are escaped, see notes above.</li>
-                </ul>
-            </li>
-            <li>Your telemetry file can include parameters that are not used by the layout file, but the converse is not
-                true: parameters used in this file MUST be present in the telemetry CSV file used for a given matrix
-                layout.
-            </li>
-        </ul>
-        <p>The resulting matrix layout output based on the CSV input above:</p>
-        <h4 id="using-optional-flags-in-the-layout-csv-file">Using Optional Flags in the Layout CSV File</h4>
-        <p>Both text and telemetry parameters accept certain &quot;flag&quot; arguments that allow additional
-            capabilities and rendering options. More than one flag can be used at a time, separated with commas. Flags
-            include:</p>
-        <table>
-            <thead>
-            <tr>
-                <th><strong>Capability</strong></th>
-                <th><strong>Flag</strong></th>
-                <th><strong>Telemetry</strong></th>
-                <th><strong>Text</strong></th>
-                <th><strong>Example</strong></th>
-                <th><strong>Notes</strong></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Span multiple columns</td>
-                <td>_span(#)</td>
-                <td>YES</td>
-                <td>YES</td>
-                <td>SYSTEMS,<strong>_span(3)</strong></td>
-                <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of columns, starting
-                    at the element&#39;s current column.
-                </td>
-            </tr>
-            <tr>
-                <td>Render as Condition Widget</td>
-                <td>_cw</td>
-                <td>YES</td>
-                <td></td>
-                <td>/SpacecraftSystem/Subsystem/aggregate.parameterName,<strong>_cw</strong></td>
-                <td>Renders a Condition Widget for this telemetry parameter. If this parameter is set to use Conditions
-                    in the telemetry CSV input file, then a Condition Set will be created using those parameters.
-                </td>
-            </tr>
-            <tr>
-                <td>Render as Hyperlink button</td>
-                <td>_link(url)</td>
-                <td></td>
-                <td>YES</td>
-                <td>BUTTON LABEL,<strong>_link(<a href="https://someurl.com">https://someurl.com</a>)</strong></td>
-                <td>A text element rendered as a Hyperlink button. Clicking the button will open the designated URL in a
-                    new browser tab. Note that Open MCT only accepts valid nasa.gov URLs. Note that elements with this
-                    flag cannot be styled with _bg and _fg; see below.
-                </td>
-            </tr>
-            <tr>
-                <td>Style background color</td>
-                <td>_bg(hex value)</td>
-                <td></td>
-                <td>YES</td>
-                <td>BUTTON LABEL,<strong>_bg(#666666)</strong></td>
-                <td>Color must be specified as full hex values. Only applicable to text elements that are not Hyperlink
-                    buttons. Resource for getting hex values: <a
-                            href="https://www.google.com/search?q=hex+color+picker">hex+color+picker</a></td>
-            </tr>
-            <tr>
-                <td>Style foreground color</td>
-                <td>_fg(hex value)</td>
-                <td></td>
-                <td>YES</td>
-                <td>BUTTON LABEL,<strong>_fg(#000099)</strong></td>
-                <td>Color must be specified as full hex values. Only applicable to text elements that are not Hyperlink
-                    buttons.
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <h3 id="generated-open-mct-examples">Generated Open MCT Examples</h3>
-        <h3 id="source">Source</h3>
-        <ul>
-            <li>Telemetry CSV: <a href="documentation/files/matrix-layout-input-telemetry-example.csv">Matrix Layout
-                inputs Telemetry CSV example</a></li>
-            <li>Matrix Layout CSV: <a href="documentation/files/matrix-layout-input-layout-example.csv">Matrix Layout
-                inputs Layout CSV example</a></li>
-        </ul>
-        <h2 class="feature-hdr" id="conditional-graphics">Conditional Graphics</h2>
-        <p>Generates one or more &quot;image view&quot; objects within a Display Layout. Image views can be
-            conditionally styled to show a given image source when a condition in a Condition Set is matched. This
-            example uses a sun angle telemetry parameter to display one of 23 different images of the &quot;sun&quot;
-            graphic, overlaid on a base drawing of the rover, itself its own image view object.</p>
-        <p><img class="screenshot" src="documentation/images/openmct-scripting-conditional-graphics-imported-result.png"
-                alt="Picture of rendered Display Layout" title="Conditional Graphics Example"></p>
-        <h3 id="what-it-does">What It Does</h3>
-        <ul>
-            <li>Generates one or more &quot;image view&quot; objects within a single Display Layout.
-                <ul>
-                    <li>Source images must all be the same size for all image views in the layout.</li>
-                    <li>Image views color and border styling can be defined.</li>
-                </ul>
-            </li>
-            <li>Optionally generates one Condition Set.
-                <ul>
-                    <li>The number of conditions in the set is not limited.</li>
-                    <li>Each condition evaluates only one criteria.</li>
-                </ul>
-            </li>
-            <li>Data sources can be dictionary parameters or a Sine Wave Generator.
-                <ul>
-                    <li>If a generator is specified, the tool will create one or more generators as a result.</li>
-                </ul>
-            </li>
-        </ul>
-        <h3 id="interface">Interface</h3>
-        <!--IMAGE HERE-->
-        <ul>
-            <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
-            <li><strong>Display Layout Grid</strong>: the X and Y grid dimensions to be used by generated Display
-                Layouts.
-                <ul>
-                    <li>Settings here are per pixel and define the scale of item widths and heights specified elsewhere.
-                        For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items set to 200 width
-                        and 14 high would then be 400 pixels wide by 28 pixels high.
-                    </li>
-                    <li>Using smaller numbers here mean that items can be more tightly packed. Using a grid of 1,1 would
-                        make the grid equivalent to pixels.
-                    </li>
-                </ul>
-            </li>
-            <li><strong>Image size in px:</strong> the pixel size (not grid units) desired for the resulting image view.
-                All generated image views will be the same size in the Display Layout.
-            </li>
-        </ul>
-        <h3 id="input-csv-file">Input CSV file</h3>
-        <p>Example input using telemetry paths as a data source:
-            <!--IMAGE HERE--></p>
-        <p>Example input using a Sine Wave Generator as a data source:
-            <!--IMAGE HERE--></p>
-        <p>Row 1 must be these headers:</p>
-        <ul>
-            <li><strong>imageViewName</strong>: The name of the image view object that will be created within the
-                layout.
-                <ul>
-                    <li>Names must be unique in the sheet. Entering a different name creates a separate image with its
-                        own set of conditional styling, if set.
-                    </li>
-                    <li>To apply a set of conditions to a single image view, use the same name in each row.</li>
-                    <li>Image views are always the same dimensions, set in &quot;Image size in px&quot; in the web app
-                        interface.
-                    </li>
-                </ul>
-            </li>
-            <li><strong>dataSource</strong>: a valid path to a telemetry source, a definition for a Sine Wave Generator
-                or a name reference to a generator specced in a previous row. See notes below on Sine Wave Generators.
-            </li>
-            <li><strong>isDefault</strong>: optional boolean if the condition for this row should be a default. If no
-                default is specified, the Condition Set will create an unnamed default condition.
-            </li>
-            <li><strong>operation</strong>: The condition operation to be performed for this row. See <a
-                    href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions in the Telemetry CSV</a> above.
-            </li>
-            <li><strong>input</strong>: Nothing, string, single number, or two numbers to be used as the condition
-                operation evaluators. See <a href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions in the
-                    Telemetry CSV</a> above.
-            </li>
-            <li><strong>name</strong>: The name of the condition that will be created for this row.</li>
-            <li><strong>output</strong>: The output string of the condition that will be created for this row.</li>
-            <li><strong>bgColor, fgColor, border</strong>: See <a href="#OpenMCTScriptingTool-ConditionOperation">Defining
-                Conditions in the Telemetry CSV</a> above.
-            </li>
-            <li><strong>imageUrl</strong>: a full path to an image source file. Note that Open MCT for VIPER only
-                supports URLs within the nasa.gov domain.
-            </li>
-        </ul>
-        <h3 id="source">Source</h3>
-        <ul>
-            <li>Example using dictionary telemetry parameters: <a
-                    href="documentation/files/conditional-graphics-example-sun-angle.csv">Sun Angle dictionary input
-                example.csv</a></li>
-            <li>Example that uses a generated Open MCT Sine Wave Generator: <a
-                    href="documentation/files/conditional-graphics-example-sun-angle-swg.csv">Sun Angle 3 SWG
-                input.csv</a></li>
-        </ul>
-        <h2 class="feature-hdr" id="procedure-displays">Procedure Displays</h2>
-        <h3 id="what-it-does">What It Does</h3>
-        <ul>
-            <li>Traverses multiple PRIDE procedure .prl files and creates Display Layout of alphanumeric parameter
-                values and Stacked Plots for each.
-                <ul>
-                    <li>Parameters are grouped into their steps and labeled as such.</li>
-                    <li>Each parameter is included as an alphanumeric with a label derived from the procedure file.</li>
-                    <li>Widths of alphanumerics can be directly set; the width of labels is automatically calculated.
-                    </li>
-                    <li><strong>IMPORTANT NOTE</strong>: only fully qualified paths (e.g. &#39;/SpacecraftSystem/Subsystem/etc.&#39;)
-                        in procedures can be found and extracted; references without in descriptive text may not be
-                        found.
-                    </li>
-                </ul>
-            </li>
-            <li>A Tabs View that contains all the generated Display Layouts.</li>
-            <li>A Stacked Plot per procedure with parameters used.</li>
-            <li>Folders that contain the above elements.</li>
-        </ul>
-        <h3 id="interface">Interface</h3>
-        <!--IMAGE HERE-->
-        <ul>
-            <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
-            <li><strong>Display Layout Grid</strong>: the X and Y grid dimensions to be used by generated Display
-                Layouts.
-                <ul>
-                    <li>Settings here are per pixel and define the scale of item widths and heights specified elsewhere.
-                        For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items set to 200 width
-                        and 14 high would then be 400 pixels wide by 28 pixels high.
-                    </li>
-                    <li>Using smaller numbers here mean that items can be more tightly packed. Using a grid of 1,1 would
-                        make the grid equivalent to pixels.
-                    </li>
-                </ul>
-            </li>
-            <li><strong>Item Margin</strong>: a single grid unit number that controls the amount of horizontal and
-                vertical space between items in the Display Layout. Using &quot;1&quot; with grid set to 2,2 would
-                create a 2 x 2 pixel space between labels and elements.
-            </li>
-            <li><strong>Alphanumeric Width:</strong> controls the width of alphanumeric elements in the layout.</li>
-            <li><strong>Row Height</strong>: controls the height of text-plus-alphanumeric pairs in the layout.</li>
-        </ul>
-        <h2 class="feature-hdr" id="stacked-views">Stacked Views</h2>
-        <!--IMAGE HERE-->
-        <h3 id="what-it-does">What It Does</h3>
-        <ul>
-            <li>Takes in multiple telemetry source files and creates both a Stacked Plot and a Flexible Layout for
-                each.
-            </li>
-            <li>The source file can group telemetry parameters into Overlay Plots, which become elements within the
-                Stacked Plots and Flexible Layouts.
-                <ul>
-                    <li>Overlay Plots of the same name will be created once, and shared amongst multiple Stacked Plots
-                        and Flexible Layouts.
-                    </li>
-                    <li>Telemetry parameters can specify some properties like the display of limit lines, marker size
-                        and shape, and line interpolation style.
-                    </li>
-                </ul>
-            </li>
-            <li>Folders that contain the above elements.</li>
-        </ul>
-        <h3 id="interface">Interface</h3>
-        <!--IMAGE HERE-->
-        <ul>
-            <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
-        </ul>
-        <h3 id="example-source">Example Source</h3>
-        <ul>
-            <li>Example that creates 3 overlay plots in a Stacked View: <a
-                    href="documentation/files/stacked-view-input-example-1.csv">Stacked View example 1 .csv</a></li>
-        </ul>
-        <h2 class="feature-hdr" id="extract-telemetry">Extract Telemetry</h2>
-        <h3 id="what-it-does">What It Does</h3>
-        <ul>
-            <li>Takes in multiple source files and creates CSV file outputs. This is not an import-able Open MCT
-                display, but is an aid to quickly generate lists of in-use parameters across multiple sources.
-                <ul>
-                    <li>&quot;Unique Telemetry&quot; will simply generate a list of all unique parameters used across
-                        all the input files.
-                    </li>
-                    <li>&quot;Telemetry and Refs&quot; will output a table with parameter paths, the file that contained
-                        them, and their reference context. For example, in a GCS parameters can be referenced in in
-                        getVal and checkVal functions, this output will indicate as such.
-                    </li>
-                    <li><strong>IMPORTANT NOTE</strong>: only fully qualified paths (e.g. &#39;/SpacecraftSystem/Subsystem/etc.&#39;)
-                        in PRIDE procedure files can be found and extracted; references without in descriptive text may
-                        not be found.
-                    </li>
-                </ul>
-            </li>
-        </ul>
-        <h3 id="interface">Interface</h3>
-        <!--IMAGE HERE-->
-        <ul>
-            <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
-            <li><strong>Input File Type</strong>: choose either GCS Python scripts (.py) or PRIDE procedure (.prl).</li>
-        </ul>
+<div class="c-app">
+    <div class="c-nav" id="nav"></div>
+    <div class="head">
+        <h1>How to Use This Tool <span id="app-version" class="app-version"></span></h1>
+    </div>
+    <div class="page --scrolls">
+        <div class="page-main --help">
+            <p>Last updated: 22 May 2024</p>
+            <h2 id="overview">Overview</h2>
+            <p>Allows large scale creation of a variety of Open MCT views, many with integrated Conditional styling.
+                Source
+                files include tabular CSV, PRIDE .prl files, and Python ground control scripts (GCS). The tool outputs
+                JSON
+                files that are imported into Open MCT.</p>
+            <ol>
+                <li>Create and/or gather input files.</li>
+                <li>Run those inputs through this tool, which then outputs an Open MCT import-ready JSON file.</li>
+                <li>Import that JSON file into Open MCT in the environment and location desired.</li>
+            </ol>
+            <p>The tool also provides a capability to extract telemetry paths from GCS scripts and PRIDE PRL files into
+                a
+                CSV output.</p>
+            <h2 id="links">Links</h2>
+            <ul>
+                <li>Release notes and change history: <a href="documentation/release-notes.md">Open MCT Scripting Tool
+                    Release Notes</a></li>
+                <li>Online web tool: <a href="https://charlesh88.github.io/openmct-scripting/">https://charlesh88.github.io/openmct-scripting/</a>
+                </li>
+                <li>Code repo: <a href="https://github.com/charlesh88/openmct-scripting">https://github.com/charlesh88/openmct-scripting</a>
+                </li>
+            </ul>
+            <h2 class="feature-hdr" id="matrix-layout">Matrix Layout</h2>
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-imported-result.png"
+                    alt="Picture of tool interface" title="Matrix Layout imported result"></p>
+            <h3 id="what-it-does">What It Does</h3>
+            <ul>
+                <li>Uses two input CSV files, one for telemetry and conditions and the other for layout and creates a
+                    single
+                    Display Layout as a result.
+                    <ul>
+                        <li>The layout can display telemetry elements in the source file as alphanumerics or widgets,
+                            depending on the specification in the matrix layout CSV file.
+                        </li>
+                        <li>The matrix layout defines a grid with variable column widths and row heights.</li>
+                        <li>Each telemetry element can be conditionally styled.</li>
+                        <li>Static layout text elements can be added as labels; labels can span multiple columns.</li>
+                    </ul>
+                </li>
+                <li>Creates Condition Sets for each specified row in the source file which are used by elements in the
+                    Display Layout.
+                </li>
+                <li>Folders that contain the above elements.</li>
+            </ul>
+            <h3 id="interface">Interface</h3>
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-matrix-layout.png"
+                    alt="Picture of tool interface"
+                    title="Matrix Layout interface"></p>
+            <ul>
+                <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
+                <li><strong>Telemetry CSV Input</strong>: a CSV file that defines paths to telemetry parameters,
+                    properties
+                    and condition properties.
+                </li>
+                <li><strong>Layout CSV</strong>: a CSV file that defines column widths, row heights, paths to telemetry
+                    parameters and text labels.
+                </li>
+            </ul>
+            <h3 id="csv-input-files-common-capabilities">CSV Input Files Common Capabilities</h3>
+            <h4 id="escaping-text-in-the-input-files">Escaping Text in the Input Files</h4>
+            <p>The tool uses certain special characters (commas, tildes and backslashes) to separate arguments and
+                define
+                telemetry paths - these characters can&#39;t be used in text labels without being escaped. To use these
+                characters for text, they must be escaped with a forward slash &quot;\&quot; as shown below.</p>
+            <table>
+                <thead>
+                <tr>
+                    <th><strong>Character</strong></th>
+                    <th><strong>Format</strong></th>
+                    <th><strong>Example</strong></th>
+                    <th><strong>Resulting Display</strong></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Comma</td>
+                    <td>\,</td>
+                    <td>STATE (A\, F == Arm\, Fire)</td>
+                    <td>STATE (A, F == Arm, Fire)</td>
+                </tr>
+                <tr>
+                    <td>Tilde</td>
+                    <td>\~</td>
+                    <td>TEMP \~10 - 20 deg</td>
+                    <td>TEMP ~10 - 20 deg</td>
+                </tr>
+                <tr>
+                    <td>Backslash</td>
+                    <td>\/</td>
+                    <td>Use \/ViperGround\/KLMIO</td>
+                    <td>Use /ViperGround/KLMIO</td>
+                </tr>
+                </tbody>
+            </table>
+            <h3 id="matrix-layout-telemetry-csv-input-file">Matrix Layout Telemetry CSV Input File</h3>
+            <p>This file defines the telemetry points and associated Condition Sets to be used in the matrix Display
+                Layout.
+                When the condition cells (columns G and on) are populated for a row, a Condition Set will be created
+                that
+                incorporates and evaluates the telemetry parameter in column B &quot;dataSource&quot;.</p>
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-csv-matrix-input-telemetry.png"
+                    alt="Picture of a CSV file"
+                    title="Example Matrix Layout telemetry input file"></p>
+            <p>Row 1 must be these headers:</p>
+            <ul>
+                <li><strong>name:</strong> name of the parameter; used by generated Condition Widgets. See below for
+                    more.
+                </li>
+                <li><strong>dataSource:</strong> full path for the parameter using forward-slashes to denote containers
+                    and
+                    periods for aggregates, like: &quot;/SpacecraftSystem/Subsystem/folder/aggregate.parameterName&quot;.
+                    Can be copied directly from Yamcs or other mission spec documents.
+                </li>
+                <li><strong>alphaFormat:</strong> a printf string to be applied to numeric alphanumerics in a Display
+                    Layout. For example, &quot;%.2f&quot; will round a numeric parameter to two decimal points.
+                </li>
+                <li><strong>alphaShowsUnit:</strong> either TRUE or FALSE to indicate if alphanumerics should include
+                    units
+                    when they are available.
+                </li>
+                <li><strong>alphaUsesCond:</strong> either TRUE or FALSE to indicate if the resulting alphanumeric
+                    should
+                    use a Condition Set and conditional styling. If TRUE, then at least one condition must be specified
+                    in
+                    the table; see below for more.
+                </li>
+                <li><strong>condWidgetUsesOutputAsLabel:</strong> either TRUE or FALSE to indicate if generated
+                    Condition
+                    Widgets should use a generated Condition Set output string as a label. For example, a switch state
+                    widget could spec conditions that output &quot;ON&quot; and &quot;OFF&quot; and setting this to TRUE
+                    would cause the widget to display that text when the relevant conditions are matched. Settiing to
+                    FALSE
+                    will use the &quot;name&quot; property specified in that column.
+                </li>
+                <li><strong>condDefault:</strong> properties and styles for the Default condition in the row&#39;s
+                    Condition
+                    Set.
+                </li>
+                <li><strong>cond1 through cond10:</strong> styles and evaluation properties for up to ten Conditions in
+                    a
+                    Condition Set.
+                    <ul>
+                        <li>Headers must be named exactly as &quot;cond1, cond2&quot;, etc.</li>
+                        <li>Not every row must have a condition definition, but a header for a column for which there is
+                            a
+                            condition defined. For example, if 99 of 100 rows only use two condition definitions, but a
+                            single row uses three conditions, the CSV must include headers for &quot;cond1&quot;, &quot;cond2&quot;
+                            and &quot;cond3&quot;.
+                        </li>
+                        <li>Each cell entry is style properties and a single criteria that evaluates the telemetry
+                            parameter
+                            in Column B, organized like this:
+                            <ul>
+                                <li><strong>Condition output</strong>: when the Condition matches, the Condition set can
+                                    output a string, which can be used and displayed by a Condition Widget. The value
+                                    here
+                                    defines that string.
+                                </li>
+                                <li><strong>Background color:</strong> the background color to be applied for matching
+                                    Conditions when using Conditional styling.
+                                </li>
+                                <li><strong>Foreground color:</strong> the foreground color to be applied for matching
+                                    Conditions when using Conditional styling.
+                                </li>
+                                <li><strong>Match criteria:</strong> use &quot;any&quot; to match the defined Condition
+                                    operation and Comparison input; use &quot;not&quot; to match all values not defined
+                                    in
+                                    the Condition operation and Comparison input.
+                                    <ul>
+                                        <li>For example: given float telem X with a current value of 0.2:</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Condition operation</strong>: the operation to perform against telemetry
+                                    values,
+                                    e.g. equalTo, greaterThan, etc. See &quot;Defining Conditions in the Telemetry CSV&quot;
+                                    below.
+                                </li>
+                                <li><strong>Comparison value(s)</strong>: what to compare the Condition evaluation to.
+                                    Not
+                                    all Condition evaluations have comparison values. See &quot;Defining Conditions in
+                                    the
+                                    Telemetry CSV&quot; below.
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <h4 id="defining-conditions-in-the-telemetry-csv">Defining Conditions in the Telemetry CSV</h4>
+            <table>
+                <thead>
+                <tr>
+                    <th><strong>Telemetry Type</strong></th>
+                    <th><strong>Operation</strong></th>
+                    <th><strong>Description</strong></th>
+                    <th><strong>Condition operation literals</strong></th>
+                    <th><strong>Comparison input format</strong></th>
+                    <th><strong>Example</strong></th>
+                    <th><strong>Notes</strong></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>All</td>
+                    <td>Is Defined</td>
+                    <td>Matches if the telemetry endpoint is present and available from Yamcs, even when it doesn&#39;t
+                        have
+                        a value.
+                    </td>
+                    <td>isDefined, isUndefined</td>
+                    <td>No comparison value</td>
+                    <td>N/A</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>All</td>
+                    <td>Data older than</td>
+                    <td></td>
+                    <td>isStale</td>
+                    <td>Number of milliseconds</td>
+                    <td>1500</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>Equality</td>
+                    <td>Compares a current telemetry value to the Comparison value with equality.</td>
+                    <td>equalTo</td>
+                    <td>Single number</td>
+                    <td>100</td>
+                    <td>Note that Float and Integer telemetry types and comparisons are not compatible, i.e. a telem
+                        value
+                        of 0.000 will not match a comparison value of 0. Use Greater/less than comparisons in these
+                        cases.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>Greater/less than</td>
+                    <td></td>
+                    <td>greaterThan, lessThan, greaterThanOrEq, lessThanOrEq</td>
+                    <td>Single number</td>
+                    <td>100</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>Between</td>
+                    <td></td>
+                    <td>between, notBetween</td>
+                    <td>Two numbers separated by a comma</td>
+                    <td>-100,100</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Enumeration</td>
+                    <td>Enum value equality</td>
+                    <td></td>
+                    <td>enumValueIs, enumValueIsNot</td>
+                    <td>Raw numeric of the enumeration, not the enumeration string</td>
+                    <td>1</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>String</td>
+                    <td>Contains</td>
+                    <td></td>
+                    <td>textContains, textDoesNotContain</td>
+                    <td>Text</td>
+                    <td>ooba</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>String</td>
+                    <td>Starts/Ends</td>
+                    <td></td>
+                    <td>textStartsWith, textEndsWith,</td>
+                    <td>Text</td>
+                    <td>Foo</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>String</td>
+                    <td>Equality</td>
+                    <td></td>
+                    <td>textIsExactly</td>
+                    <td>Text</td>
+                    <td>Foobar</td>
+                </tr>
+                </tbody>
+            </table>
+            <h4 id="condition-examples">Condition Examples</h4>
+            <table>
+                <thead>
+                <tr>
+                    <th><strong>Telemetry Type</strong></th>
+                    <th><strong>Goal</strong></th>
+                    <th><strong>Condition string</strong></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>All</td>
+                    <td>If the telemetry is present on the server, output the string &quot;Defined&quot; with a medium
+                        gray
+                        background and white foreground.
+                    </td>
+                    <td>Defined,#666666,#ffffff,any,isDefined</td>
+                </tr>
+                <tr>
+                    <td>Numeric</td>
+                    <td>If the current float telemetry value is between than -0.1 and 0.2, output the string &quot;Nominal&quot;
+                        with an green background and white foreground.
+                    </td>
+                    <td>Nominal,#006600,#ffffff,any,between,-0.1,0.2</td>
+                </tr>
+                <tr>
+                    <td>Numeric</td>
+                    <td>If the current float telemetry value is greater than 0.2, output the string &quot;High&quot;
+                        with an
+                        orange background and white foreground.
+                    </td>
+                    <td>High,#ff6600,#ffffff,any,greaterThan,0.2</td>
+                </tr>
+                </tbody>
+            </table>
+            <h3 id="matrix-layout-layout-csv-input-file">Matrix Layout &quot;layout&quot; CSV Input File</h3>
+            <p>The matrix layout is simply a grid with variable column widths and row heights.</p>
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-csv-matrix-input-layout.png"
+                    alt="Picture of a CSV file"
+                    title="Example Matrix Layout layout input file"></p>
+            <ul>
+                <li>Row 1 defines the width of columns in the grid, in layout grid units.</li>
+                <li>Column A defines the height of each row in the grid, in layout grid units.</li>
+                <li>Cell A1 contains 3 comma-separated values that control the grid dimensions and item margin:
+                    <ul>
+                        <li>The first two values are the desired layout grid dimensions, which are the basis for grid
+                            units.
+                        </li>
+                        <li>The last value is the amount of margin between columns and rows, in grid units.</li>
+                        <li>For example, &quot;1, 1, 4&quot; will create a Display Layout with settings of grid X = 1,
+                            grid
+                            Y = 1, and 4 &quot;grid units&quot; of margin between columns and rows.
+                        </li>
+                        <li>If values are not provided in A1, the tool will use the default settings of 1, 1, 4.</li>
+                    </ul>
+                </li>
+                <li>Cells can contain text, or a path to a telemetry parameter.
+                    <ul>
+                        <li>Text cells can contain optional &quot;flags&quot;; see below for more.</li>
+                        <li>Cells that start with &quot;/&quot; or &quot;~&quot; will be treated as parameter paths.
+                        </li>
+                        <li>You can use &quot;/&quot; or &quot;~&quot; if they are escaped, see notes above.</li>
+                    </ul>
+                </li>
+                <li>Your telemetry file can include parameters that are not used by the layout file, but the converse is
+                    not
+                    true: parameters used in this file MUST be present in the telemetry CSV file used for a given matrix
+                    layout.
+                </li>
+            </ul>
+            <p>The resulting matrix layout output based on the CSV input above:</p>
+            <h4 id="using-optional-flags-in-the-layout-csv-file">Using Optional Flags in the Layout CSV File</h4>
+            <p>Both text and telemetry parameters accept certain &quot;flag&quot; arguments that allow additional
+                capabilities and rendering options. More than one flag can be used at a time, separated with commas.
+                Flags
+                include:</p>
+            <table>
+                <thead>
+                <tr>
+                    <th><strong>Capability</strong></th>
+                    <th><strong>Flag</strong></th>
+                    <th><strong>Telemetry</strong></th>
+                    <th><strong>Text</strong></th>
+                    <th><strong>Example</strong></th>
+                    <th><strong>Notes</strong></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Span multiple columns</td>
+                    <td>_span(#)</td>
+                    <td>YES</td>
+                    <td>YES</td>
+                    <td>SYSTEMS,<strong>_span(3)</strong></td>
+                    <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of columns,
+                        starting
+                        at the element&#39;s current column.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Render as Condition Widget</td>
+                    <td>_cw</td>
+                    <td>YES</td>
+                    <td></td>
+                    <td>/SpacecraftSystem/Subsystem/aggregate.parameterName,<strong>_cw</strong></td>
+                    <td>Renders a Condition Widget for this telemetry parameter. If this parameter is set to use
+                        Conditions
+                        in the telemetry CSV input file, then a Condition Set will be created using those parameters.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Render as Hyperlink button</td>
+                    <td>_link(url)</td>
+                    <td></td>
+                    <td>YES</td>
+                    <td>BUTTON LABEL,<strong>_link(<a href="https://someurl.com">https://someurl.com</a>)</strong></td>
+                    <td>A text element rendered as a Hyperlink button. Clicking the button will open the designated URL
+                        in a
+                        new browser tab. Note that Open MCT only accepts valid nasa.gov URLs. Note that elements with
+                        this
+                        flag cannot be styled with _bg and _fg; see below.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Style background color</td>
+                    <td>_bg(hex value)</td>
+                    <td></td>
+                    <td>YES</td>
+                    <td>BUTTON LABEL,<strong>_bg(#666666)</strong></td>
+                    <td>Color must be specified as full hex values. Only applicable to text elements that are not
+                        Hyperlink
+                        buttons. Resource for getting hex values: <a
+                                href="https://www.google.com/search?q=hex+color+picker">hex+color+picker</a></td>
+                </tr>
+                <tr>
+                    <td>Style foreground color</td>
+                    <td>_fg(hex value)</td>
+                    <td></td>
+                    <td>YES</td>
+                    <td>BUTTON LABEL,<strong>_fg(#000099)</strong></td>
+                    <td>Color must be specified as full hex values. Only applicable to text elements that are not
+                        Hyperlink
+                        buttons.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <h3 id="generated-open-mct-examples">Generated Open MCT Examples</h3>
+            <h3 id="source">Source</h3>
+            <ul>
+                <li>Telemetry CSV: <a href="documentation/files/matrix-layout-input-telemetry-example.csv">Matrix Layout
+                    inputs Telemetry CSV example</a></li>
+                <li>Matrix Layout CSV: <a href="documentation/files/matrix-layout-input-layout-example.csv">Matrix
+                    Layout
+                    inputs Layout CSV example</a></li>
+            </ul>
+            <h2 class="feature-hdr" id="conditional-graphics">Conditional Graphics</h2>
+            <p>Generates one or more &quot;image view&quot; objects within a Display Layout. Image views can be
+                conditionally styled to show a given image source when a condition in a Condition Set is matched. This
+                example uses a sun angle telemetry parameter to display one of 23 different images of the &quot;sun&quot;
+                graphic, overlaid on a base drawing of the rover, itself its own image view object.</p>
+            <p><img class="screenshot"
+                    src="documentation/images/openmct-scripting-conditional-graphics-imported-result.png"
+                    alt="Picture of rendered Display Layout" title="Conditional Graphics Example"></p>
+            <h3 id="what-it-does">What It Does</h3>
+            <ul>
+                <li>Generates one or more &quot;image view&quot; objects within a single Display Layout.
+                    <ul>
+                        <li>Source images must all be the same size for all image views in the layout.</li>
+                        <li>Image views color and border styling can be defined.</li>
+                    </ul>
+                </li>
+                <li>Optionally generates one Condition Set.
+                    <ul>
+                        <li>The number of conditions in the set is not limited.</li>
+                        <li>Each condition evaluates only one criteria.</li>
+                    </ul>
+                </li>
+                <li>Data sources can be dictionary parameters or a Sine Wave Generator.
+                    <ul>
+                        <li>If a generator is specified, the tool will create one or more generators as a result.</li>
+                    </ul>
+                </li>
+            </ul>
+            <h3 id="interface">Interface</h3>
+            <!--IMAGE HERE-->
+            <ul>
+                <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
+                <li><strong>Display Layout Grid</strong>: the X and Y grid dimensions to be used by generated Display
+                    Layouts.
+                    <ul>
+                        <li>Settings here are per pixel and define the scale of item widths and heights specified
+                            elsewhere.
+                            For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items set to 200
+                            width
+                            and 14 high would then be 400 pixels wide by 28 pixels high.
+                        </li>
+                        <li>Using smaller numbers here mean that items can be more tightly packed. Using a grid of 1,1
+                            would
+                            make the grid equivalent to pixels.
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>Image size in px:</strong> the pixel size (not grid units) desired for the resulting image
+                    view.
+                    All generated image views will be the same size in the Display Layout.
+                </li>
+            </ul>
+            <h3 id="input-csv-file">Input CSV file</h3>
+            <p>Example input using telemetry paths as a data source:
+                <!--IMAGE HERE--></p>
+            <p>Example input using a Sine Wave Generator as a data source:
+                <!--IMAGE HERE--></p>
+            <p>Row 1 must be these headers:</p>
+            <ul>
+                <li><strong>imageViewName</strong>: The name of the image view object that will be created within the
+                    layout.
+                    <ul>
+                        <li>Names must be unique in the sheet. Entering a different name creates a separate image with
+                            its
+                            own set of conditional styling, if set.
+                        </li>
+                        <li>To apply a set of conditions to a single image view, use the same name in each row.</li>
+                        <li>Image views are always the same dimensions, set in &quot;Image size in px&quot; in the web
+                            app
+                            interface.
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>dataSource</strong>: a valid path to a telemetry source, a definition for a Sine Wave
+                    Generator
+                    or a name reference to a generator specced in a previous row. See notes below on Sine Wave
+                    Generators.
+                </li>
+                <li><strong>isDefault</strong>: optional boolean if the condition for this row should be a default. If
+                    no
+                    default is specified, the Condition Set will create an unnamed default condition.
+                </li>
+                <li><strong>operation</strong>: The condition operation to be performed for this row. See <a
+                        href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions in the Telemetry CSV</a>
+                    above.
+                </li>
+                <li><strong>input</strong>: Nothing, string, single number, or two numbers to be used as the condition
+                    operation evaluators. See <a href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions in
+                        the
+                        Telemetry CSV</a> above.
+                </li>
+                <li><strong>name</strong>: The name of the condition that will be created for this row.</li>
+                <li><strong>output</strong>: The output string of the condition that will be created for this row.</li>
+                <li><strong>bgColor, fgColor, border</strong>: See <a href="#OpenMCTScriptingTool-ConditionOperation">Defining
+                    Conditions in the Telemetry CSV</a> above.
+                </li>
+                <li><strong>imageUrl</strong>: a full path to an image source file. Note that Open MCT for VIPER only
+                    supports URLs within the nasa.gov domain.
+                </li>
+            </ul>
+            <h3 id="source">Source</h3>
+            <ul>
+                <li>Example using dictionary telemetry parameters: <a
+                        href="documentation/files/conditional-graphics-example-sun-angle.csv">Sun Angle dictionary input
+                    example.csv</a></li>
+                <li>Example that uses a generated Open MCT Sine Wave Generator: <a
+                        href="documentation/files/conditional-graphics-example-sun-angle-swg.csv">Sun Angle 3 SWG
+                    input.csv</a></li>
+            </ul>
+            <h2 class="feature-hdr" id="procedure-displays">Procedure Displays</h2>
+            <h3 id="what-it-does">What It Does</h3>
+            <ul>
+                <li>Traverses multiple PRIDE procedure .prl files and creates Display Layout of alphanumeric parameter
+                    values and Stacked Plots for each.
+                    <ul>
+                        <li>Parameters are grouped into their steps and labeled as such.</li>
+                        <li>Each parameter is included as an alphanumeric with a label derived from the procedure
+                            file.
+                        </li>
+                        <li>Widths of alphanumerics can be directly set; the width of labels is automatically
+                            calculated.
+                        </li>
+                        <li><strong>IMPORTANT NOTE</strong>: only fully qualified paths (e.g. &#39;/SpacecraftSystem/Subsystem/etc.&#39;)
+                            in procedures can be found and extracted; references without in descriptive text may not be
+                            found.
+                        </li>
+                    </ul>
+                </li>
+                <li>A Tabs View that contains all the generated Display Layouts.</li>
+                <li>A Stacked Plot per procedure with parameters used.</li>
+                <li>Folders that contain the above elements.</li>
+            </ul>
+            <h3 id="interface">Interface</h3>
+            <!--IMAGE HERE-->
+            <ul>
+                <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
+                <li><strong>Display Layout Grid</strong>: the X and Y grid dimensions to be used by generated Display
+                    Layouts.
+                    <ul>
+                        <li>Settings here are per pixel and define the scale of item widths and heights specified
+                            elsewhere.
+                            For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items set to 200
+                            width
+                            and 14 high would then be 400 pixels wide by 28 pixels high.
+                        </li>
+                        <li>Using smaller numbers here mean that items can be more tightly packed. Using a grid of 1,1
+                            would
+                            make the grid equivalent to pixels.
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>Item Margin</strong>: a single grid unit number that controls the amount of horizontal and
+                    vertical space between items in the Display Layout. Using &quot;1&quot; with grid set to 2,2 would
+                    create a 2 x 2 pixel space between labels and elements.
+                </li>
+                <li><strong>Alphanumeric Width:</strong> controls the width of alphanumeric elements in the layout.</li>
+                <li><strong>Row Height</strong>: controls the height of text-plus-alphanumeric pairs in the layout.</li>
+            </ul>
+            <h2 class="feature-hdr" id="stacked-views">Stacked Views</h2>
+            <!--IMAGE HERE-->
+            <h3 id="what-it-does">What It Does</h3>
+            <ul>
+                <li>Takes in multiple telemetry source files and creates both a Stacked Plot and a Flexible Layout for
+                    each.
+                </li>
+                <li>The source file can group telemetry parameters into Overlay Plots, which become elements within the
+                    Stacked Plots and Flexible Layouts.
+                    <ul>
+                        <li>Overlay Plots of the same name will be created once, and shared amongst multiple Stacked
+                            Plots
+                            and Flexible Layouts.
+                        </li>
+                        <li>Telemetry parameters can specify some properties like the display of limit lines, marker
+                            size
+                            and shape, and line interpolation style.
+                        </li>
+                    </ul>
+                </li>
+                <li>Folders that contain the above elements.</li>
+            </ul>
+            <h3 id="interface">Interface</h3>
+            <!--IMAGE HERE-->
+            <ul>
+                <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
+            </ul>
+            <h3 id="example-source">Example Source</h3>
+            <ul>
+                <li>Example that creates 3 overlay plots in a Stacked View: <a
+                        href="documentation/files/stacked-view-input-example-1.csv">Stacked View example 1 .csv</a></li>
+            </ul>
+            <h2 class="feature-hdr" id="extract-telemetry">Extract Telemetry</h2>
+            <h3 id="what-it-does">What It Does</h3>
+            <ul>
+                <li>Takes in multiple source files and creates CSV file outputs that list parameters, their usage and
+                    optionally if they validated against a Yamcs database.
+                </li>
+                <li>Allows validation of extracted parameters if a valid Yamcs web api server connection is
+                    available.
+                </li>
+                <li><strong>IMPORTANT NOTE</strong>: only fully qualified paths (e.g. &#39;/SpacecraftSystem/Subsystem/etc.&#39;)
+                    in PRIDE procedure files can be found and extracted; references without in descriptive text
+                    may
+                    not be found.
+                </li>
+            </ul>
+            <h3 id="interface">Interface</h3>
+            <!--IMAGE HERE-->
+            <ul>
+                <li><strong>Yamcs URL</strong> allows the entry of a valid "Get Parameter"
+                    <a target="_blank"
+                       href="https://docs.yamcs.org/yamcs-http-api/mdb/get-parameter/">Yamcs
+                        web api</a> URL to allow validation of extracted telemetry parameters against the mission
+                    database. When a valid URL is entered and a good connection to a Yamcs is available, the
+                    indicator to the right of the input will display "Connected", and the "Validate Telemetry"
+                    button will be enabled once telemetry has been extracted. A Yamcs connection is not required in
+                    order to extract telemetry, only to validate it.
+                </li>
+                <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
+                <li><strong>Input File Type</strong>: choose either GCS Python scripts (.py) or PRIDE procedure (.prl).
+                </li>
+                <li><strong>Choose Files</strong> allows you to select one or more of .prl or .py files to use.</li>
+                <li><strong>Download Telemetry CSV</strong> downloads the resulting output CSV.
+                </li>
+                <li><strong>Validate Telemetry</strong> If a valid Yamcs URL is entered and the connection is good, this
+                    button will enable after files have been selected. Click again to validate extracted parameters.
+                </li>
 
-        <h2 class="feature-hdr" id="find-replace">Find / Replace</h2>
-        <p>Content to come.</p>
+            </ul>
 
+<!--            <h2 class="feature-hdr" id="find-replace">Find / Replace</h2>
+            <p>Content to come.</p>-->
+
+        </div>
     </div>
 </div>
 
