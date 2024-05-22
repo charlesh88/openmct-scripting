@@ -8,52 +8,62 @@
 </head>
 
 <body translate="no">
-<div class="c-nav" id="nav"></div>
-<div class="head">
-    <h1>Generate Open MCT Stacked Views from CSV <span id="app-version" class="app-version"></span></h1>
-</div>
-<div class="page">
-    <div class="page-main --main">
-        <div class="page-section c-config-holder">
-            <div class="c-config">
-                <h2>Settings</h2>
-                <div class="c-config__label">Output Base Name</div>
-                <div class="c-config__value"><input type="text" id="output-base-name" value="Open MCT Stacked Views"/></div>
-            </div>
-            <div class="c-config">
-                <h2>Inputs</h2>
-                <div class="c-config__label">Telemetry CSVs</div>
-                <div class="c-config__value">
-                <input class="upload-file-btn" type="file" id="inputCsv" accept=".csv" multiple/>
-                    </div>
-            </div>
-        </div>
-
-        <div class="page-section">
-            <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
-        </div>
-
-        <div class="page-section --expands">
-            <h2>Output</h2>
-            <div id="output-stats" class="message"></div>
-            <div class="c-msg" id="outputMsg">
-            </div>
-        </div>
+<div class="c-app">
+    <div class="c-nav" id="nav"></div>
+    <div class="head">
+        <h1>Generate Open MCT Stacked Views from CSV <span id="app-version" class="app-version"></span></h1>
     </div>
+    <div class="page">
+        <div class="page-main --main">
+            <div class="page-section c-config-holder">
+                <div class="c-config">
+                    <h2>Settings</h2>
+                    <div class="c-config__label">Output Base Name</div>
+                    <div class="c-config__value"><input type="text" id="output-base-name"
+                                                        value="Open MCT Stacked Views"/></div>
+                </div>
+                <div class="c-config">
+                    <h2>Inputs</h2>
+                    <div class="c-config__label">Telemetry CSVs</div>
+                    <div class="c-config__value">
+                        <input class="upload-file-btn" type="file" id="inputCsv" accept=".csv" multiple/>
+                    </div>
+                </div>
+            </div>
 
-    <div class="page-main --sidebar">
-        <div class="page-section --can-shrink" id="howCsv">
-            <h2>What this does</h2>
-            <ul>
-                <li>Allows the input of multiple CSV files to create stacked views (Stacked Plots and Flexible Layouts), one for each CSV file that is input. Each stacked view is named from its input CSV file name.</li>
-                <li>Stacked views can contain nested Overlay Plots, or parameters on their own. Overlay Plots can be shared amongst multiple stacked views by including the same Overlay Plot name in multiple sheets.</li>
-                <li>Folders will be created to hold Stacked Plots, Flexible Layouts and Overlay Plots respectively.</li>
-            </ul>
-            <!--h2>How to use</h2>
-            <ol>
-                <li>Content TK
-                </li>
-            </ol-->
+            <div class="page-section">
+                <button id="btnDownloadJson" onclick="downloadJson();" disabled>DOWNLOAD OPEN MCT JSON</button>
+            </div>
+
+            <div class="page-section --expands">
+                <h2>Output</h2>
+                <div class="c-msg" id="outputMsg">
+                </div>
+            </div>
+        </div>
+
+        <div class="page-main --sidebar">
+            <div class="page-section --can-shrink" id="howCsv">
+                <h2>What this does</h2>
+                <ul>
+                    <li>Allows the input of multiple CSV files to create stacked views (Stacked Plots and Flexible
+                        Layouts), one for each CSV file that is input. Each stacked view is named from its input CSV
+                        file name.
+                    </li>
+                    <li>Stacked views can contain nested Overlay Plots, or parameters on their own. Overlay Plots can be
+                        shared amongst multiple stacked views by including the same Overlay Plot name in multiple
+                        sheets.
+                    </li>
+                    <li>Folders will be created to hold Stacked Plots, Flexible Layouts and Overlay Plots
+                        respectively.
+                    </li>
+                </ul>
+                <!--h2>How to use</h2>
+                <ol>
+                    <li>Content TK
+                    </li>
+                </ol-->
+            </div>
         </div>
     </div>
 </div>

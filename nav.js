@@ -9,7 +9,7 @@ const navArray = [
     },
     {
         "name": "Procedure Displays",
-        "pathname": "index-gen-from-prl.html"
+        "pathname": "index-prl-to-display.html"
     },
     {
         "name": "Stacked Views",

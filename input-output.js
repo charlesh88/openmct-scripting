@@ -35,7 +35,7 @@ function uploadFiles(files, fileType) {
         // ["File1 Content", "File2 Content" ... "FileN Content"]
 
         if (fileType.includes('prl')) {
-            processInputPrls(filenames, values);
+            processPrlFiles(filenames, values);
         } else if (fileType.includes('csv')) {
             processInputCsvs(filenames, values);
         }
@@ -117,12 +117,13 @@ function outputJSON() {
     console.log('outputJSON', objJson);
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
-    outputStatsDisplay.innerHTML =
+    const oStr =
         'Generated ' +
         updateTime.getHours().toString().padStart(2, '0') + ':' +
         updateTime.getMinutes().toString().padStart(2, '0') + ':' +
         updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
+    outputMsg(oStr);
     btnDownloadJson.removeAttribute('disabled');
 }
 
@@ -136,21 +137,13 @@ downloadJson = function () {
     downloadFile(file);
 }
 
-downloadTelemList = function () {
-    const filename = config.outputBaseName.concat(' - Uniques.csv');
-    const list = globalArrUniquePaths.join('\n');
-    const file = new File([list], filename, {type: 'text/csv'});
-    downloadFile(file);
-    return false;
-}
-
-downloadTelemAndRefsList = function () {
-    const filename = config.outputBaseName.concat(' - Telemetry and Refs.csv');
-    const list = globalArrPathsAndRefs.join('\n');
-    const file = new File([list], filename, {type: 'text/csv'});
-    downloadFile(file);
-    return false;
-}
+// downloadTelemList = function () {
+//     const filename = config.outputBaseName.concat(' - Uniques.csv');
+//     const list = globalArrUniquePaths.join('\n');
+//     const file = new File([list], filename, {type: 'text/csv'});
+//     downloadFile(file);
+//     return false;
+// }
 
 downloadFile = function (file) {
     const link = document.createElement('a');
@@ -238,7 +231,13 @@ function htmlGridFromArray(arr) {
 
 /************************************************* LOCAL STORAGE */
 function storeLocal(key, value) {
-    window.localStorage.setItem(key, value);
+    try {
+        window.localStorage.setItem(key, value);
+        window.localStorage.getItem(key);
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 function loadLocal(key) {

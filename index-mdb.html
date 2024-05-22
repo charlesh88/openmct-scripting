@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Open MCT Find / Replace</title>
+    <title>MDB Indexing</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -11,25 +11,23 @@
 <div class="c-app">
     <div class="c-nav" id="nav"></div>
     <div class="head">
-        <h1>Open MCT Find / Replace <span id="app-version" class="app-version"></span></h1>
+        <h1>Ingest MDB <span id="app-version" class="app-version"></span></h1>
+        <a href="index-mdb.html" id="mdb-status" class="c-mdb-status">Yamcs MDB not accessible</a>
     </div>
     <div class="page">
         <div class="page-main --main">
             <div class="page-section c-config-holder">
                 <div class="c-config">
                     <h2>Inputs</h2>
-                    <div class="c-config__label">Open MCT JSON file</div>
-                    <div class="c-config__value"><input class="upload-file-btn" type="file" id="inputJson"/>
-                    </div>
-                    <div class="c-config__label">Find/Replace CSV</div>
+                    <div class="c-config__label">MDB Directory</div>
                     <div class="c-config__value">
-                        <input class="upload-file-btn" type="file" id="inputCsv"
-                               accept=".csv" disabled/></div>
+                        <input class="upload-file-btn" type="file" id="inputXML" webkitdirectory multiple/>
+                    </div>
                 </div>
             </div>
 
             <div class="page-section">
-                <button id="btnDownloadJson" onclick="downloadReplaced();" disabled>DOWNLOAD</button>
+                <button id="btnDownloadTelemList" onclick="downLoadMDB();" disabled>DOWNLOAD CSV</button>
                 <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
             </div>
 
@@ -44,11 +42,9 @@
             <div class="page-section --can-shrink" id="howCsv">
                 <h2>What this does</h2>
                 <ul>
-                    <li>Allows bulk replacement of strings within an Open MCT JSON export file.
+                    <li>Content TK
                     </li>
                 </ul>
-                <h2>How to use</h2>
-
             </div>
         </div>
     </div>
@@ -58,7 +54,10 @@
 <script src="input-output.js"></script>
 <script src="utilities.js"></script>
 <script src="ui-elements.js"></script>
-<script src="main-find-replace.js"></script>
+<script src="component-mdb.js"></script>
+<!--<script src="mdb-connect.js"></script>-->
+<script src="telemetry-validate.js"></script>
+<script src="main-mdb.js"></script>
 <script src="nav.js"></script>
 <script src="main.js"></script>
 </body>

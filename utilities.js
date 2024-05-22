@@ -36,6 +36,19 @@ function getFormNumericVal(id) {
     return (v) ? parseInt(v) : null;
 }
 
+function getStrBetween(str, start, end) {
+    const result = str.match(new RegExp(start + "(.*?)" + end));
+    return result[1];
+}
+
+function getStrBetweenRegex(str, regex) {
+    const result = str.match(new RegExp(regex));
+    if (!result) {
+        return undefined;
+    }
+    return result[0];
+}
+
 toggleHiddenClass = function (arrIDs) {
     for (let i = 0; i < arrIDs.length; i++) {
         if (arrIDs[i].className.includes('--hidden')) {
@@ -71,4 +84,87 @@ function strClean(str) {
 
 function getCurrentTimeEpoch() {
     return Math.floor(Date.now() / 1000); // Convert milliseconds to seconds
+}
+
+function findIndexInArray(array, member) {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] === member) {
+            return i;
+        }
+    }
+    return -1; // Return -1 if the member is not found in the array
+}
+
+function insertValueIntoArrayAtIndex(array, index, value) {
+    while (index >= array.length) {
+        array.push(undefined); // Add empty values to the array until the index is within bounds
+    }
+    array.splice(index, 0, value); // Insert the value at the specified index
+    return array;
+}
+
+function arrSortByKey(arr) {
+    // Convert the array of objects into an array of key-value pairs
+    const keyValuePairArray = arr.map(obj => Object.entries(obj)[0]);
+
+    // Sort the array of key-value pairs based on the key
+    keyValuePairArray.sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+
+    // Reconstruct the object from the sorted array of key-value pairs
+    const sortedObject = keyValuePairArray.reduce((acc, [key, value]) => {
+        acc[key] = value;
+        return acc;
+    }, {});
+
+    return sortedObject;
+}
+
+function arrSortByProperty(arr, property) {
+    // Sort the array of objects by the specified property
+    return arr.sort((a, b) => {
+        if (a[property] < b[property]) {
+            return -1;
+        }
+        if (a[property] > b[property]) {
+            return 1;
+        }
+        return 0;
+    });
+}
+
+function arrSortAndKeyByProperty(arr, property) {
+    arr = arrSortByProperty(arr, property);
+
+    // console.log('arrSortAndKeyByProperty sorted',arr);
+
+    // Create a new array of objects keyed to the specified property
+    const keyedArray = arr.map(obj => {
+        const newObj = {};
+        newObj[obj[property]] = obj;
+        return newObj;
+    });
+
+    return keyedArray;
+}
+
+function strRemoveRegex(str, regex) {
+    return str.replace(regex, '');
+}
+
+function extractStrBetweenStrings(str, startStr, endStr) {
+    let startIndex = 0;
+    let endIndex = 0;
+
+    if (str.includes(startStr)) {
+        startIndex = str.indexOf(startStr) + startStr.length;
+
+        if (str.includes(endStr)) {
+            endIndex = str.indexOf(endStr, startIndex);
+            return str.substring(startIndex, endIndex)
+        } else {
+            return str.substring(startIndex)
+        }
+    }
+
+    return str;
 }

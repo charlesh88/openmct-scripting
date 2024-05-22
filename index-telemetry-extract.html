@@ -8,58 +8,72 @@
 </head>
 
 <body translate="no">
-<div class="c-nav" id="nav"></div>
-<div class="head">
-    <h1>Telemetry Extractor <span id="app-version" class="app-version"></span></h1>
-</div>
-<div class="page">
-    <div class="page-main --main">
-        <div class="page-section c-config-holder">
-            <div class="c-config">
-                <h2>Settings</h2>
-                <div class="c-config__label">Output Base Name</div>
-                <div class="c-config__value"><input type="text" id="output-base-name" value="Telemetry Extract"/></div>
-            </div>
-            <div class="c-config">
-                <h2>Input Files</h2>
-                <label class="c-config__label" for="inputType">Input File Type</label>
-                <div class="c-config__value">
-                    <select id="inputType">
-                        <option value="gcs" selected>GCS (.py)</option>
-                        <option value="prl">Pride procedure (.prl)</option>
-                    </select>
-                </div>
-                <div class="c-config__label">Input Files</div>
-                <div class="c-config__value">
-                    <input id="inputGCS" class="upload-file-btn" type="file" accept=".py" multiple/>
-                    <input id="inputPrl" class="upload-file-btn --hidden" type="file" accept=".prl" multiple/>
-                </div>
-            </div>
-        </div>
-
-        <div class="page-section">
-            <button id="btnDownloadTelemList" onclick="downloadTelemList();" disabled>DOWNLOAD UNIQUE TELEMETRY</button>
-            <button id="btnDownloadTelemAndRefsList" onclick="downloadTelemAndRefsList();" disabled>DOWNLOAD TELEMETRY AND REFS</button>
-        </div>
-
-        <div class="page-section --expands">
-            <h2>Output</h2>
-            <div id="output-stats" class="message"></div>
-            <div class="c-msg" id="outputMsg">
-            </div>
-        </div>
+<div class="c-app">
+    <div class="c-nav" id="nav"></div>
+    <div class="head">
+        <h1>Telemetry Extractor <span id="app-version" class="app-version"></span></h1>
     </div>
+    <div class="page">
+        <div class="page-main --main">
+            <div id="component-mdb" class="contents"></div>
+            <div class="page-section c-config-holder">
+                <div class="c-config">
+                    <h2>Settings</h2>
+                    <div class="c-config__label">Output Base Name</div>
+                    <div class="c-config__value"><input type="text" id="output-base-name" value="Telemetry Extract"/>
+                    </div>
+                </div>
+                <div class="c-config">
+                    <h2>Input Files</h2>
+                    <label class="c-config__label" for="inputType">Input File Type</label>
+                    <div class="c-config__value">
+                        <select id="inputType">
+                            <option value="gcs">GCS (.py)</option>
+                            <option value="prl" selected>Pride procedure (.prl)</option>
+                        </select>
+                    </div>
+                    <div class="c-config__label">Input Files</div>
+                    <div class="c-config__value">
+                        <input id="inputGCS" class="upload-file-btn --hidden" type="file" accept=".py"
+                               multiple/>
+                        <input id="inputPRL" class="upload-file-btn --hidden" type="file" accept=".prl"
+                               multiple/>
+                    </div>
+                </div>
+            </div>
 
-    <div class="page-main --sidebar">
-        <div class="page-section --min-content">
-            <h2>What this does</h2>
-            <ul>
-                <li>Crawls selected GCS .py files and finds telemetry in getval and checkval calls.</li>
-                <li>Crawls selected Pride .prl files and finds telemetry in DataReferences and DataNomenclatures.</li>
-                <li>Outputs .csv files of de-duped unique telemetry paths and a full table of paths with their file
-                    references.
-                </li>
-            </ul>
+            <div class="page-section">
+                <button id="btnDownloadTelem" onclick="downloadTelemCsv();" disabled>
+                    DOWNLOAD TELEMETRY CSV
+                </button>
+                <button id="btnValidateTelem" class="--minor" onclick="validateTelem();" disabled>
+                    VALIDATE TELEMETRY
+                </button>
+                <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
+            </div>
+
+            <div class="page-section c-output">
+                <h2>Output</h2>
+                <div class="c-msg" id="outputMsg">
+                </div>
+            </div>
+        </div>
+
+        <div class="page-main --sidebar">
+            <div class="page-section --min-content">
+                <h2>What this does</h2>
+                <ul>
+                    <li>Crawls selected GCS .py files and finds telemetry in getval and checkval calls.</li>
+                    <li>Crawls selected Pride .prl files and finds telemetry in DataReferences and DataNomenclatures.
+                    </li>
+                    <li>Outputs a .csv file table of de-duped unique telemetry paths with usage indication per procedure
+                        or GCS. If a Yamcs server is available, validation results will also be indicated.
+                    </li>
+                    <li>To enable mission database validation, enter a valid Yamcs &quot;parameters&quot; web api URL in
+                        the input. A proxy server may be necessary when running locally due to CORS issues.
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -67,10 +81,15 @@
 <script src="common.js"></script>
 <script src="input-output.js"></script>
 <script src="utilities.js"></script>
+<script src="component-mdb.js"></script>
 <script src="telemetry-extract-prl.js"></script>
+<script src="telemetry-extract-gcs.js"></script>
+<script src="telemetry-extract.js"></script>
+<script src="telemetry-validate.js"></script>
 <script src="main-telemetry-extract.js"></script>
 <script src="nav.js"></script>
 <script src="main.js"></script>
+
 </body>
 </html>
 

@@ -1,42 +1,41 @@
-const outputStatsDisplay = document.getElementById('output-stats');
 const inputType = document.getElementById("inputType");
 const inputGCS = document.getElementById("inputGCS");
-const inputPrl = document.getElementById("inputPrl");
-const btnDownloadTelemList = document.getElementById("btnDownloadTelemList");
-// const checkboxFilterParameters = document.getElementById("checkboxFilterParameters");
+const inputPRL = document.getElementById("inputPRL");
+const btnDownloadTelem = document.getElementById("btnDownloadTelem");
+const btnValidateTelem = document.getElementById("btnValidateTelem");
 const OUTPUT_BASE_NAME_KEY = '_TELEM_EXTRACT_BASE_NAME';
-const btnDownloadTelemAndRefsList = document.getElementById("btnDownloadTelemAndRefsList");
 const outputMsgText = document.getElementById("outputMsg");
 const lineSepStr = '------------------------------------------------';
-let globalArrUniquePaths = [];
-let globalArrPathsAndRefs = [];
+
+let CUR_FILE_TYPE = 'PRL';
+let gObjByTelem = {};
+let gStrArrByTelem = [];
 
 storeOutputBaseName();
 loadLocalSettings();
 
-inputType.addEventListener("change", function(ev){
-    toggleHiddenClass([inputGCS, inputPrl]);
+inputType.addEventListener("change", function (ev) {
+    toggleHiddenClass([inputGCS, inputPRL]);
 }, false);
 
-inputGCS.addEventListener("change", function(ev){
+inputGCS.addEventListener("change", function (ev) {
+    CUR_FILE_TYPE = 'GCS';
     uploadGCSFiles(ev.currentTarget.files);
 }, false);
 
-inputPrl.addEventListener("change", function(ev){
+inputPRL.addEventListener("change", function (ev) {
+    CUR_FILE_TYPE = 'PRL';
     uploadPrlFiles(ev.currentTarget.files);
 }, false);
 
 function getConfigFromForm() {
-    // Get form values
-    const config = {};
-
-    config.outputBaseName = document.getElementById('output-base-name').value;
-
-    return config;
+    return {
+        'outputBaseName': document.getElementById('output-base-name').value
+    };
 }
+
 function resetTelemetryExtract() {
-    globalArrUniquePaths = ['Unique Path'];
-    globalArrPathsAndRefs = ['Path,Filename,Type'];
+    gStrArrByTelem = [];
     outputMsgText.innerHTML = '';
 }
 
@@ -47,10 +46,10 @@ function uploadGCSFiles(files) {
     let filenames = [];
 
     // Abort if there were no files selected
-    if(!files.length) return;
+    if (!files.length) return;
 
     // Store promises in array
-    for(let i = 0;i < files.length;i++){
+    for (let i = 0; i < files.length; i++) {
         filenames.push(files[i].name);
         readers.push(readFileAsText(files[i]));
     }
@@ -68,10 +67,10 @@ function uploadPrlFiles(files) {
     let filenames = [];
 
     // Abort if there were no files selected
-    if(!files.length) return;
+    if (!files.length) return;
 
     // Store promises in array
-    for(let i = 0;i < files.length;i++){
+    for (let i = 0; i < files.length; i++) {
         filenames.push(files[i].name);
         readers.push(readFileAsText(files[i]));
     }
@@ -82,140 +81,147 @@ function uploadPrlFiles(files) {
     });
 }
 
+downloadTelemCsv = function () {
+    const filename = config.outputBaseName;
+    const list = gStrArrByTelem.join('\n');
+    const file = new File([list], filename, {type: 'text/csv'});
+    downloadFile(file);
+    return false;
+}
+
 /*********************************** MULTIPLE FILE HANDLING */
-prlExtractTelemetry = function(filenames, values) {
-    let nonUniqueTelemCntr = 0;
+prlExtractTelemetry = function (filenames, values) {
+    let arrAllProcsAndTelem = [];
 
     for (let i = 0; i < filenames.length; i++) {
-        const telemCnt = extractTelemFromPrl(values[i], filenames[i]);
-        nonUniqueTelemCntr += telemCnt;
-        outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
-    }
-    outputMsg(lineSepStr);
-    outputMsg('Prl extraction done. ' +
-        'Total telem count = ' + nonUniqueTelemCntr + '; ' +
-        'Total uniques = ' + globalArrUniquePaths.length);
+        const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
+        arrAllProcsAndTelem.push(...arrStepsAndTelem);
 
-    btnDownloadTelemList.removeAttribute('disabled');
-    btnDownloadTelemAndRefsList.removeAttribute('disabled');
+        outputMsg(filenames[i] + ' has ' + arrStepsAndTelem.length + ' telem ref(s)');
+    }
+
+    const objProcByTelem = procByTelem(arrAllProcsAndTelem);
+
+    gObjByTelem = objProcByTelem;
+
+    prlPackageExtractedTelemetryForCsv(gObjByTelem);
 }
 
 gcsExtractTelemetry = function (filenames, values) {
     let nonUniqueTelemCntr = 0;
+    arrAllGcsAndTelem = [];
 
     for (let i = 0; i < filenames.length; i++) {
-        const telemCnt = extractTelemFromGCS(values[i], filenames[i]);
+        const arrTelem = extractFromGcs(values[i], filenames[i]);
+        arrAllGcsAndTelem.push(...arrTelem);
+
+        const telemCnt = arrTelem.length;
         nonUniqueTelemCntr += telemCnt;
         outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
     }
+
+    const objGcsByTelem = gcsByTelem(arrAllGcsAndTelem);
+
+    gObjByTelem = objGcsByTelem;
+
+    gcsPackageExtractedTelemetryForCsv(gObjByTelem);
+}
+
+prlPackageExtractedTelemetryForCsv = function (objByTelem) {
+    // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
+    const outTelemByProcArr = telemByProcToCsvArr(objProcByTelem);
+
+    let outTelemByProcStrArr = [];
+    outTelemByProcArr.forEach(row => {
+        outTelemByProcStrArr.push(
+            row.join(',')
+        );
+    })
+
+    gStrArrByTelem = outTelemByProcStrArr;
+
     outputMsg(lineSepStr);
-    outputMsg('GCS extraction done. ' +
-        'Total telem count = ' + nonUniqueTelemCntr + '; ' +
-        'Total uniques = ' + globalArrUniquePaths.length);
-    btnDownloadTelemList.removeAttribute('disabled');
-    btnDownloadTelemAndRefsList.removeAttribute('disabled');
+    outputMsg('prl extraction done.  Total telem count = ' + Object.keys(objByTelem).length);
+
+    btnDownloadTelem.removeAttribute('disabled');
+    if (MDB_CONNECTED) {
+        btnValidateTelem.removeAttribute('disabled');
+    }
 }
 
-/*********************************** .PRL FUNCTIONS */
-extractTelemFromPrl = function (strValue, filename) {
-    let xmlDoc = new DOMParser().parseFromString(strValue, "text/xml");
-    const arrDataReferences = xmlDoc.getElementsByTagName("prl:DataReference");
-    const arrDataNomenclature = xmlDoc.getElementsByTagName("prl:DataNomenclature");
-    let arrTelem = [];
-    let arrUniqueTelemForProc = [];
-    // const arrVerifications = xmlDoc.getElementsByTagName("prl:VerifyGoal");
-    // const filterParams = checkboxFilterParameters.checked;
+gcsPackageExtractedTelemetryForCsv = function (objByTelem) {
+    // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
+    const outGcsByTelemArr = gcsByTelemToCsvArr(objByTelem);
 
-    let nonUniqueTelemCntr = 0;
+    gStrArrByTelem = outGcsByTelemArr;
 
-    if (arrDataReferences.length > 0) {
-        arrTelem = extractTelemFromPrlDataReferences(arrDataReferences);
-        if (arrTelem.length > 0) {
-            for (let i = 0; i < arrTelem.length; i++) {
-                const path = arrTelem[i];
-                addToArrUniquePaths(path);
-                if (!arrUniqueTelemForProc.includes(path)) {
-                    arrUniqueTelemForProc.push(path);
-                    addToArrPathsAndRefs(escForCsv(path), filename,'DataReference');
+    outputMsg(lineSepStr);
+    outputMsg('gcs extraction done.  Total telem count = ' + Object.keys(objByTelem).length);
+
+    btnDownloadTelem.removeAttribute('disabled');
+    if (MDB_CONNECTED) {
+        btnValidateTelem.removeAttribute('disabled');
+    }
+}
+
+addValidationResult = function(obj, arrValidation) {
+    const arrTelemPaths = Object.keys(arrValidation);
+    let invalidCnt = 0;
+
+    for (let i = 0; i < arrTelemPaths.length; i++) {
+        const telemPath = arrTelemPaths[i];
+        const pathValid = arrValidation[telemPath].validated;
+        obj[telemPath].testPath = arrValidation[telemPath].testPath;
+        obj[telemPath].valid = pathValid;
+        invalidCnt = pathValid ? invalidCnt : invalidCnt + 1;
+    }
+
+    outputMsg('Validation complete. '
+        .concat(invalidCnt.toString())
+        .concat(' invalid paths found; ')
+        .concat((arrTelemPaths.length - invalidCnt).toString())
+        .concat(' valid paths found.'));
+
+    console.log('addValidationResult', obj);
+    return obj;
+}
+
+validateTelem = function () {
+    btnDownloadTelem.setAttribute('disabled', true);
+    btnValidateTelem.setAttribute('disabled', true);
+
+    outputMsg(lineSepStr);
+    outputMsg('Validating '.concat(Object.keys(gObjByTelem).length)
+        .concat(' paths...'));
+
+    const keysToValidate = Object.keys(gObjByTelem);
+    if (keysToValidate && keysToValidate.length > 0) {
+        validateParamsAgainstYamcsMdb(keysToValidate)
+            .then(arrKeysValidated => {
+                if (arrKeysValidated) {
+                    gObjByTelem = addValidationResult(gObjByTelem, arrKeysValidated);
+
+                    if (CUR_FILE_TYPE === 'PRL') {
+                        prlPackageExtractedTelemetryForCsv(gObjByTelem);
+                    } else {
+                        gcsPackageExtractedTelemetryForCsv(gObjByTelem);
+                    }
                 }
-            }
-        }
-        nonUniqueTelemCntr += arrUniqueTelemForProc.length;
+            })
     }
 
-    // Reset so we can also grab telem in a different ref type
-    arrUniqueTelemForProc = [];
 
-    if (arrDataNomenclature.length > 0) {
-        arrTelem = extractTelemFromPrlDataNomenclature(arrDataReferences);
-        if (arrTelem.length > 0) {
-            for (let i = 0; i < arrTelem.length; i++) {
-                const path = arrTelem[i];
-                addToArrUniquePaths(path);
-                if (!arrUniqueTelemForProc.includes(path)) {
-                    arrUniqueTelemForProc.push(path);
-                    addToArrPathsAndRefs(escForCsv(path), filename,'DataNomenclature');
-                }
-            }
-        }
-        nonUniqueTelemCntr += arrUniqueTelemForProc.length;
-
-    }
-
-    return nonUniqueTelemCntr;
 }
 
-/*********************************** GCS .PY FUNCTIONS */
-extractTelemFromGCS = function (strValue, filename) {
-    const lines = strValue.split('\n');
-    const regex = "(?<=\\(')(.*?)(?=')";
-    let telemCount = 0;
-
-    for (let i = 0; i < lines.length; i++) {
-        if (
-            !lines[i].includes('#') &&
-            (
-                lines[i].includes('getval(') ||
-                lines[i].includes('checkval(')
-            )
-        ) {
-            const telem = getStrBetweenRegex(lines[i], regex);
-            if (telem) {
-                telemCount++;
-                addToArrPathsAndRefs(telem, filename, (lines[i].includes('getval')) ? 'getval' : 'checkval');
-                addToArrUniquePaths(telem);
-            }
+initPage = function () {
+    for (let i = 0; i < inputType.options.length; i++) {
+        if (inputType.options[i].value === CUR_FILE_TYPE.toLowerCase()) {
+            inputType.selectedIndex = i;
+            break;
         }
     }
-    return telemCount;
+
+    document.getElementById('input' + CUR_FILE_TYPE).classList.remove('--hidden');
 }
 
-function addToArrUniquePaths(path) {
-    if (!globalArrUniquePaths.includes(path)) {
-        globalArrUniquePaths.push(path);
-        return true;
-    }
-
-    return false;
-}
-
-function addToArrPathsAndRefs(path, filename, type) {
-    let value = path.concat(",").concat(filename);
-    if (type) {
-        value += (",").concat(type);
-    }
-    globalArrPathsAndRefs.push(value);
-
-    return true;
-}
-
-function getStrBetween(str, start, end) {
-    const result = str.match(new RegExp(start + "(.*?)" + end));
-    return result[1];
-}
-
-function getStrBetweenRegex(str, regex) {
-    const result = str.match(new RegExp(regex));
-    if (!result) { return undefined; }
-    return result[0];
-}
+document.body.onload = initPage();
