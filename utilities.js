@@ -17,6 +17,11 @@ function createUUID() {
     return uuid;
 }
 
+function isGUID(key) {
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return guidRegex.test(key);
+}
+
 function copyObj(obj) {
     return JSON.parse(JSON.stringify(obj));
 }

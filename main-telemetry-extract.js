@@ -1,31 +1,46 @@
 const inputType = document.getElementById("inputType");
-const inputGCS = document.getElementById("inputGCS");
-const inputPRL = document.getElementById("inputPRL");
+const inputFile = document.getElementById("inputFile");
 const btnDownloadTelem = document.getElementById("btnDownloadTelem");
 const btnValidateTelem = document.getElementById("btnValidateTelem");
 const OUTPUT_BASE_NAME_KEY = '_TELEM_EXTRACT_BASE_NAME';
 const outputMsgText = document.getElementById("outputMsg");
 const lineSepStr = '------------------------------------------------';
 
-let CUR_FILE_TYPE = 'PRL';
+const FILE_TYPES = {
+    'gcs': ['.py', true],
+    'json': ['.json', false],
+    'prl': ['.prl', true],
+};
+let CUR_FILE_TYPE = 'json';
 let gObjByTelem = {};
 let gStrArrByTelem = [];
 
 storeOutputBaseName();
 loadLocalSettings();
 
+setFileInputProps = function (target, type) {
+    target.accept = FILE_TYPES[type][0];
+    target.multiple = FILE_TYPES[type][1];
+}
+
 inputType.addEventListener("change", function (ev) {
-    toggleHiddenClass([inputGCS, inputPRL]);
+    CUR_FILE_TYPE = ev.target.value;
+    setFileInputProps(
+        inputFile, ev.target.value
+    );
 }, false);
 
-inputGCS.addEventListener("change", function (ev) {
-    CUR_FILE_TYPE = 'GCS';
-    uploadGCSFiles(ev.currentTarget.files);
-}, false);
-
-inputPRL.addEventListener("change", function (ev) {
-    CUR_FILE_TYPE = 'PRL';
-    uploadPrlFiles(ev.currentTarget.files);
+inputFile.addEventListener("change", function (ev) {
+    switch (CUR_FILE_TYPE) {
+        case 'gcs':
+            uploadGCSFiles(ev.currentTarget.files);
+            break;
+        case 'prl':
+            uploadPrlFiles(ev.currentTarget.files);
+            break;
+        default:
+            uploadJSONFiles(ev.currentTarget.files);
+    }
 }, false);
 
 function getConfigFromForm() {
@@ -57,6 +72,27 @@ function uploadGCSFiles(files) {
     // Trigger Promises
     Promise.all(readers).then((values) => {
         gcsExtractTelemetry(filenames, values);
+    });
+}
+
+function uploadJSONFiles(files) {
+    config = getConfigFromForm();
+    resetTelemetryExtract();
+    let readers = [];
+    let filenames = [];
+
+    // Abort if there were no files selected
+    if (!files.length) return;
+
+    // Store promises in array
+    for (let i = 0; i < files.length; i++) {
+        filenames.push(files[i].name);
+        readers.push(readFileAsText(files[i]));
+    }
+
+    // Trigger Promises
+    Promise.all(readers).then((values) => {
+        jsonExtractTelemetry(filenames, values);
     });
 }
 
@@ -127,6 +163,13 @@ gcsExtractTelemetry = function (filenames, values) {
     gcsPackageExtractedTelemetryForCsv(gObjByTelem);
 }
 
+jsonExtractTelemetry = function (filename, value) {
+    const jsonExtract = JSON.parse(value);
+    console.log('jsonExtractTelemetry', jsonExtract);
+    console.log(extractCompositionKeys(jsonExtract));
+
+}
+
 prlPackageExtractedTelemetryForCsv = function (objByTelem) {
     // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
     const outTelemByProcArr = telemByProcToCsvArr(objProcByTelem);
@@ -164,7 +207,7 @@ gcsPackageExtractedTelemetryForCsv = function (objByTelem) {
     }
 }
 
-addValidationResult = function(obj, arrValidation) {
+addValidationResult = function (obj, arrValidation) {
     const arrTelemPaths = Object.keys(arrValidation);
     let invalidCnt = 0;
 
@@ -201,27 +244,31 @@ validateTelem = function () {
                 if (arrKeysValidated) {
                     gObjByTelem = addValidationResult(gObjByTelem, arrKeysValidated);
 
-                    if (CUR_FILE_TYPE === 'PRL') {
-                        prlPackageExtractedTelemetryForCsv(gObjByTelem);
-                    } else {
-                        gcsPackageExtractedTelemetryForCsv(gObjByTelem);
+                    switch (CUR_FILE_TYPE) {
+                        case 'gcs':
+                            gcsPackageExtractedTelemetryForCsv(gObjByTelem);
+                            break;
+                        case 'prl':
+                            prlPackageExtractedTelemetryForCsv(gObjByTelem);
+                            break;
+                        default:
+                            // jsonPackageExtractedTelemetryForCsv(gObjByTelem); TODO: add this function!
+
                     }
                 }
             })
     }
-
-
 }
 
 initPage = function () {
     for (let i = 0; i < inputType.options.length; i++) {
-        if (inputType.options[i].value === CUR_FILE_TYPE.toLowerCase()) {
+        if (inputType.options[i].value === CUR_FILE_TYPE) {
             inputType.selectedIndex = i;
             break;
         }
     }
 
-    document.getElementById('input' + CUR_FILE_TYPE).classList.remove('--hidden');
+    setFileInputProps(inputFile, CUR_FILE_TYPE);
 }
 
 document.body.onload = initPage();
