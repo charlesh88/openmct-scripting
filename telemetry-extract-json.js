@@ -89,3 +89,64 @@ openMCTContainerByTelem = function (arr) {
     return openMCTContainerByTelem;
 }
 
+openMCTContainerByTelemToCsvArr = function (arr) {
+    /*
+    Expects an array of objects in format from openMCTContainerByTelem
+    Iterate through keys, and format a tabular CSV for output
+    */
+
+    let tableArr = [];
+    const LINE_BREAK = '\r\n';
+
+    let tableHdrArr = [
+        'parameter',
+        'in object count',
+        'objects'
+    ];
+
+    const pathKeys = Object.keys(arr);
+
+    // Check the first entry for a valid property
+    const validation = (arr[pathKeys[0]].valid);
+    console.log('openMCTContainerByTelemToCsvArr', arr);
+
+    if (validation) {
+        tableHdrArr.push('valid');
+    }
+
+    for (let i = 0; i < pathKeys.length; i++) {
+        const curKey = pathKeys[i]; // /SpaceSystem/Sub-system/Parameter.etc
+
+        let tableRowArr = [
+            curKey,
+            arr[curKey].containerCount
+        ];
+
+        if (validation) {
+            tableRowArr.push(arr[curKey].valid)
+        }
+
+        const containersForThisPath = arr[curKey].containers; // Object with keyed containers.
+
+        const keysContainersForThisPath = Object.keys(containersForThisPath); // Array of container guids
+        let containersStr = '';
+
+        for (let j = 0; j < keysContainersForThisPath.length; j++) {
+            const curContainerGuid = keysContainersForThisPath[j];
+            const curContainer = containersForThisPath[curContainerGuid];
+            containersStr = containersStr
+                .concat(curContainer.name)
+                .concat(' [')
+                .concat(curContainer.type)
+                .concat(']')
+                .concat(LINE_BREAK);
+        }
+
+        tableRowArr.push('"' + containersStr + '"');
+        tableArr.push(tableRowArr);
+    }
+
+    tableArr.unshift(tableHdrArr);
+
+    return tableArr;
+}

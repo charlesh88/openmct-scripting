@@ -160,7 +160,7 @@ gcsExtractTelemetry = function (filenames, values) {
         outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
     }
 
-    const objGcsByTelem = open(arrAllGcsAndTelem);
+    const objGcsByTelem = gcsByTelem(arrAllGcsAndTelem);
 
     gObjByTelem = objGcsByTelem;
 
@@ -171,10 +171,12 @@ jsonExtractTelemetry = function (filename, value) {
     const jsonExtract = JSON.parse(value);
     // console.log('jsonExtractTelemetry', jsonExtract);
 
-    let arrAllProcsAndTelem = extractCompositionKeysToObjArray(jsonExtract);
-    const objOpenMCTContainerByTelem = openMCTContainerByTelem(arrAllProcsAndTelem);
-    console.log('jsonExtractTelemetry arrAllProcsAndTelem', arrAllProcsAndTelem);
+    let arrAllContainersAndTelem = extractCompositionKeysToObjArray(jsonExtract);
+    const objOpenMCTContainerByTelem = openMCTContainerByTelem(arrAllContainersAndTelem);
+    // console.log('jsonExtractTelemetry arrAllContainersAndTelem', arrAllContainersAndTelem);
     console.log('jsonExtractTelemetry objOpenMCTContainerByTelem', objOpenMCTContainerByTelem);
+
+    jsonPackageExtractedTelemetryForCsv(objOpenMCTContainerByTelem);
 }
 
 /*********************************** FILE PROCESSING - PACKAGING FOR OUTPUT */
@@ -217,12 +219,14 @@ gcsPackageExtractedTelemetryForCsv = function (objByTelem) {
 
 jsonPackageExtractedTelemetryForCsv = function (objByTelem) {
     // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
-    const outGcsByTelemArr = gcsByTelemToCsvArr(objByTelem);
+    const arrOut = openMCTContainerByTelemToCsvArr(objByTelem);
 
-    gStrArrByTelem = outGcsByTelemArr;
+    gStrArrByTelem = arrOut;
+
+    console.log('jsonPackageExtractedTelemetryForCsv', gStrArrByTelem);
 
     outputMsg(lineSepStr);
-    outputMsg('gcs extraction done.  Total telem count = ' + Object.keys(objByTelem).length);
+    outputMsg('JSON extraction done.  Total telem count = ' + Object.keys(objByTelem).length);
 
     btnDownloadTelem.removeAttribute('disabled');
     if (MDB_CONNECTED) {
@@ -276,7 +280,7 @@ validateTelem = function () {
                             prlPackageExtractedTelemetryForCsv(gObjByTelem);
                             break;
                         default:
-                            // jsonPackageExtractedTelemetryForCsv(gObjByTelem); TODO: add this function!
+                            jsonPackageExtractedTelemetryForCsv(gObjByTelem);
 
                     }
                 }
