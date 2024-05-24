@@ -134,15 +134,20 @@ openMCTContainerByTelemToCsvArr = function (arr) {
         for (let j = 0; j < keysContainersForThisPath.length; j++) {
             const curContainerGuid = keysContainersForThisPath[j];
             const curContainer = containersForThisPath[curContainerGuid];
+            const br = j > 0 ? LINE_BREAK : '';
             containersStr = containersStr
+                .concat(br)
                 .concat(curContainer.name)
                 .concat(' [')
                 .concat(curContainer.type)
                 .concat(']')
-                .concat(LINE_BREAK);
         }
 
-        tableRowArr.push('"' + containersStr + '"');
+        containerStr = '"'
+            .concat(containersStr)
+            .concat('"');
+
+        tableRowArr.push(containerStr);
         tableArr.push(tableRowArr);
     }
 

@@ -176,6 +176,8 @@ jsonExtractTelemetry = function (filename, value) {
     // console.log('jsonExtractTelemetry arrAllContainersAndTelem', arrAllContainersAndTelem);
     console.log('jsonExtractTelemetry objOpenMCTContainerByTelem', objOpenMCTContainerByTelem);
 
+    gObjByTelem = objOpenMCTContainerByTelem;
+
     jsonPackageExtractedTelemetryForCsv(objOpenMCTContainerByTelem);
 }
 
@@ -258,33 +260,46 @@ addValidationResult = function (obj, arrValidation) {
 }
 
 validateTelem = function () {
-    btnDownloadTelem.setAttribute('disabled', true);
-    btnValidateTelem.setAttribute('disabled', true);
-
-    outputMsg(lineSepStr);
-    outputMsg('Validating '.concat(Object.keys(gObjByTelem).length)
-        .concat(' paths...'));
-
     const keysToValidate = Object.keys(gObjByTelem);
+    const maxParams = 700;
+    let continueValidation = false;
+
     if (keysToValidate && keysToValidate.length > 0) {
-        validateParamsAgainstYamcsMdb(keysToValidate)
-            .then(arrKeysValidated => {
-                if (arrKeysValidated) {
-                    gObjByTelem = addValidationResult(gObjByTelem, arrKeysValidated);
+        if (keysToValidate.length > maxParams) {
+            continueValidation = confirm('The number of parameters to validate is greater than '
+                .concat(maxParams.toString()
+                    .concat(' and may not complete. Do you want to try anyway?')));
+        } else {
+            continueValidation = true;
+        }
 
-                    switch (CUR_FILE_TYPE) {
-                        case 'gcs':
-                            gcsPackageExtractedTelemetryForCsv(gObjByTelem);
-                            break;
-                        case 'prl':
-                            prlPackageExtractedTelemetryForCsv(gObjByTelem);
-                            break;
-                        default:
-                            jsonPackageExtractedTelemetryForCsv(gObjByTelem);
+        if (continueValidation) {
+            btnDownloadTelem.setAttribute('disabled', true);
+            btnValidateTelem.setAttribute('disabled', true);
 
+            outputMsg(lineSepStr);
+            outputMsg('Validating '.concat(Object.keys(gObjByTelem).length)
+                .concat(' paths...'));
+
+            validateParamsAgainstYamcsMdb(keysToValidate)
+                .then(arrKeysValidated => {
+                    if (arrKeysValidated) {
+                        gObjByTelem = addValidationResult(gObjByTelem, arrKeysValidated);
+
+                        switch (CUR_FILE_TYPE) {
+                            case 'gcs':
+                                gcsPackageExtractedTelemetryForCsv(gObjByTelem);
+                                break;
+                            case 'prl':
+                                prlPackageExtractedTelemetryForCsv(gObjByTelem);
+                                break;
+                            default:
+                                jsonPackageExtractedTelemetryForCsv(gObjByTelem);
+
+                        }
                     }
-                }
-            })
+                })
+        }
     }
 }
 
