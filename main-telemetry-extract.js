@@ -54,6 +54,7 @@ function resetTelemetryExtract() {
     outputMsgText.innerHTML = '';
 }
 
+/*********************************** FILE UPLOADING */
 function uploadGCSFiles(files) {
     config = getConfigFromForm();
     resetTelemetryExtract();
@@ -117,6 +118,7 @@ function uploadPrlFiles(files) {
     });
 }
 
+/*********************************** FILE DOWNLOADING */
 downloadTelemCsv = function () {
     const filename = config.outputBaseName;
     const list = gStrArrByTelem.join('\n');
@@ -125,7 +127,7 @@ downloadTelemCsv = function () {
     return false;
 }
 
-/*********************************** MULTIPLE FILE HANDLING */
+/*********************************** FILE PROCESSING - EXTRACTION */
 prlExtractTelemetry = function (filenames, values) {
     let arrAllProcsAndTelem = [];
 
@@ -137,6 +139,8 @@ prlExtractTelemetry = function (filenames, values) {
     }
 
     const objProcByTelem = procByTelem(arrAllProcsAndTelem);
+
+    console.log('prlExtractTelemetry arrAllProcsAndTelem', arrAllProcsAndTelem, objProcByTelem);
 
     gObjByTelem = objProcByTelem;
 
@@ -156,7 +160,7 @@ gcsExtractTelemetry = function (filenames, values) {
         outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
     }
 
-    const objGcsByTelem = gcsByTelem(arrAllGcsAndTelem);
+    const objGcsByTelem = open(arrAllGcsAndTelem);
 
     gObjByTelem = objGcsByTelem;
 
@@ -165,11 +169,15 @@ gcsExtractTelemetry = function (filenames, values) {
 
 jsonExtractTelemetry = function (filename, value) {
     const jsonExtract = JSON.parse(value);
-    console.log('jsonExtractTelemetry', jsonExtract);
-    console.log(extractCompositionKeys(jsonExtract));
+    // console.log('jsonExtractTelemetry', jsonExtract);
 
+    let arrAllProcsAndTelem = extractCompositionKeysToObjArray(jsonExtract);
+    const objOpenMCTContainerByTelem = openMCTContainerByTelem(arrAllProcsAndTelem);
+    console.log('jsonExtractTelemetry arrAllProcsAndTelem', arrAllProcsAndTelem);
+    console.log('jsonExtractTelemetry objOpenMCTContainerByTelem', objOpenMCTContainerByTelem);
 }
 
+/*********************************** FILE PROCESSING - PACKAGING FOR OUTPUT */
 prlPackageExtractedTelemetryForCsv = function (objByTelem) {
     // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
     const outTelemByProcArr = telemByProcToCsvArr(objProcByTelem);
@@ -206,6 +214,22 @@ gcsPackageExtractedTelemetryForCsv = function (objByTelem) {
         btnValidateTelem.removeAttribute('disabled');
     }
 }
+
+jsonPackageExtractedTelemetryForCsv = function (objByTelem) {
+    // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
+    const outGcsByTelemArr = gcsByTelemToCsvArr(objByTelem);
+
+    gStrArrByTelem = outGcsByTelemArr;
+
+    outputMsg(lineSepStr);
+    outputMsg('gcs extraction done.  Total telem count = ' + Object.keys(objByTelem).length);
+
+    btnDownloadTelem.removeAttribute('disabled');
+    if (MDB_CONNECTED) {
+        btnValidateTelem.removeAttribute('disabled');
+    }
+}
+
 
 addValidationResult = function (obj, arrValidation) {
     const arrTelemPaths = Object.keys(arrValidation);
