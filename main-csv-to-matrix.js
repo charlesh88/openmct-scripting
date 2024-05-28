@@ -105,7 +105,7 @@ function parseCSVTelemetry(csv) {
                         border: ALPHA_BORDER,
                         bgColor: cond.bgColor,
                         fgColor: cond.fgColor,
-                        conditionId: cond.id
+                        id: cond.id
                     }));
                 }
             }
@@ -251,7 +251,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
                     if (telemetryObject.alphaObjStyles) {
                         dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.alphaObjStyles;
-                        dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = telemetryObject.csKey;
+                        dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(telemetryObject.csKey);
                     }
 
                     dlMatrix.addToComposition(cell, getNamespace(cell));

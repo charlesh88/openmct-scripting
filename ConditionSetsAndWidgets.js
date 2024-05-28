@@ -55,29 +55,30 @@ function conditionStrToObj(condStr) {
     0: output string
     1: bgColor
     2: fgColor
-    3: trigger
-    4: operation
-    5: input value 1 (OPTIONAL)
-    6: input value 2 (OPTIONAL)
+    3: border
+    4: trigger
+    5: operation
+    6: input value 1 (OPTIONAL)
+    7: input value 2 (OPTIONAL)
      */
     const condArr = condStr.split(',');
-    let inputStr = '';
     let condObj = {
         'isDefault': true,
         'output': condArr[0],
         'bgColor': condArr[1],
-        'fgColor': condArr[2]
+        'fgColor': condArr[2],
+        'border': condArr[3]
     }
-    if (condArr.length > 3) {
+    if (condArr.length > 4) {
         condObj.isDefault = false;
-        condObj.trigger = condArr[3];
-        condObj.operation = condArr[4];
+        condObj.trigger = condArr[4];
+        condObj.operation = condArr[5];
         condObj.inputArr = [];
     }
-    if (condArr.length > 5) {
+    if (condArr.length > 6) {
         // There are input(s). Make into a string and add as a string
-        condObj.input = condArr[5]
-            .concat(condArr.length > 6? ','.concat(condArr[6]) : '');
+        condObj.input = condArr[6]
+            .concat(condArr.length > 7? ','.concat(condArr[7]) : '');
     }
 
     return condObj;
