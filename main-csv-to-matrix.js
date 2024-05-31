@@ -208,29 +208,24 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
                 if (cellArgs) {
                     if (cellArgs.includes('_cw')) {
-                        if (telemetryObject && telemetryObject.cs) {
-                            // Create Condition Widget
-                            let cw = new ConditionWidget(telemetryObject);
-                            root.addJson(cw);
-                            folderConditionWidgets.addToComposition(cw.identifier.key);
-                            cw.setLocation(folderConditionWidgets);
+                        // Create Condition Widget
+                        let cw = new ConditionWidget(telemetryObject);
+                        root.addJson(cw);
+                        folderConditionWidgets.addToComposition(cw.identifier.key);
+                        cw.setLocation(folderConditionWidgets);
 
-                            // Add Condition Widget to the layout
-                            dlMatrix.addSubObjectViewInPlace({
-                                itemW: itemW,
-                                itemH: rowH,
-                                x: curX,
-                                y: curY,
-                                ident: cw.identifier.key,
-                                hasFrame: false
-                            });
+                        // Add Condition Widget to the layout
+                        dlMatrix.addSubObjectViewInPlace({
+                            itemW: itemW,
+                            itemH: rowH,
+                            x: curX,
+                            y: curY,
+                            ident: cw.identifier.key,
+                            hasFrame: false
+                        });
 
-                            dlMatrix.addToComposition(cw.identifier.key);
-                        } else {
-                            // The matrix file wanted a Condition Widget, but there wasn't a corresponding telemetry
-                            // end point in the telemetry CSV file
-                            outputMsg(cell.concat(' designated to display as a Condition Widget, but no corresponding entry was found in the telemetry CSV'));
-                        }
+                        dlMatrix.addToComposition(cw.identifier.key);
+                        outputMsg(' Added Condition Widget: '.concat(telemetryObject.name));
                     }
                 } else {
                     // Add as a telemetry view (alphanumeric)
@@ -250,6 +245,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     }
 
                     dlMatrix.addToComposition(cell, getNamespace(cell));
+                    outputMsg(' Added telemetry alphanumeric: '.concat(telemetryObject.name));
                 }
             } else if (cell.length > 0) {
                 // Add as a text object or a Hyperlink button
@@ -263,14 +259,12 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
                 if (cellArgs && cellArgs.includes('_bg')) {
                     const start = cellArgs.indexOf('_bg');
-                    const bgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.backgroundColor = bgColorStr;
+                    args.backgroundColor = cellArgs.substring(start + 4, start + 11);
                 }
 
                 if (cellArgs && cellArgs.includes('_fg')) {
                     const start = cellArgs.indexOf('_fg');
-                    const fgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.color = fgColorStr;
+                    args.color = cellArgs.substring(start + 4, start + 11);
                 }
 
                 if (cellArgs && cellArgs.includes('_link')) {
@@ -296,9 +290,11 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     });
 
                     dlMatrix.addToComposition(linkBtn.identifier.key);
+                    outputMsg(' Added link: '.concat(linkName));
 
                 } else {
                     dlItem = dlMatrix.addTextView(args);
+                    outputMsg(' Added text: '.concat(args.text));
                 }
             }
 

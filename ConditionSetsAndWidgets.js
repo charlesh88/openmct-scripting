@@ -1,81 +1,3 @@
-// CONDITION SETS AND CONDITIONS
-const COND_STYLES_DEFAULTS = {
-    'backgroundColor': '',
-    'border': '',
-    'color': '',
-    'input': [],
-    'isDefault': false,
-    'metadata': 'value',
-    'name': '',
-    'operation': '',
-    'output': '',
-    'telemetry': 'any',
-    'trigger': 'any',
-    'url': ''
-};
-const ConditionSet = function (telemetryObject) {
-    Obj.call(this, telemetryObject.name, 'conditionSet', true);
-    this.configuration = {};
-    this.configuration.conditionTestData = [];
-    this.configuration.conditionCollection = [];
-
-    this.composition.push(createIdentifier(telemetryObject.dataSource, telemetryObject.dataSource.includes('~') ? 'taxonomy' : ''));
-
-    this.addCondition = function (condArgsObj) {
-        const cond = createOpenMCTCondObj(condArgsObj);
-        this.configuration.conditionCollection.push(cond);
-        return cond.id;
-    }
-/*
-    this.addConditionsFromObjArr = function (condObjArr) {
-        // TODO: REFACTOR TO USE NEW OUTPUT STYLE FROM unpackTelemetryObjectCondStyles
-        const condObjArrKeys = Object.keys(condObjArr);
-
-        for (let i = 0; i < condObjArrKeys.length; i++) {
-            const objCondArgs = condObjArr[condObjArrKeys[i]];
-            // objCondArgs will be an object with .name, .output, etc.
-            // The default condition should be first
-            this.configuration.conditionCollection.push(createConditionFromObj(objCondArgs))
-        }
-
-
-        // Counts on the last condition in conditionsObjArr to be the default
-        for (let i = 0; i < conditionsObjArr.length; i++) {
-            conditionsObjArr.conditionName = 'Condition '.concat(i.toString());
-            this.configuration.conditionCollection.push(createConditionFromObj(conditionsObjArr[i]));
-        }
-    }*/
-    /*
-        this.conditionsToObjArr = function (telemetryObject) {
-            // TODO: DEPRECATE THIS, REPLACE WITH unpackTelemetryObjectCondStyles
-            console.error("conditionsToObjArr: DON'T USE THIS!");
-            return false;
-
-            const maxConditions = 10;
-            let condObjArr = [];
-
-            // Unpack conditions 1 - 10
-            // Output string, bg, fg, criteria, value
-            for (let i = 1; i < maxConditions; i++) {
-                const condStr = telemetryObject['cond' + i.toString()];
-
-                if (condStr && condStr.length > 0) {
-                    if (condStr.includes('{')) {
-                        condObjArr.push(conditionObjStrToObj(condStr));
-                    } else {
-                        condObjArr.push(conditionStrToObj(condStr));
-                    }
-                }
-            }
-
-            // Unpack default condition
-            condObjArr.push(conditionStrToObj(telemetryObject.condDefault));
-
-            return condObjArr;
-        }
-        */
-}
-
 /***************************************** UNPACKING CSV CONDITION DEFINITIONS */
 function condStylesFromObj(objIn) {
     // Newer {property:value} style
@@ -83,13 +5,10 @@ function condStylesFromObj(objIn) {
     // Copy the default object so we don't make changes to the defaults!
     const objOut = copyObj(COND_STYLES_DEFAULTS);
 
-    // console.log('condStylesFromObj objIn', objIn);
-
     for (let i = 0; i < csdKeys.length; i++) {
         // Iterate through each key and set the value of the current props object
         const key = csdKeys[i];
         if (objIn[key]) {
-            // console.log('Found ', key, objIn[key]);
             objOut[key] = objIn[key];
         }
     }
@@ -150,22 +69,11 @@ function unpackTelemetryObjectCondStyles(telemObj) {
 
     const maxConditions = 10;
     let objCondPropsOut = {};
-
-    // Unpack default condition
-    let condKeyName = 'condDefault';
-    let condStr = telemObj[condKeyName];
-    if (condStr.includes('{')) {
-        objCondPropsOut = condStylesFromObj(convertStringToJSON(condStr));
-    } else {
-        objCondPropsOut = condObjStylesFromArr(condStr.split(','));
-    }
-    objCondPropsOut.isDefault = true;
-    objCondPropsOut.name = 'Default Condition';
-    arrTelemObjCondsAndStyles[condKeyName] = objCondPropsOut;
+    let condKeyName;
+    let condStr;
 
     // Unpack conditions 1 - 10
     for (let i = 1; i < maxConditions; i++) {
-        // const objCondPropsOut = {}; // Reset
         condKeyName = 'cond' + i.toString();
         condStr = telemObj[condKeyName];
 
@@ -180,121 +88,54 @@ function unpackTelemetryObjectCondStyles(telemObj) {
             arrTelemObjCondsAndStyles[condKeyName] = objCondPropsOut;
         }
     }
+
+    // Unpack default condition last
+    condKeyName = 'condDefault';
+    condStr = telemObj[condKeyName];
+    if (condStr.includes('{')) {
+        objCondPropsOut = condStylesFromObj(convertStringToJSON(condStr));
+    } else {
+        objCondPropsOut = condObjStylesFromArr(condStr.split(','));
+    }
+    objCondPropsOut.isDefault = true;
+    objCondPropsOut.name = 'Default Condition';
+    arrTelemObjCondsAndStyles[condKeyName] = objCondPropsOut;
+
     console.log('unpackTelemetryObjectCondStyles', arrTelemObjCondsAndStyles);
     return arrTelemObjCondsAndStyles;
 }
 
-/***************************************** CONDITION OBJECT CREATION AND STRUCTURE */
-function createConditionFromObj(argsObj) {
-    // TODO: FACTOR THIS OUT, REPLACE WITH
-    /*
-    Used by csv-conditional-graphics AND csv-to-matrix.
-    */
-
-    let o = {};
-    o.isDefault = argsObj.isDefault ? argsObj.isDefault : false;
-    o.id = argsObj.id ? argsObj.id : createUUID();
-    // o.bgColor = argsObj.bgColor ? argsObj.bgColor : '';
-    // o.fgColor = argsObj.fgColor ? argsObj.fgColor : '';
-
-    /*
-
-    o.id = createUUID();
-    o.telemetry = 'any';
-    o.operation = argsObj.operation;
-    o.input = (Array.isArray(argsObj.input)) ? argsObj.input : argsObj.inputArr;
-    o.metadata = argsObj.metadata ? argsObj.metadata : 'value';
-
-     */
-
-
-    o.configuration = {
-        'name': argsObj.name, 'output': argsObj.output, 'trigger': argsObj.trigger, 'criteria': [{
-            'id': createUUID(),
-            'telemetry': argsObj.telemetry,
-            'operation': argsObj.operation,
-            'input': argsObj.input,
-            'metadata': argsObj.metadata
-        }]
-    }
-
-
-    let c = o.configuration = {};
-    c.name = argsObj.name ? argsObj.name : 'Unnamed Condition';
-    c.output = argsObj.output ? argsObj.output : '';
-    c.trigger = argsObj.trigger ? argsObj.trigger : 'all';
-
-    argsObj.inputArr = conditionInputStrToArr(argsObj.operation, argsObj.input);
-    c.criteria = (!argsObj.isDefault) ? [createConditionCriteriaObj(argsObj)] : [];
-    c.summary = c.name + ' was scripted';
-
-    return o;
-}
-
-function conditionInputStrToArr(operation, inputStr) {
-    // Expect .operation and .input, like "10" or "-10,10"
-    let inputArr = [];
-    if (!inputStr) {
-        return inputArr;
-    }
-    if (isNumericConditionOperation(operation)) {
-        // Convert to numbers
-        if (inputStr.includes(',')) {
-            const strArr = inputStr.split(',');
-            inputArr[0] = parseFloat(strArr[0]);
-            inputArr[1] = parseFloat(strArr[1]);
-        } else {
-            inputArr[0] = parseFloat(inputStr);
-        }
-    } else {
-        // Set as an array with a string
-        inputArr = [inputStr];
-    }
-    return inputArr;
-}
-
-function createConditionCriteriaObj(argsObj) {
-    // TODO; REFACTOR THIS OUT, REPLACED BY createConditionFromObj()
-    let o = {};
-    // console.log('createConditionCriteriaObj', argsObj);
-
-    o.id = createUUID();
-    o.telemetry = 'any';
-    o.operation = argsObj.operation;
-    o.input = (Array.isArray(argsObj.input)) ? argsObj.input : argsObj.inputArr;
-    o.metadata = argsObj.metadata ? argsObj.metadata : 'value';
-
-    return o;
-}
-
-/***************************************** UTILITY */
-function isNumericConditionOperation(op) {
-    const arrNumericOperations = ['equalTo', 'greaterThan', 'lessThan', 'greaterThanOrEq', 'lessThanOrEq', 'between', 'notBetween', 'enumValueIs', 'enumValueIsNot'];
-    return arrNumericOperations.includes(op);
-}
-
-// CONDITION WIDGETS
-/*const ConditionWidgetOld = function (conditionSet, telemetryObject, argsObj) {
-    // TODO: add argsObj.link to the widgets url property
-    Obj.call(this, 'CW ' + telemetryObject.name, 'conditionWidget', false);
+/***************************************** CONDITION SETS AND CONDITIONS */
+const COND_STYLES_DEFAULTS = {
+    'backgroundColor': '',
+    'border': '',
+    'color': '',
+    'input': [],
+    'isDefault': false,
+    'metadata': 'value',
+    'name': '',
+    'operation': '',
+    'output': '',
+    'telemetry': 'any',
+    'trigger': 'any',
+    'url': ''
+};
+const ConditionSet = function (telemetryObject) {
+    Obj.call(this, telemetryObject.name, 'conditionSet', true);
     this.configuration = {};
-    let os = this.configuration.objectStyles = {};
-    os.styles = [];
-    os.staticStyle = createOpenMCTStyleObj();
-    os.conditionSetIdentifier = createIdentifier(conditionSet.identifier.key);
-    this.label = telemetryObject.name;
-    this.conditionalLabel = '';
-    this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condWidgetUsesOutputAsLabel === 'TRUE');
+    this.configuration.conditionTestData = [];
+    this.configuration.conditionCollection = [];
 
-    for (const cond of conditionSet.configuration.conditionCollection) {
-        if (cond.isDefault) {
-            os.selectedConditionId = cond.id;
-            os.defaultConditionId = cond.id;
-        }
-        os.styles.push(createOpenMCTStyleObj(cond));
+    this.composition.push(createIdentifier(telemetryObject.dataSource, telemetryObject.dataSource.includes('~') ? 'taxonomy' : ''));
+
+    this.addCondition = function (condArgsObj) {
+        const cond = createOpenMCTCondObj(condArgsObj);
+        this.configuration.conditionCollection.push(cond);
+        return cond.id;
     }
-}*/
+}
 
+/***************************************** CONDITION WIDGETS */
 const ConditionWidget = function (telemetryObject) {
     /* TODO:
         - add argsObj.link to the widgets url property
@@ -305,17 +146,19 @@ const ConditionWidget = function (telemetryObject) {
     let os = this.configuration.objectStyles = {};
     os.styles = [];
     os.staticStyle = createOpenMCTStyleObj();
-    os.conditionSetIdentifier = createIdentifier(telemetryObject.cs.identifier.key);
     this.label = telemetryObject.name;
     this.conditionalLabel = '';
-    this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condWidgetUsesOutputAsLabel === 'TRUE');
 
-    for (const cond of telemetryObject.cs.configuration.conditionCollection) {
-        if (cond.isDefault) {
-            os.selectedConditionId = cond.id;
-            os.defaultConditionId = cond.id;
+    if (telemetryObject.cs) {
+        os.conditionSetIdentifier = createIdentifier(telemetryObject.cs.identifier.key);
+        this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condWidgetUsesOutputAsLabel === 'TRUE');
+
+        for (const cond of telemetryObject.cs.configuration.conditionCollection) {
+            if (cond.isDefault) {
+                os.selectedConditionId = cond.id;
+                os.defaultConditionId = cond.id;
+            }
         }
+        os.styles = telemetryObject.objStyles; // TODO: may need copyObj here
     }
-
-    os.styles = telemetryObject.objStyles; // TODO: may need copyObj here
 }
