@@ -4,6 +4,7 @@ const STEP_LABEL_STYLE = {
     bgColor: '#555',
     fgColor: '#ccc'
 }
+const ALPHA_BORDER = '1px solid #555555';
 
 // let globalArrUniquePaths = [];
 
@@ -167,7 +168,8 @@ processPrlFiles = function (filenames, values) {
                         placeIndex: alphasItemPlacementTracker.placeIndex,
                         shiftIndex: alphasItemPlacementTracker.shiftIndex,
                         alphaFormat: config.dlAlphas.alphaFormat,
-                        alphaShowsUnit: true
+                        alphaShowsUnit: true,
+                        border: ALPHA_BORDER
                     });
 
                     procDisplayLayout.addToComposition(curStepPath, getNamespace(curStepPath));

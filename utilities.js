@@ -17,6 +17,66 @@ function createUUID() {
     return uuid;
 }
 
+function convertStringToJSON(inputString) {
+    const ESC_COMMA = "$";
+    // Remove whitespace and line breaks from the input string
+    // inputString = inputString.replace(/\s+/g, '');
+
+    // Esc commas within square brackets
+    inputString = inputString.replace(/\[(.*?)\]/g, function (match, p1) {
+        return "[" + p1.replace(/,/g, ESC_COMMA) + "]";
+    });
+
+    // Remove the surrounding double quotes if present
+    if (inputString.startsWith('"') && inputString.endsWith('"')) {
+        inputString = inputString.slice(1, -1);
+    }
+
+    // Remove the outer curly braces if present
+    if (inputString.startsWith("{") && inputString.endsWith("}")) {
+        inputString = inputString.slice(1, -1);
+    }
+
+    // Split the string by commas to separate key-value pairs
+    var pairs = inputString.split(",");
+
+    // Initialize an empty object to store key-value pairs
+    var jsonObject = {};
+
+    // Iterate through each pair and add them to the object
+    pairs.forEach(function (pair) {
+        // Split each pair by colon to separate key and value
+        var keyValue = pair.split(":");
+
+        // Trim any leading or trailing spaces from key and value
+        var key = keyValue[0].trim();
+        var value = keyValue[1].trim();
+        // Un-escape any escaped commas
+        value = value.replaceAll(ESC_COMMA, ",");
+        // console.log("value 1", value);
+
+        // Convert certain values to their appropriate data types
+        if (value === "true" || value === "false") {
+            value = value === "true";
+        } else if (!isNaN(value)) {
+            console.log("value 3", value, parseFloat(value), isNaN(value));
+            value = parseFloat(value);
+        } else if (
+            typeof value === "string" &&
+            value.startsWith("[") &&
+            value.endsWith("]")
+        ) {
+            // Store arrays as arrays
+            value = JSON.parse(value);
+        }
+
+        // Assign the key-value pair to the object
+        jsonObject[key] = value;
+    });
+
+    return jsonObject;
+}
+
 function copyObj(obj) {
     return JSON.parse(JSON.stringify(obj));
 }

@@ -29,19 +29,79 @@ const Obj = function (name, type, hasComposition) {
     }
 }
 
-function createStyleObj(args) {
-    let obj = {};
-    obj.style = {};
+function createOpenMCTCondObj(args) {
+    /*
+    "id": "3fbee1a9-496d-45ed-865e-60f9632a11ec",
+    "configuration": {
+      "name": "Disabled",
+      "output": "Disabled",
+      "trigger": "any",
+      "criteria": [
+        {
+          "id": "3f8b53a4-8dc0-4c59-a722-3687dacc70e2",
+          "telemetry": "any",
+          "operation": "lessThan",
+          "input": [
+            1
+          ],
+          "metadata": "value"
+        }
+      ]
+    },
+    "summary": "Match if any criteria are met:  any telemetry Value  < 1 "
+     */
 
+    const condObj = {};
+    condObj.isDefault = args.isDefault;
+    condObj.id = createUUID();
+    condObj.configuration = {
+        'name': args.name,
+        'output': args.output,
+        'trigger': args.isDefault ? 'all' : args.trigger,
+        'criteria': args.isDefault ? [] :
+            [{
+                'id': createUUID(),
+                'telemetry': args.telemetry,
+                'operation': args.operation,
+                'input': args.input,
+                'metadata': args.metadata
+            }]
+    };
+    condObj.summary = args.isDefault ? 'Scripted: default' :
+        'Scripted: match if any criteria are met: '
+            .concat(args.telemetry)
+            .concat(' telemetry ')
+            .concat(args.metadata)
+            .concat(' ')
+            .concat(args.operation)
+            .concat(' ')
+            .concat(args.input.toString())
+
+    return condObj;
+}
+
+function createOpenMCTStyleObj(args = undefined, condId = undefined) {
+    // TODO: make sure all functions calling this now pass the right stuff
+    const objStyleDefaults = {
+        'backgroundColor': '',
+        'border': '',
+        'color': '',
+        'isStyleInvisible': '',
+        'output': '',
+        'url': ''
+    }
+
+    let obj = {};
+    if (condId) {
+        obj.conditionId = condId;
+    }
+    obj.style = copyObj(objStyleDefaults);
     if (args) {
-        obj.style.output = args.output ? args.output : '';
-        obj.style.isStyleInvisible = args.isStyleInvisible ? args.isStyleInvisible : '';
-        if (args.output) { obj.style.output = args.output; }
-        if (args.border) { obj.style.border = args.border; }
-        if (args.url) { obj.style.imageUrl = args.url; }
-        if (args.bgColor) { obj.style.backgroundColor = args.bgColor; }
-        if (args.fgColor) { obj.style.color = args.fgColor; }
-        if (args.id) { obj.conditionId = args.id; }
+        for (const key in objStyleDefaults) {
+            if (args[key]) {
+                obj.style[key] = args[key];
+            }
+        }
     }
 
     return obj;

@@ -51,7 +51,7 @@ function parseCSVTelemetry(csv) {
 
     telemetryObjects = csvToObjArray(csv);
 
-    outputMsg('Telemetry CSV imported, '
+    outputMsg('Telemetry file imported, '
         .concat(telemetryObjects.length.toString())
         .concat(' rows found')
     );
@@ -86,42 +86,37 @@ function parseCSVTelemetry(csv) {
 
         LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
 
-        // Add conditionals
+        // If conditions defined for this telemetry parameter, create a Condition Set and add conditions
         if (telemetryObject.cond1.length > 0) {
+            const telemObjCondStyles = unpackTelemetryObjectCondStyles(telemetryObject);
+            const telemObjStyles = [];
             let cs = new ConditionSet(telemetryObject);
+            // console.log('telemObjCondStyles', telemObjCondStyles);
 
-            const conditionsObjArr = cs.conditionsToObjArr(telemetryObject);
-            cs.addConditionsFromObjArr(conditionsObjArr);
+            for (const key in telemObjCondStyles) {
+                const condId = cs.addCondition(telemObjCondStyles[key]);
 
-            telemetryObjects[curIndex].csKey = cs.identifier.key;
-            telemetryObjects[curIndex].cs = cs;
-
-            // Add a "styles" collection for Conditional styling in the matrix layout
-            if (telemetryObject.alphaUsesCond === 'TRUE') {
-                telemetryObjects[curIndex].alphaObjStyles = [];
-
-                for (const cond of cs.configuration.conditionCollection) {
-                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj({
-                        border: ALPHA_BORDER,
-                        bgColor: cond.bgColor,
-                        fgColor: cond.fgColor,
-                        id: cond.id
-                    }));
-                }
+                // Use condId to add a series of styleObjs to a styleObjs array
+                telemObjStyles.push(
+                    createOpenMCTStyleObj(telemObjCondStyles[key], condId)
+                );
             }
+            // console.log('cs', cs);
+            telemetryObjects[curIndex].cs = cs;
+            telemetryObjects[curIndex].objStyles = telemObjStyles;
 
             root.addJson(cs);
             folderConditionSets.addToComposition(cs.identifier.key);
             cs.setLocation(folderConditionSets);
         }
     }
+    console.log('telemetryObjects', telemetryObjects)
 }
 
 function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
 
     const rowArr = csvToArray(csv);
-
 
     // Create a folder to hold Hyperlinks and add it to the root folder
     let folderHyperlinks;
@@ -215,7 +210,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     if (cellArgs.includes('_cw')) {
                         if (telemetryObject && telemetryObject.cs) {
                             // Create Condition Widget
-                            let cw = new ConditionWidget(telemetryObject.cs, telemetryObject, cellArgsObj);
+                            let cw = new ConditionWidget(telemetryObject);
                             root.addJson(cw);
                             folderConditionWidgets.addToComposition(cw.identifier.key);
                             cw.setLocation(folderConditionWidgets);
@@ -249,9 +244,9 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         alphaShowsUnit: telemetryObject.alphaShowsUnit
                     });
 
-                    if (telemetryObject.alphaObjStyles) {
-                        dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.alphaObjStyles;
-                        dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(telemetryObject.csKey);
+                    if (telemetryObject.objStyles) {
+                        dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.objStyles;
+                        dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(telemetryObject.cs.identifier.key);
                     }
 
                     dlMatrix.addToComposition(cell, getNamespace(cell));
@@ -269,13 +264,13 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 if (cellArgs && cellArgs.includes('_bg')) {
                     const start = cellArgs.indexOf('_bg');
                     const bgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.bgColor = bgColorStr;
+                    args.backgroundColor = bgColorStr;
                 }
 
                 if (cellArgs && cellArgs.includes('_fg')) {
                     const start = cellArgs.indexOf('_fg');
                     const fgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.fgColor = fgColorStr;
+                    args.color = fgColorStr;
                 }
 
                 if (cellArgs && cellArgs.includes('_link')) {

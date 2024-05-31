@@ -105,8 +105,8 @@ const DisplayLayout = function (args) {
         textArgs.x = itemPos.x;
         textArgs.y = itemPos.y;
         textArgs.itemW = combinedArgs.itemW;
-        textArgs.bgColor = STEP_LABEL_STYLE.bgColor;
-        textArgs.fgColor = STEP_LABEL_STYLE.fgColor;
+        textArgs.backgroundColor = STEP_LABEL_STYLE.bgColor;
+        textArgs.color = STEP_LABEL_STYLE.fgColor;
         this.addTextView(textArgs);
 
         return response;
@@ -118,12 +118,9 @@ const DisplayLayout = function (args) {
         subObj.y = args.y;
         subObj.type = 'text-view';
         subObj.text = args.text;
-        if (args.bgColor || args.fgColor) {
+        if (args.backgroundColor || args.color) {
             this.configuration.objectStyles[subObj.id] = {};
-            this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj({
-                bgColor: args.bgColor? args.bgColor : '',
-                fgColor: args.fgColor? args.fgColor : ''
-            });
+            this.configuration.objectStyles[subObj.id].staticStyle = createOpenMCTStyleObj(args);
             this.configuration.objectStyles[subObj.id].styles = [];
         }
         this.configuration.items.push(subObj);
@@ -138,7 +135,7 @@ const DisplayLayout = function (args) {
         subObj.url = args.url;
         subObj.type = 'image-view';
         this.configuration.objectStyles[subObj.id] = {};
-        this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj(args);
+        this.configuration.objectStyles[subObj.id].staticStyle = createOpenMCTStyleObj(args);
         this.configuration.objectStyles[subObj.id].styles = [];
         this.configuration.items.push(subObj);
 
@@ -157,7 +154,7 @@ const DisplayLayout = function (args) {
         subObj.showUnits = (args.alphaShowsUnit === 'TRUE');
 
         this.configuration.objectStyles[subObj.id] = {};
-        this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj({border: ALPHA_BORDER});
+        this.configuration.objectStyles[subObj.id].staticStyle = createOpenMCTStyleObj(args);
         this.configuration.objectStyles[subObj.id].styles = [];
         this.configuration.items.push(subObj);
 

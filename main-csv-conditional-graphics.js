@@ -193,13 +193,13 @@ function parseCSVTelemetry(csv) {
             }
 
             // Create a new condition and add it to curConditionSet
-            const curCondition = createConditionFromObj(rowObj);
+            const curCondition = createOpenMCTCondObj(rowObj);
+
             curConditionSet.configuration.conditionCollection.push(curCondition);
 
             /***************************** CONDITIONAL STYLING */
             // Add a style object to the current image view
-            let conditionStyleObj = createStyleObj(rowObj);
-            conditionStyleObj.conditionId = curCondition.id
+            let conditionStyleObj = createOpenMCTStyleObj(rowObj, curCondition.id);
             dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
         }
     }
