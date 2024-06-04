@@ -111,9 +111,10 @@ function getNamespace(source) {
     return (source.indexOf('~') != -1) ? 'taxonomy' : '';
 }
 
-const TabsView = function (name) {
+const TabsView = function (name, keepAlive = true) {
+    // keep_alive is the "eager load" setting.
     Obj.call(this, name, 'tabs', true);
-    this.keep_alive = true;
+    this.keep_alive = keepAlive;
 }
 
 const StackedPlot = function (name) {
