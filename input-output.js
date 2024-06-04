@@ -114,7 +114,7 @@ function csvToObjArray(str) {
 
 /************************************************* OUTPUTS AND DOWNLOADING */
 function outputJSON() {
-    console.log('outputJSON', objJson);
+    // console.log('outputJSON', objJson);
     let outputJSON = JSON.stringify(objJson, null, 4);
     const updateTime = new Date();
     const oStr =
@@ -123,6 +123,7 @@ function outputJSON() {
         updateTime.getMinutes().toString().padStart(2, '0') + ':' +
         updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
+    outputMsg(lineSepStr);
     outputMsg(oStr);
     btnDownloadJson.removeAttribute('disabled');
 }

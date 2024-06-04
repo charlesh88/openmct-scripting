@@ -1,12 +1,9 @@
 const INPUT_TYPE = "prl";
 const OUTPUT_BASE_NAME_KEY = '_PRL_TO_DISPLAYS_BASE_NAME';
 const STEP_LABEL_STYLE = {
-    bgColor: '#555',
-    fgColor: '#ccc'
+    backgroundColor: '#555555',
+    color: '#cccccc'
 }
-const ALPHA_BORDER = '1px solid #555555';
-
-// let globalArrUniquePaths = [];
 
 storeOutputBaseName();
 loadLocalSettings();
@@ -137,15 +134,19 @@ processPrlFiles = function (filenames, values) {
                 // Make a header that combines the step number and crewMembers
                 let dlItem = procDisplayLayout.addLabel(
                     {
+                        style: {
+                            backgroundColor: STEP_LABEL_STYLE.backgroundColor,
+                            color: STEP_LABEL_STYLE.color
+                        },
                         index: curIndex,
                         itemW: labelWidth + config.itemMargin + config.dlAlphas.itemW,
                         itemH: config.dlAlphas.itemH,
                         ident: stepKeys[s],
-                        text: stepKeys[s].concat(' ').concat(curStepObj.crewMembers),
                         layoutStrategy: config.dlAlphas.layoutStrategy,
                         layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                         placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex
+                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
+                        text: stepKeys[s].concat(' ').concat(curStepObj.crewMembers)
                     }
                 );
 
@@ -157,19 +158,18 @@ processPrlFiles = function (filenames, values) {
                     const curStepPath = curStepObj.paths[p].replaceAll('/','~');
 
                     dlItem = procDisplayLayout.addTextAndAlphaViewPair({
+                        alphaFormat: config.dlAlphas.alphaFormat,
+                        alphaShowsUnit: true,
                         index: curIndex,
-                        labelW: labelWidth,
                         itemW: config.dlAlphas.itemW,
                         itemH: config.dlAlphas.itemH,
                         ident: curStepPath,
-                        text: curStepObj.pathsShort[p],
+                        labelW: labelWidth,
                         layoutStrategy: config.dlAlphas.layoutStrategy,
                         layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                         placeIndex: alphasItemPlacementTracker.placeIndex,
                         shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                        alphaFormat: config.dlAlphas.alphaFormat,
-                        alphaShowsUnit: true,
-                        border: ALPHA_BORDER
+                        text: curStepObj.pathsShort[p]
                     });
 
                     procDisplayLayout.addToComposition(curStepPath, getNamespace(curStepPath));

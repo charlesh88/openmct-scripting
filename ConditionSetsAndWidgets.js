@@ -1,13 +1,31 @@
-/***************************************** UNPACKING CSV CONDITION DEFINITIONS */
-function condStylesFromObj(objIn) {
-    // Newer {property:value} style
-    const csdKeys = Object.keys(COND_STYLES_DEFAULTS);
-    // Copy the default object so we don't make changes to the defaults!
-    const objOut = copyObj(COND_STYLES_DEFAULTS);
+const STYLES_DEFAULTS = {
+    'backgroundColor': '',
+    'border': '',
+    'color': ''
+};
 
-    for (let i = 0; i < csdKeys.length; i++) {
-        // Iterate through each key and set the value of the current props object
-        const key = csdKeys[i];
+const COND_STYLES_DEFAULTS = {
+    'backgroundColor': '',
+    'border': '',
+    'color': '',
+    'input': [],
+    'isDefault': false,
+    'metadata': 'value',
+    'name': '',
+    'operation': '',
+    'output': '',
+    'telemetry': 'any',
+    'trigger': 'any',
+    'url': ''
+};
+
+
+/***************************************** UNPACKING CSV CONDITION DEFINITIONS */
+function stylesFromObj(objIn, set = COND_STYLES_DEFAULTS) {
+    const keys = Object.keys(set);
+    const objOut = copyObj(set);
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
         if (objIn[key]) {
             objOut[key] = objIn[key];
         }
@@ -79,7 +97,7 @@ function unpackTelemetryObjectCondStyles(telemObj) {
 
         if (condStr && condStr.length > 0) {
             if (condStr.includes('{')) {
-                objCondPropsOut = condStylesFromObj(convertStringToJSON(condStr));
+                objCondPropsOut = stylesFromObj(convertStringToJSON(condStr), COND_STYLES_DEFAULTS);
             } else {
                 objCondPropsOut = condObjStylesFromArr(condStr.split(','));
             }
@@ -93,7 +111,7 @@ function unpackTelemetryObjectCondStyles(telemObj) {
     condKeyName = 'condDefault';
     condStr = telemObj[condKeyName];
     if (condStr.includes('{')) {
-        objCondPropsOut = condStylesFromObj(convertStringToJSON(condStr));
+        objCondPropsOut = stylesFromObj(convertStringToJSON(condStr), COND_STYLES_DEFAULTS);
     } else {
         objCondPropsOut = condObjStylesFromArr(condStr.split(','));
     }
@@ -101,25 +119,10 @@ function unpackTelemetryObjectCondStyles(telemObj) {
     objCondPropsOut.name = 'Default Condition';
     arrTelemObjCondsAndStyles[condKeyName] = objCondPropsOut;
 
-    console.log('unpackTelemetryObjectCondStyles', arrTelemObjCondsAndStyles);
     return arrTelemObjCondsAndStyles;
 }
 
 /***************************************** CONDITION SETS AND CONDITIONS */
-const COND_STYLES_DEFAULTS = {
-    'backgroundColor': '',
-    'border': '',
-    'color': '',
-    'input': [],
-    'isDefault': false,
-    'metadata': 'value',
-    'name': '',
-    'operation': '',
-    'output': '',
-    'telemetry': 'any',
-    'trigger': 'any',
-    'url': ''
-};
 const ConditionSet = function (telemetryObject) {
     Obj.call(this, telemetryObject.name, 'conditionSet', true);
     this.configuration = {};
@@ -136,16 +139,17 @@ const ConditionSet = function (telemetryObject) {
 }
 
 /***************************************** CONDITION WIDGETS */
-const ConditionWidget = function (telemetryObject) {
+const ConditionWidget = function (argsObj) {
     /* TODO:
-        - add argsObj.link to the widgets url property
+        - add argsObj.link and argsObj.style to the widgets' properties
         - make sure all functions calling this now pass the right stuff
     */
+    const telemetryObject = argsObj.telemetryObject;
     Obj.call(this, 'CW ' + telemetryObject.name, 'conditionWidget', false);
     this.configuration = {};
     let os = this.configuration.objectStyles = {};
     os.styles = [];
-    os.staticStyle = createOpenMCTStyleObj();
+    os.staticStyle = createOpenMCTStyleObj(argsObj.style);
     this.label = telemetryObject.name;
     this.conditionalLabel = '';
 

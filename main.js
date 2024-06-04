@@ -1,4 +1,4 @@
-let telemetryObjects = [];
+let TELEMETRY_OBJECTS = [];
 function displayAppVersion() {
     document.getElementById('app-version').innerText = APP_VERSION;
 }

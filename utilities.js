@@ -97,8 +97,14 @@ function getFormNumericVal(id) {
 }
 
 function getStrBetween(str, start, end) {
-    const result = str.match(new RegExp(start + "(.*?)" + end));
-    return result[1];
+    const startIndex = str.indexOf(start);
+    if (startIndex === -1) return ""; // start not found
+    const endIndex = str.indexOf(
+        end,
+        startIndex + start.length
+    );
+    if (endIndex === -1) return ""; // end not found
+    return str.substring(startIndex + start.length, endIndex);
 }
 
 function getStrBetweenRegex(str, regex) {
@@ -146,10 +152,16 @@ function getCurrentTimeEpoch() {
     return Math.floor(Date.now() / 1000); // Convert milliseconds to seconds
 }
 
-function findIndexInArray(array, member) {
+function findIndexInArray(array, member, equals = true) {
     for (let i = 0; i < array.length; i++) {
-        if (array[i] === member) {
-            return i;
+        if (!equals) {
+            if (array[i].includes(member)) {
+                return i;
+            }
+        } else {
+            if (array[i] === member) {
+                return i;
+            }
         }
     }
     return -1; // Return -1 if the member is not found in the array
@@ -209,22 +221,4 @@ function arrSortAndKeyByProperty(arr, property) {
 
 function strRemoveRegex(str, regex) {
     return str.replace(regex, '');
-}
-
-function extractStrBetweenStrings(str, startStr, endStr) {
-    let startIndex = 0;
-    let endIndex = 0;
-
-    if (str.includes(startStr)) {
-        startIndex = str.indexOf(startStr) + startStr.length;
-
-        if (str.includes(endStr)) {
-            endIndex = str.indexOf(endStr, startIndex);
-            return str.substring(startIndex, endIndex)
-        } else {
-            return str.substring(startIndex)
-        }
-    }
-
-    return str;
 }
