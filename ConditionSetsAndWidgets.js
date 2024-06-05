@@ -122,7 +122,7 @@ function unpackTelemetryObjectCondStyles(telemObj) {
     return arrTelemObjCondsAndStyles;
 }
 
-/***************************************** CONDITION SETS AND CONDITIONS */
+/***************************************** CONDITION SETS AND WIDGETS */
 const ConditionSet = function (telemetryObject) {
     Obj.call(this, telemetryObject.name, 'conditionSet', true);
     this.configuration = {};
@@ -145,15 +145,18 @@ const ConditionWidget = function (argsObj) {
         - make sure all functions calling this now pass the right stuff
     */
     const telemetryObject = argsObj.telemetryObject;
-    Obj.call(this, 'CW ' + telemetryObject.name, 'conditionWidget', false);
+    const label = telemetryObject ? telemetryObject.name : argsObj.cellValue;
+
+    Obj.call(this, 'CW ' + label, 'conditionWidget', false);
     this.configuration = {};
     let os = this.configuration.objectStyles = {};
     os.styles = [];
     os.staticStyle = createOpenMCTStyleObj(argsObj.style);
-    this.label = telemetryObject.name;
+    this.label = label;
     this.conditionalLabel = '';
+    this.url = argsObj.url;
 
-    if (telemetryObject.cs) {
+    if (telemetryObject && telemetryObject.cs) {
         os.conditionSetIdentifier = createIdentifier(telemetryObject.cs.identifier.key);
         this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condWidgetUsesOutputAsLabel === 'TRUE');
 

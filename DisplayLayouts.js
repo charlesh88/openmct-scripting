@@ -125,6 +125,8 @@ const DisplayLayout = function (args) {
         this.configuration.objectStyles[subObj.id].staticStyle = createOpenMCTStyleObj(args.style);
         this.configuration.objectStyles[subObj.id].styles = [];
         this.configuration.items.push(subObj);
+
+        return subObj;
     }
 
     this.addImageView = function (args) {

@@ -138,14 +138,6 @@ downloadJson = function () {
     downloadFile(file);
 }
 
-// downloadTelemList = function () {
-//     const filename = config.outputBaseName.concat(' - Uniques.csv');
-//     const list = globalArrUniquePaths.join('\n');
-//     const file = new File([list], filename, {type: 'text/csv'});
-//     downloadFile(file);
-//     return false;
-// }
-
 downloadFile = function (file) {
     const link = document.createElement('a');
     link.setAttribute('download', file.name);

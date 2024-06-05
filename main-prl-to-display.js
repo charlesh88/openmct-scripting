@@ -30,13 +30,20 @@ function getConfigFromForm() {
 /*********************************** MULTIPLE FILE HANDLING */
 processPrlFiles = function (filenames, values) {
     let arrAllProcsAndTelem = [];
+    const outputMsgArr = [[
+        'Procedure File',
+        'Non-unique Telem'
+    ]];
     let responseObj = {};
 
 
     for (let i = 0; i < filenames.length; i++) {
         const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
 
-        outputMsg(filenames[i] + ' has ' + arrStepsAndTelem.length + ' telem ref(s)');
+        outputMsgArr.push([
+            filenames[i],
+            arrStepsAndTelem.length
+        ]);
 
         let consolidatedTelemByStep = [];
         let longestLabelCharCnt = 0;
@@ -67,6 +74,8 @@ processPrlFiles = function (filenames, values) {
             };
         }
     }
+
+    outputMsg(htmlGridFromArray(outputMsgArr));
 
     const procKeys = Object.keys(arrAllProcsAndTelem);
 
@@ -158,7 +167,7 @@ processPrlFiles = function (filenames, values) {
 
                 // Iterate through the pathsShort array and make label and alpha pairs for each
                 for (let p = 0; p < curStepObj.paths.length; p++) {
-                    const curStepPath = curStepObj.paths[p].replaceAll('/','~');
+                    const curStepPath = curStepObj.paths[p].replaceAll('/', '~');
 
                     dlItem = procDisplayLayout.addTextAndAlphaViewPair({
                         alphaFormat: config.dlAlphas.alphaFormat,

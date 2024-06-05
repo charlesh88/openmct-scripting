@@ -115,7 +115,6 @@ function parseCSVTelemetry(csv) {
         }
     }
     console.log('TELEMETRY_OBJECTS', TELEMETRY_OBJECTS);
-    outputMsg('Telemetry file processing completed.');
 }
 
 function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
@@ -165,6 +164,10 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         folderHyperlinks.setLocation(folderRoot);
     }
 
+    const outputMsgArr = [[
+        'Object',
+        'Type'
+    ]];
     // Iterate through telemetry collection
     for (let r = 1; r < rowArr.length; r++) {
         const row = rowArr[r];
@@ -209,7 +212,10 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         }
 
                         dlMatrix.addToComposition(cObj.cellValue, getNamespace(cObj.cellValue));
-                        outputMsg(' Added telemetry alphanumeric: '.concat(cObj.telemetryObject.name));
+                        outputMsgArr.push([
+                            dlItem.identifier.key,
+                            'Alphanumeric'
+                        ]);
                         break;
                     case 'cw':
                         // Create as a Condition Widget
@@ -229,7 +235,10 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         });
 
                         dlMatrix.addToComposition(cw.identifier.key);
-                        outputMsg(' Added Condition Widget: '.concat(cObj.telemetryObject.name));
+                        outputMsgArr.push([
+                            cw.label,
+                            'Condition Widget'
+                        ]);
                         break;
                     case 'link':
                         // Create as a Link
@@ -257,7 +266,10 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         });
 
                         dlMatrix.addToComposition(linkBtn.identifier.key);
-                        outputMsg(' Added link: '.concat(linkName));
+                        outputMsgArr.push([
+                            linkBtn.label,
+                            'Link'
+                        ]);
                         break;
                     default:
                         // Create as a text object
@@ -269,7 +281,10 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                             x: curX,
                             y: curY
                         });
-                        outputMsg(' Added text: '.concat(cObj.cellValue));
+                        outputMsgArr.push([
+                            dlItem.text,
+                            'Text'
+                        ]);
                 }
             }
 
@@ -278,6 +293,8 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
         curY += rowH + itemMargin;
     }
+
+    outputMsg(htmlGridFromArray(outputMsgArr));
 
     outputJSON();
     outputMsg('Matrix layout generated');
@@ -324,7 +341,12 @@ function unpackCell(strCell) {
     curIndex = findIndexInArray(arr, '_link', false);
     if (curIndex > -1) {
         matrixCell.type = 'link';
-        matrixCell.url = getStrBetween(arr[curIndex], '_link(', ')');
+    }
+
+    // Capture URLs which can be applied to both Hyperlinks and Condition Widgets
+    curIndex = findIndexInArray(arr, '_url', false);
+    if (curIndex > -1) {
+        matrixCell.url = getStrBetween(arr[curIndex], '_url(', ')');
     }
 
     return matrixCell;
