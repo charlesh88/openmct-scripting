@@ -194,11 +194,15 @@ form {
 
 .head {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 10px;
+}
+.headh1 {
+  display: flex;
   align-items: center;
   gap: 10px;
 }
-.head > * {
+.headh1 > * {
   flex: 0 0 auto;
 }
 
@@ -247,7 +251,7 @@ form {
 .page-main {
   display: flex;
   flex-direction: column;
-  flex: 1 1 70%;
+  flex: 1 1 auto;
   gap: 10px;
 }
 
@@ -370,9 +374,10 @@ form {
 .c-msg__grid {
   display: grid;
   gap: 1px;
+  margin-top: 5px;
 }
 .c-msg__grid div {
-  padding: 2px 4px;
+  padding: 3px 5px;
 }
 .c-msg__grid div.bdy {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
