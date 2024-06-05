@@ -68,8 +68,6 @@ processPrlFiles = function (filenames, values) {
         }
     }
 
-    console.log('arrAllProcsAndTelem', arrAllProcsAndTelem);
-
     const procKeys = Object.keys(arrAllProcsAndTelem);
 
     if (procKeys && procKeys.length > 0) {
