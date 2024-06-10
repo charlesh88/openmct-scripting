@@ -400,6 +400,15 @@ form {
 }
 
 /**************************************************************** HELP */
+.--help code {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  display: inline;
+  font-size: 1.25em;
+  padding: 5px 10px;
+  width: min-content;
+  white-space: nowrap;
+}
 .--help h1, .--help h2, .--help h3, .--help h4 {
   background: none !important;
   color: white;

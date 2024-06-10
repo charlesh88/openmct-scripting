@@ -425,6 +425,16 @@ form {
 .--help {
   $c: rgba(white, 0.1);
 
+  code {
+    background: rgba(white, 0.2);
+    border-radius: 4px;
+    display: inline;
+    font-size: 1.25em;
+    padding: 5px 10px;
+    width: min-content;
+    white-space: nowrap;
+  }
+
   h1, h2, h3, h4 {
     background: none !important;
     color: white;

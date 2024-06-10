@@ -1,4 +1,14 @@
 # Release Notes
+## v4.0 - June 5, 2024
+- Significant refactoring of conditional and static styling capabilities:
+  - Conditions and styling should now be specified in a JSON-like string format, like `{backgroundColor:#009900,color:#33ff33}`. The legacy comma-separated format is still supported.
+  - Static styling can now be defined in the telemetry file.
+  - Border style can now be specified, like `{border:1px solid #ff0000}`.
+- Condition Widgets can now be created without a telemetry reference, and can now include URL properties to make them function as buttons.
+- Hyperlinks are now created simply with `_link`; urls must be specified with a separate `_url()` property, which can also be applied to Condition Widgets.
+- 'Output messaging' enhanced to use grid layout and provide additional detail.
+- Added Stacked Plot creation back into prl-to-display. Plots are now collected into a Tabs view, similar to Display Layouts.
+- Enhanced TabsView creation to allow setting of the "keep_alive / eager load" property.
 
 ## v3.2 - May 22, 2024
 
