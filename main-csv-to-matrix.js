@@ -49,10 +49,10 @@ function parseCSVTelemetry(csv) {
     document.getElementById('inputCsv').toggleAttribute('disabled');
     document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
 
-    telemetryObjects = csvToObjArray(csv);
+    TELEMETRY_OBJECTS = csvToObjArray(csv);
 
-    outputMsg('Telemetry CSV imported, '
-        .concat(telemetryObjects.length.toString())
+    outputMsg('Telemetry file imported, '
+        .concat(TELEMETRY_OBJECTS.length.toString())
         .concat(' rows found')
     );
 
@@ -81,58 +81,51 @@ function parseCSVTelemetry(csv) {
     folderRoot.addToComposition(LadTable.identifier.key);
     LadTable.setLocation(folderRoot);
 
-    for (const telemetryObject of telemetryObjects) {
-        const curIndex = telemetryObjects.indexOf(telemetryObject);
+    for (const telemetryObject of TELEMETRY_OBJECTS) {
+        const curIndex = TELEMETRY_OBJECTS.indexOf(telemetryObject);
 
         LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
 
-        // Add conditionals
+        // Allow static styling to be defined in the telemetry file.
+        // Will be overridden by styling in the matrix file, if present.
+        if (telemetryObject.alphaStyle.length > 0) {
+            telemetryObject.alphaStyle = stylesFromObj(convertStringToJSON(telemetryObject.alphaStyle), STYLES_DEFAULTS);
+        }
+
+        // If conditions defined for this telemetry parameter, create a Condition Set and add conditions
         if (telemetryObject.cond1.length > 0) {
+            const telemObjCondStyles = unpackTelemetryObjectCondStyles(telemetryObject);
+            const telemObjStyles = [];
             let cs = new ConditionSet(telemetryObject);
 
-            const conditionsObjArr = cs.conditionsToObjArr(telemetryObject);
-            cs.addConditionsFromObjArr(conditionsObjArr);
+            for (const key in telemObjCondStyles) {
+                const condId = cs.addCondition(telemObjCondStyles[key]);
 
-            telemetryObjects[curIndex].csKey = cs.identifier.key;
-            telemetryObjects[curIndex].cs = cs;
-
-            // Add a "styles" collection for Conditional styling in the matrix layout
-            if (telemetryObject.alphaUsesCond === 'TRUE') {
-                telemetryObjects[curIndex].alphaObjStyles = [];
-
-                for (const cond of cs.configuration.conditionCollection) {
-                    telemetryObjects[curIndex].alphaObjStyles.push(createStyleObj({
-                        border: ALPHA_BORDER,
-                        bgColor: cond.bgColor,
-                        fgColor: cond.fgColor,
-                        conditionId: cond.id
-                    }));
-                }
+                // Use condId to add a series of styleObjs to a styleObjs array
+                telemObjStyles.push(
+                    createOpenMCTStyleObj(telemObjCondStyles[key], condId)
+                );
             }
 
+            TELEMETRY_OBJECTS[curIndex].cs = cs;
+            TELEMETRY_OBJECTS[curIndex].objStyles = telemObjStyles;
             root.addJson(cs);
             folderConditionSets.addToComposition(cs.identifier.key);
             cs.setLocation(folderConditionSets);
         }
     }
+    console.log('TELEMETRY_OBJECTS', TELEMETRY_OBJECTS);
 }
 
 function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
+    // Toggle the matrix file upload button to disabled
     document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
+    outputMsg(lineSepStr);
 
     const rowArr = csvToArray(csv);
 
-
-    // Create a folder to hold Hyperlinks and add it to the root folder
-    let folderHyperlinks;
-
-    if (csv.includes('_link')) {
-        folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
-        root.addJson(folderHyperlinks);
-        folderRoot.addToComposition(folderHyperlinks.identifier.key);
-        folderHyperlinks.setLocation(folderRoot);
-    }
-
+    let curY = 0;
+    let dlItem = {};
     const arrColWidths = rowArr[0];
     const arrGridMargin = arrColWidths[0].length > 0 ? arrColWidths[0].split(',') : [2, 2, 2];
     const gridDimensions = [
@@ -151,10 +144,6 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     folderRoot.addToComposition(dlMatrix.identifier.key);
     dlMatrix.setLocation(folderRoot);
 
-
-    let curY = 0;
-    let dlItem = {};
-
     outputMsg('Matrix layout started: '
         .concat(arrColWidths.length.toString())
         .concat(' columns and ')
@@ -166,6 +155,19 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         .concat(itemMargin)
     );
 
+    // Create a folder to hold Hyperlinks and add it to the root folder
+    let folderHyperlinks;
+    if (csv.includes('_link')) {
+        folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
+        root.addJson(folderHyperlinks);
+        folderRoot.addToComposition(folderHyperlinks.identifier.key);
+        folderHyperlinks.setLocation(folderRoot);
+    }
+
+    const outputMsgArr = [[
+        'Object',
+        'Type'
+    ]];
     // Iterate through telemetry collection
     for (let r = 1; r < rowArr.length; r++) {
         const row = rowArr[r];
@@ -175,135 +177,114 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         // Iterate through row cells
         for (let c = 1; c < row.length; c++) {
             // Process each cell in the matrix
-            let cell = row[c].trim();
+            const cObj = unpackCell(row[c].trim());
+
             let colW = parseInt(arrColWidths[c]);
             let itemW = colW;
 
-            const argSeparator = ',';
-            let cellArgs;
-            let cellArgsArr = [];
-            let cellArgsObj = {};
-
-            if (cell.includes(argSeparator)) {
-                cellArgs = cell.substring(cell.indexOf(argSeparator) + 1, cell.length);
-                cell = cell.substring(0, cell.indexOf(argSeparator)).replaceAll('"', '').trim();
-                cellArgsArr = cellArgs.split(argSeparator);
-            }
-
-            if (cellArgsArr.length > 0) {
-                const spanArg = extractArg(cellArgsArr, '_span');
-                if (spanArg) {
-                    cellArgsObj.span = parseInt(spanArg);
-                    // Span includes the current column, c
-                    // Add widths from columns to be spanned to itemW
-                    for (let i = c + 1; i < (c + cellArgsObj.span); i++) {
-                        itemW += parseInt(arrColWidths[i]) + itemMargin;
-                    }
-                }
-
-                let linkArg = extractArg(cellArgsArr, '_link');
-                if (linkArg) {
-                    cellArgsObj.url = linkArg;
+            if (cObj.span) {
+                // Span includes the current column, c
+                // Add widths from columns to be spanned to itemW
+                for (let i = c + 1; i < (c + parseInt(cObj.span)); i++) {
+                    itemW += parseInt(arrColWidths[i]) + itemMargin;
                 }
             }
 
-            if (cell.startsWith("~")) {
-                // If telem, get the corresponding telemetryObject
-                const telemetryObject = telemetryObjects.find(e => e.dataSource === cell);
+            if (cObj.cellValue.length > 0) {
+                // console.log('- > ',cObj.cellValue, cObj);
+                switch (cObj.type) {
+                    case 'alpha':
+                        // Create as an alphanumeric
+                        dlItem = dlMatrix.addTelemetryView({
+                            alphaFormat: cObj.telemetryObject.alphaFormat,
+                            alphaShowsUnit: cObj.telemetryObject.alphaShowsUnit,
+                            ident: cObj.cellValue.replaceAll('/', '~'),
+                            itemH: rowH,
+                            itemW: itemW,
+                            style: (cObj.style) ? cObj.style : cObj.telemetryObject.alphaStyle,
+                            x: curX,
+                            y: curY
+                        });
 
-                if (cellArgs) {
-                    if (cellArgs.includes('_cw')) {
-                        if (telemetryObject && telemetryObject.cs) {
-                            // Create Condition Widget
-                            let cw = new ConditionWidget(telemetryObject.cs, telemetryObject, cellArgsObj);
-                            root.addJson(cw);
-                            folderConditionWidgets.addToComposition(cw.identifier.key);
-                            cw.setLocation(folderConditionWidgets);
-
-                            // Add Condition Widget to the layout
-                            dlMatrix.addSubObjectViewInPlace({
-                                itemW: itemW,
-                                itemH: rowH,
-                                x: curX,
-                                y: curY,
-                                ident: cw.identifier.key,
-                                hasFrame: false
-                            });
-
-                            dlMatrix.addToComposition(cw.identifier.key);
-                        } else {
-                            // The matrix file wanted a Condition Widget, but there wasn't a corresponding telemetry
-                            // end point in the telemetry CSV file
-                            outputMsg(cell.concat(' designated to display as a Condition Widget, but no corresponding entry was found in the telemetry CSV'));
+                        if (cObj.telemetryObject.objStyles && cObj.telemetryObject.alphaUsesCond === 'TRUE') {
+                            dlMatrix.configuration.objectStyles[dlItem.id].styles = cObj.telemetryObject.objStyles;
+                            dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(cObj.telemetryObject.cs.identifier.key);
                         }
-                    }
-                } else {
-                    // Add as a telemetry view (alphanumeric)
-                    dlItem = dlMatrix.addTelemetryView({
-                        itemW: itemW,
-                        itemH: rowH,
-                        x: curX,
-                        y: curY,
-                        ident: cell.replaceAll('/', '~'),
-                        alphaFormat: telemetryObject.alphaFormat,
-                        alphaShowsUnit: telemetryObject.alphaShowsUnit
-                    });
 
-                    if (telemetryObject.alphaObjStyles) {
-                        dlMatrix.configuration.objectStyles[dlItem.id].styles = telemetryObject.alphaObjStyles;
-                        dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = telemetryObject.csKey;
-                    }
+                        dlMatrix.addToComposition(cObj.cellValue, getNamespace(cObj.cellValue));
+                        outputMsgArr.push([
+                            dlItem.identifier.key,
+                            'Alphanumeric'
+                        ]);
+                        break;
+                    case 'cw':
+                        // Create as a Condition Widget
+                        let cw = new ConditionWidget(cObj);
+                        root.addJson(cw);
+                        folderConditionWidgets.addToComposition(cw.identifier.key);
+                        cw.setLocation(folderConditionWidgets);
 
-                    dlMatrix.addToComposition(cell, getNamespace(cell));
-                }
-            } else if (cell.length > 0) {
-                // Add as a text object or a Hyperlink button
-                const args = {
-                    itemW: itemW,
-                    itemH: rowH,
-                    x: curX,
-                    y: curY,
-                    text: restoreEscChars(cell)
-                };
+                        // Add Condition Widget to the layout
+                        dlMatrix.addSubObjectViewInPlace({
+                            itemW: itemW,
+                            itemH: rowH,
+                            x: curX,
+                            y: curY,
+                            ident: cw.identifier.key,
+                            hasFrame: false
+                        });
 
-                if (cellArgs && cellArgs.includes('_bg')) {
-                    const start = cellArgs.indexOf('_bg');
-                    const bgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.bgColor = bgColorStr;
-                }
+                        dlMatrix.addToComposition(cw.identifier.key);
+                        outputMsgArr.push([
+                            cw.label,
+                            'Condition Widget'
+                        ]);
+                        break;
+                    case 'link':
+                        // Create as a Link
+                        // TODO: make sure link objects are being created and styled properly
+                        const text = restoreEscChars(cObj.cellValue);
+                        let linkBtn = new HyperLink(text, {
+                            format: 'button',
+                            target: '_blank',
+                            url: cObj.url,
+                            label: text
+                        });
 
-                if (cellArgs && cellArgs.includes('_fg')) {
-                    const start = cellArgs.indexOf('_fg');
-                    const fgColorStr = cellArgs.substring(start + 4, start + 11);
-                    args.fgColor = fgColorStr;
-                }
+                        root.addJson(linkBtn);
+                        folderHyperlinks.addToComposition(linkBtn.identifier.key);
+                        linkBtn.setLocation(folderHyperlinks);
 
-                if (cellArgs && cellArgs.includes('_link')) {
-                    const linkName = restoreEscChars(args.text);
-                    let linkBtn = new HyperLink(linkName, {
-                        format: 'button',
-                        target: '_blank',
-                        url: cellArgsObj.url,
-                        label: linkName
-                    });
-                    root.addJson(linkBtn);
-                    folderHyperlinks.addToComposition(linkBtn.identifier.key);
-                    linkBtn.setLocation(folderHyperlinks);
+                        // Add Hyperlink to the layout
+                        dlMatrix.addSubObjectViewInPlace({
+                            itemW: itemW,
+                            itemH: rowH,
+                            x: curX,
+                            y: curY,
+                            ident: linkBtn.identifier.key,
+                            hasFrame: false
+                        });
 
-                    // Add Hyperlink to the layout
-                    dlMatrix.addSubObjectViewInPlace({
-                        itemW: itemW,
-                        itemH: rowH,
-                        x: curX,
-                        y: curY,
-                        ident: linkBtn.identifier.key,
-                        hasFrame: false
-                    });
-
-                    dlMatrix.addToComposition(linkBtn.identifier.key);
-
-                } else {
-                    dlItem = dlMatrix.addTextView(args);
+                        dlMatrix.addToComposition(linkBtn.identifier.key);
+                        outputMsgArr.push([
+                            linkBtn.label,
+                            'Link'
+                        ]);
+                        break;
+                    default:
+                        // Create as a text object
+                        dlItem = dlMatrix.addTextView({
+                            itemW: itemW,
+                            itemH: rowH,
+                            style: cObj.style,
+                            text: restoreEscChars(cObj.cellValue),
+                            x: curX,
+                            y: curY
+                        });
+                        outputMsgArr.push([
+                            dlItem.text,
+                            'Text'
+                        ]);
                 }
             }
 
@@ -313,21 +294,60 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         curY += rowH + itemMargin;
     }
 
+    outputMsg(htmlGridFromArray(outputMsgArr));
+
     outputJSON();
     outputMsg('Matrix layout generated');
 }
 
-function extractArg(arr, argKey) {
-    // expects arr[argKey(value)]
-    const argStr = arr.find(
-        (elem) => elem.includes(argKey)
-    );
-
-    if (argStr) {
-        return argStr
-            .substring(0, argStr.length - 1) // Get rid of last )
-            .split('(')[1]
+function unpackCell(strCell) {
+    const matrixCell = {
+        'type': 'text',
+        'span': undefined,
+        'style': undefined,
+        'url': undefined
     }
 
-    return false;
+    // Look for `,_` as a pattern to use for split
+    const a = strCell.split(',_');
+    // The cell's 'value' will always be the first part of the array
+    matrixCell.cellValue = a.shift();
+    // Restore underbar character that was removed by split
+    const arr = a.map(val => {
+        return '_'.concat(val)
+    });
+
+    if (matrixCell.cellValue.startsWith('~')) {
+        matrixCell.telemetryObject = TELEMETRY_OBJECTS.find(e => e.dataSource === matrixCell.cellValue);
+        matrixCell.type = 'alpha';
+    }
+
+    if (arr.includes('_cw')) {
+        matrixCell.type = 'cw';
+    }
+
+    let curIndex = findIndexInArray(arr, '_span', false);
+    if (curIndex > -1) {
+        matrixCell.span = Number(getStrBetween(arr[curIndex], '_span(', ')'));
+    }
+
+    curIndex = findIndexInArray(arr, '_style', false);
+    if (curIndex > -1) {
+        matrixCell.style = stylesFromObj(
+            convertStringToJSON(getStrBetween(arr[curIndex], '_style(', ')')),
+            STYLES_DEFAULTS);
+    }
+
+    curIndex = findIndexInArray(arr, '_link', false);
+    if (curIndex > -1) {
+        matrixCell.type = 'link';
+    }
+
+    // Capture URLs which can be applied to both Hyperlinks and Condition Widgets
+    curIndex = findIndexInArray(arr, '_url', false);
+    if (curIndex > -1) {
+        matrixCell.url = getStrBetween(arr[curIndex], '_url(', ')');
+    }
+
+    return matrixCell;
 }

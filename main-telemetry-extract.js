@@ -5,7 +5,6 @@ const btnDownloadTelem = document.getElementById("btnDownloadTelem");
 const btnValidateTelem = document.getElementById("btnValidateTelem");
 const OUTPUT_BASE_NAME_KEY = '_TELEM_EXTRACT_BASE_NAME';
 const outputMsgText = document.getElementById("outputMsg");
-const lineSepStr = '------------------------------------------------';
 
 let CUR_FILE_TYPE = 'PRL';
 let gObjByTelem = {};

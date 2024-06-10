@@ -1,11 +1,9 @@
 const INPUT_TYPE = "prl";
 const OUTPUT_BASE_NAME_KEY = '_PRL_TO_DISPLAYS_BASE_NAME';
 const STEP_LABEL_STYLE = {
-    bgColor: '#555',
-    fgColor: '#ccc'
+    backgroundColor: '#555555',
+    color: '#cccccc'
 }
-
-// let globalArrUniquePaths = [];
 
 storeOutputBaseName();
 loadLocalSettings();
@@ -32,13 +30,20 @@ function getConfigFromForm() {
 /*********************************** MULTIPLE FILE HANDLING */
 processPrlFiles = function (filenames, values) {
     let arrAllProcsAndTelem = [];
+    const outputMsgArr = [[
+        'Procedure File',
+        'Non-unique Telem'
+    ]];
     let responseObj = {};
 
 
     for (let i = 0; i < filenames.length; i++) {
         const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
 
-        outputMsg(filenames[i] + ' has ' + arrStepsAndTelem.length + ' telem ref(s)');
+        outputMsgArr.push([
+            filenames[i],
+            arrStepsAndTelem.length
+        ]);
 
         let consolidatedTelemByStep = [];
         let longestLabelCharCnt = 0;
@@ -70,7 +75,7 @@ processPrlFiles = function (filenames, values) {
         }
     }
 
-    console.log('arrAllProcsAndTelem', arrAllProcsAndTelem);
+    outputMsg(htmlGridFromArray(outputMsgArr));
 
     const procKeys = Object.keys(arrAllProcsAndTelem);
 
@@ -78,9 +83,6 @@ processPrlFiles = function (filenames, values) {
         initDomainObjects();
         config = getConfigFromForm();
         let root = objJson.openmct = new Container();
-
-        // Clear out the outputMsgs display
-        outputMsgText.innerHTML = '';
 
         // Create the root folder
         let folderRoot = new Obj(config.outputBaseName, 'folder', true);
@@ -99,11 +101,17 @@ processPrlFiles = function (filenames, values) {
         folderRoot.addToComposition(folderSP.identifier.key);
         folderSP.setLocation(folderRoot);
 
-        // Create a Tabs view
-        let procTabs = new TabsView('Procedure Displays');
-        root.addJson(procTabs);
-        folderRoot.addToComposition(procTabs.identifier.key);
-        procTabs.setLocation(folderRoot);
+        // Create a Tabs view for Display Layouts
+        let tabsDL = new TabsView('Procedure Displays', false);
+        root.addJson(tabsDL);
+        folderRoot.addToComposition(tabsDL.identifier.key);
+        tabsDL.setLocation(folderRoot);
+
+        // Create a Tabs view for Stacked Plots
+        let tabsSP = new TabsView('Procedure Stacked Plots', false);
+        root.addJson(tabsSP);
+        folderRoot.addToComposition(tabsSP.identifier.key);
+        tabsSP.setLocation(folderRoot);
 
         for (let i = 0; i < procKeys.length; i++) {
             // Make a Display Layout for the current proc
@@ -112,6 +120,7 @@ processPrlFiles = function (filenames, values) {
             const curProcObj = arrAllProcsAndTelem[procName];
             const curProcObjSteps = curProcObj.steps; // Array of objects, keyed by step number
             const stepKeys = Object.keys(curProcObjSteps);
+            let uniqueTelemPaths = [];
 
             //Create a Display Layout for alphas and add it to the root folder
             let procDisplayLayout = new DisplayLayout({
@@ -122,6 +131,7 @@ processPrlFiles = function (filenames, values) {
 
             initAlphasItemPlacementTracker();
 
+            // Per-step context starts here. Note that a telemetry path can be present more than once in a proc.
             for (let s = 0; s < stepKeys.length; s++) {
                 // Iterate through each step object
                 const curStepObj = curProcObjSteps[stepKeys[s]];
@@ -136,15 +146,19 @@ processPrlFiles = function (filenames, values) {
                 // Make a header that combines the step number and crewMembers
                 let dlItem = procDisplayLayout.addLabel(
                     {
+                        style: {
+                            backgroundColor: STEP_LABEL_STYLE.backgroundColor,
+                            color: STEP_LABEL_STYLE.color
+                        },
                         index: curIndex,
                         itemW: labelWidth + config.itemMargin + config.dlAlphas.itemW,
                         itemH: config.dlAlphas.itemH,
                         ident: stepKeys[s],
-                        text: stepKeys[s].concat(' ').concat(curStepObj.crewMembers),
                         layoutStrategy: config.dlAlphas.layoutStrategy,
                         layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                         placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex
+                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
+                        text: stepKeys[s].concat(' ').concat(curStepObj.crewMembers)
                     }
                 );
 
@@ -153,146 +167,55 @@ processPrlFiles = function (filenames, values) {
 
                 // Iterate through the pathsShort array and make label and alpha pairs for each
                 for (let p = 0; p < curStepObj.paths.length; p++) {
-                    const curStepPath = curStepObj.paths[p].replaceAll('/','~');
+                    const curStepPath = curStepObj.paths[p].replaceAll('/', '~');
 
                     dlItem = procDisplayLayout.addTextAndAlphaViewPair({
+                        alphaFormat: config.dlAlphas.alphaFormat,
+                        alphaShowsUnit: true,
                         index: curIndex,
-                        labelW: labelWidth,
                         itemW: config.dlAlphas.itemW,
                         itemH: config.dlAlphas.itemH,
                         ident: curStepPath,
-                        text: curStepObj.pathsShort[p],
+                        labelW: labelWidth,
                         layoutStrategy: config.dlAlphas.layoutStrategy,
                         layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
                         placeIndex: alphasItemPlacementTracker.placeIndex,
                         shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                        alphaFormat: config.dlAlphas.alphaFormat,
-                        alphaShowsUnit: true
+                        text: curStepObj.pathsShort[p]
                     });
 
                     procDisplayLayout.addToComposition(curStepPath, getNamespace(curStepPath));
+                    if (!uniqueTelemPaths.includes(curStepPath)) {
+                        uniqueTelemPaths.push(curStepPath);
+                    }
                     // procStackedPlot.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
                     alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
                     alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
-
                 }
-
-
             } // Closes steps context
 
             // Add the proc's Display Layout
             root.addJson(procDisplayLayout);
-            procTabs.addToComposition(procDisplayLayout.identifier.key);
+            tabsDL.addToComposition(procDisplayLayout.identifier.key);
             folderDL.addToComposition(procDisplayLayout.identifier.key);
             procDisplayLayout.setLocation(folderDL);
 
+            //Create a Stacked Plot for telemetry
+            let procStackedPlot = new StackedPlot(procNameShort);
+            uniqueTelemPaths.map(p => {
+                procStackedPlot.addToComposition(p, getNamespace(p));
+            });
+
             // Add the proc's Stacked Plot
-            // root.addJson(procStackedPlot);
-            // folderSP.addToComposition(procStackedPlot.identifier.key);
-            // procStackedPlot.setLocation(folderSP);
-
-
+            root.addJson(procStackedPlot);
+            tabsSP.addToComposition(procStackedPlot.identifier.key);
+            folderSP.addToComposition(procStackedPlot.identifier.key);
+            procStackedPlot.setLocation(folderSP);
         } // Closes single procedure context
     }
 
     outputJSON();
 }
-
-/*
-prlToDisplay = function (prlFilename, prlContents) {
-    const procNameFull = removeExtension(prlFilename); // remove .prl
-    // Shorten name by clipping at 2nd '_' in the proc name
-    const procName = procNameFull.substring(0, procNameFull.indexOf('_', procNameFull.indexOf('_') + 1));
-    const prlObjects = extractFromPrlTraverse(prlFilename, prlContents);
-    let responseObj = {};
-
-    if (prlObjects.length == 0) {
-        outputMsg(procName.concat(' -- NO TELEMETRY FOUND'));
-    } else {
-        outputMsg(procName);
-        //Create a Display Layout for alphas and add it to the root folder
-        let procDisplayLayout = new DisplayLayout({
-            'name': procName,
-            'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
-            'itemMargin': config.itemMargin
-        });
-
-        //Create a Stacked Plot for telemetry
-        let procStackedPlot = new StackedPlot(procName + ' Telemetry');
-
-        initAlphasItemPlacementTracker();
-
-        const longestLabel = findLongestLabel(prlObjects);
-        const labelWidth = labelWidthFromChars(parseInt(config.layoutGrid[0]), longestLabel);
-
-        for (const prlObject of prlObjects) {
-            const curIndex = prlObjects.indexOf(prlObject);
-            const isTelemetry = prlObject.dataSource.length > 0;
-            let dlItem = {};
-
-            outputMsg(prlObject.name.concat(': ').concat(prlObject.dataSource));
-
-            if (isTelemetry) {
-                // If there's a datasource, add a label + alpha pair
-                dlItem = procDisplayLayout.addTextAndAlphaViewPair({
-                    index: curIndex,
-                    labelW: labelWidth,
-                    itemW: config.dlAlphas.itemW,
-                    itemH: config.dlAlphas.itemH,
-                    ident: prlObject.dataSource,
-                    text: prlObject.name,
-                    layoutStrategy: config.dlAlphas.layoutStrategy,
-                    layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-                    placeIndex: alphasItemPlacementTracker.placeIndex,
-                    shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                    alphaFormat: config.dlAlphas.alphaFormat,
-                    alphaShowsUnit: prlObject.alphaShowsUnit
-                });
-
-                procDisplayLayout.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
-                procStackedPlot.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
-
-            } else {
-                dlItem = procDisplayLayout.addLabel(
-                    {
-                        index: curIndex,
-                        itemW: labelWidth + config.itemMargin + config.dlAlphas.itemW,
-                        itemH: config.dlAlphas.itemH,
-                        ident: prlObject.dataSource,
-                        text: prlObject.name,
-                        layoutStrategy: config.dlAlphas.layoutStrategy,
-                        layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-                        placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex
-                    }
-                )
-            }
-
-            alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
-            alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
-        }
-
-        responseObj.display_layout = procDisplayLayout;
-        responseObj.stacked_plot = procStackedPlot;
-    }
-
-    return responseObj;
-}
-*/
-/*
-findLongestLabel = function (objArr) {
-    let maxLen = 0;
-    let curLen = 0;
-    for (let i = 0; i < objArr.length; i++) {
-        curLen = objArr[i].name.toString().length;
-        if (curLen > maxLen) {
-            maxLen = curLen;
-        }
-    }
-
-    return maxLen;
-}
-*/
 
 createTableObj = function (type, str, referenceType) {
     let tableObj = {};
