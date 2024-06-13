@@ -1,0 +1,13 @@
+"1,1,2",200,100,70
+20,"HS Temps,_span(3),_style({backgroundColor:#555555,color:#cccccc})",,
+24,HS_FWD_HKL01_1_FLT,/Spacesystem/Subsystem/HS_FWD_HKL01_1_FLT,"/Spacesystem/Subsystem/HS_FWD_HKL01_1_FLT,_cw"
+24,HS_FWD_HKL01_2_FLT,/Spacesystem/Subsystem/HS_FWD_HKL01_2_FLT,"/Spacesystem/Subsystem/HS_FWD_HKL01_2_FLT,_cw"
+24,HS_FWD_001_TMP_HKL01_FLT,/Spacesystem/Subsystem/HS_FWD_001_TMP_HKL01_FLT,"/Spacesystem/Subsystem/HS_FWD_001_TMP_HKL01_FLT,_cw"
+24,HS_FWD_002_TMP_HKL01_FLT,/Spacesystem/Subsystem/HS_FWD_002_TMP_HKL01_FLT,"/Spacesystem/Subsystem/HS_FWD_002_TMP_HKL01_FLT,_cw"
+20,"CP Stats,_span(3),_style({backgroundColor:#555555,color:#cccccc})",,
+24,CP_errorCnt,/Spacesystem/Subsystem/CP_errorCnt,"/Spacesystem/Subsystem/CP_errorCnt,_cw"
+24,CP_housekeepingCnt,/Spacesystem/Subsystem/CP_housekeepingCnt,"/Spacesystem/Subsystem/CP_housekeepingCnt,_cw"
+24,CP_processingCnt,/Spacesystem/Subsystem/CP_processingCnt,"/Spacesystem/Subsystem/CP_processingCnt,_cw"
+20,"ZX Switches,_span(3),_style({backgroundColor:#555555,color:#cccccc})",,
+24,ZX4_LPA_SW_S.enabled,/Spacesystem/Subsystem/ZX4_LPA_SW_S.enabled,"/Spacesystem/Subsystem/ZX4_LPA_SW_S.enabled,_cw"
+24,ZX4_LPB_SW_S.enabled,/Spacesystem/Subsystem/ZX4_LPB_SW_S.enabled,"/Spacesystem/Subsystem/ZX4_LPB_SW_S.enabled,_cw"

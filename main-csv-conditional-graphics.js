@@ -85,6 +85,10 @@ function parseCSVTelemetry(csv) {
     let dataSources = [];
     let dataSourceObj = {};
     let curConditionSet;
+    const outputMsgArr = [[
+        'Object',
+        'Type'
+    ]];
 
     for (const rowObj of rowObjs) {
         let curImageViewObj;
@@ -113,6 +117,10 @@ function parseCSVTelemetry(csv) {
                 }
             );
             imageViewObjs[rowObj.imageViewName] = curImageViewObj;
+            outputMsgArr.push([
+                rowObj.imageViewName,
+                'Image View'
+            ])
         }
 
         /***************************** DATASOURCE */
@@ -126,6 +134,10 @@ function parseCSVTelemetry(csv) {
                     dataSourceObj.id = dataSourceObj.name;
                     dataSources[dataSourceObj.name] = dataSourceObj;
                     addDataSourceToConditionSet = true;
+                    outputMsgArr.push([
+                        rowObj.dataSourceObj.name,
+                        'Parameter'
+                    ]);
                 }
             } else if (rowObj.dataSource.includes('{')) {
                 // It's a new SWG
@@ -149,6 +161,11 @@ function parseCSVTelemetry(csv) {
                     swgObj.setLocation(folderRoot);
                     dataSources[dataSourceObj.name] = dataSourceObj;
                     addDataSourceToConditionSet = true;
+                    outputMsgArr.push([
+                        dataSourceObj.name,
+                        'Sine Wave Generator'
+                    ]);
+
                 }
             } else {
                 // It's a SWG reference, assume it has been created - but check anyway
@@ -179,6 +196,10 @@ function parseCSVTelemetry(csv) {
                 root.addJson(curConditionSet);
                 folderRoot.addToComposition(curConditionSet.identifier.key);
                 curConditionSet.setLocation(folderRoot);
+                outputMsgArr.push([
+                    curConditionSet.name,
+                    'Condition Set'
+                ]);
 
                 // The datasource has already been added to the CS, don't add it again
                 addDataSourceToConditionSet = false;
@@ -193,19 +214,19 @@ function parseCSVTelemetry(csv) {
             }
 
             // Create a new condition and add it to curConditionSet
-            const curCondition = createConditionFromObj(rowObj);
+            const curCondition = createOpenMCTCondObj(rowObj);
+
             curConditionSet.configuration.conditionCollection.push(curCondition);
 
             /***************************** CONDITIONAL STYLING */
-            // Add a style object to the current image view
-            let conditionStyleObj = createStyleObj(rowObj);
-            conditionStyleObj.conditionId = curCondition.id
+                // Add a style object to the current image view
+            let conditionStyleObj = createOpenMCTStyleObj(rowObj, curCondition.id);
             dlCondImage.configuration.objectStyles[curImageViewObj.id].styles.push(conditionStyleObj);
         }
     }
     // console.log('rowObjs', rowObjs);
     // console.log('imageViewObjs', imageViewObjs);
     // console.log('dataSources', dataSources);
-
+    outputMsg(htmlGridFromArray(outputMsgArr));
     outputJSON();
 }

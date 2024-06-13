@@ -68,6 +68,8 @@ const DisplayLayout = function (args) {
     }
 
     this.addTextAndAlphaViewPair = function (args) {
+        // Opinionated. Wants to create a text label to the left of an input. Inputs get styled with a border.
+        const ALPHA_STYLE = { border: '1px solid #555555' };
         const response = {};
         const combinedArgs = copyObj(args);
         combinedArgs.itemW = args.labelW + config.itemMargin + args.itemW;
@@ -87,6 +89,9 @@ const DisplayLayout = function (args) {
         telemArgs.y = itemPos.y;
         telemArgs.alphaFormat = args.alphaFormat;
         telemArgs.alphaShowsUnit = args.alphaShowsUnit;
+        telemArgs.style = {
+            border: ALPHA_STYLE.border
+        }
         response.id = this.addTelemetryView(telemArgs).id;
 
         return response;
@@ -105,8 +110,6 @@ const DisplayLayout = function (args) {
         textArgs.x = itemPos.x;
         textArgs.y = itemPos.y;
         textArgs.itemW = combinedArgs.itemW;
-        textArgs.bgColor = STEP_LABEL_STYLE.bgColor;
-        textArgs.fgColor = STEP_LABEL_STYLE.fgColor;
         this.addTextView(textArgs);
 
         return response;
@@ -118,15 +121,12 @@ const DisplayLayout = function (args) {
         subObj.y = args.y;
         subObj.type = 'text-view';
         subObj.text = args.text;
-        if (args.bgColor || args.fgColor) {
-            this.configuration.objectStyles[subObj.id] = {};
-            this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj({
-                bgColor: args.bgColor? args.bgColor : '',
-                fgColor: args.fgColor? args.fgColor : ''
-            });
-            this.configuration.objectStyles[subObj.id].styles = [];
-        }
+        this.configuration.objectStyles[subObj.id] = {};
+        this.configuration.objectStyles[subObj.id].staticStyle = createOpenMCTStyleObj(args.style);
+        this.configuration.objectStyles[subObj.id].styles = [];
         this.configuration.items.push(subObj);
+
+        return subObj;
     }
 
     this.addImageView = function (args) {
@@ -138,7 +138,7 @@ const DisplayLayout = function (args) {
         subObj.url = args.url;
         subObj.type = 'image-view';
         this.configuration.objectStyles[subObj.id] = {};
-        this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj(args);
+        this.configuration.objectStyles[subObj.id].staticStyle = createOpenMCTStyleObj(args.style);
         this.configuration.objectStyles[subObj.id].styles = [];
         this.configuration.items.push(subObj);
 
@@ -155,10 +155,10 @@ const DisplayLayout = function (args) {
         subObj.value = 'value';
         subObj.format = args.alphaFormat;
         subObj.showUnits = (args.alphaShowsUnit === 'TRUE');
-
-        this.configuration.objectStyles[subObj.id] = {};
-        this.configuration.objectStyles[subObj.id].staticStyle = createStyleObj({border: ALPHA_BORDER});
-        this.configuration.objectStyles[subObj.id].styles = [];
+        this.configuration.objectStyles[subObj.id] = {
+            'staticStyle': createOpenMCTStyleObj(args.style),
+            'styles': []
+        };
         this.configuration.items.push(subObj);
 
         return subObj;

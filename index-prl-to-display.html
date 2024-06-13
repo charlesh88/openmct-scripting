@@ -12,6 +12,7 @@
     <div class="c-nav" id="nav"></div>
     <div class="head">
         <h1>Generate Open MCT Views from Pride Procedures <span id="app-version" class="app-version"></span></h1>
+        <div class="desc">Generate Display Layouts and Stacked Plot views from Pride procedures.</div>
     </div>
     <div class="page">
         <div class="page-main --main">
@@ -52,43 +53,9 @@
             </div>
 
             <div class="page-section --expands">
-                <h2>Output</h2>
+                <h2>Messages</h2>
                 <div class="c-msg" id="outputMsg">
                 </div>
-            </div>
-        </div>
-
-        <div class="page-main --sidebar">
-            <div class="page-section --can-shrink" id="howPrl">
-                <h2>What this does</h2>
-                <ul>
-                    <li>Each selected .prl file will be traversed, and steps with telemetry in them as data references
-                        will
-                        be extracted. Steps without telemetry will be ignored.
-                    </li>
-                    <li>For each procedure, a Display Layout will be genned that includes all its telemetry points as
-                        alphanumerics. Each alphanumeric will have a text label, based on the telemetry path. Labels
-                        will
-                        also be added for procedure step numbers.
-                    </li>
-                    <li>For each procedure, a Stacked Plot will be genned that includes all its telemetry points.</li>
-                    <li>A single Tabs view will be created that includes all the generated Display Layouts.</li>
-                    <li>Folders that hold the layouts and plots.</li>
-                    <li>A single folder that holds all of the above, named using your input Root Name.</li>
-                </ul>
-
-                <h2>How to use</h2>
-                <ol>
-                    <li>Set parameters below. Label Width is recommended to be 220.
-                        <!--Recommend defaults, but set Columns = 1 and Item Width = 150.--></li>
-                    <li>Press the "Choose File" button and select one or more Pride .prl files. A JSON file will
-                        immediately
-                        be generated.
-                    </li>
-                    <li>Press "DOWNLOAD" to download the generated JSON file.</li>
-                    <li>Import the generated file into your Open MCT environment using the "Import from JSON" action.
-                    </li>
-                </ol>
             </div>
         </div>
     </div>

@@ -12,6 +12,7 @@
     <div class="c-nav" id="nav"></div>
     <div class="head">
         <h1>Telemetry Extractor <span id="app-version" class="app-version"></span></h1>
+        <div class="desc">Extract telemetry paths from a variety of sources, and validate against a mission database.</div>
     </div>
     <div class="page">
         <div class="page-main --main">
@@ -51,26 +52,9 @@
             </div>
 
             <div class="page-section c-output">
-                <h2>Output</h2>
+                <h2>Messages</h2>
                 <div class="c-msg" id="outputMsg">
                 </div>
-            </div>
-        </div>
-
-        <div class="page-main --sidebar">
-            <div class="page-section --min-content">
-                <h2>What this does</h2>
-                <ul>
-                    <li>Crawls selected GCS .py files and finds telemetry in getval and checkval calls.</li>
-                    <li>Crawls selected Pride .prl files and finds telemetry in DataReferences and DataNomenclatures.
-                    </li>
-                    <li>Outputs a .csv file table of de-duped unique telemetry paths with usage indication per procedure
-                        or GCS. If a Yamcs server is available, validation results will also be indicated.
-                    </li>
-                    <li>To enable mission database validation, enter a valid Yamcs &quot;parameters&quot; web api URL in
-                        the input. A proxy server may be necessary when running locally due to CORS issues.
-                    </li>
-                </ul>
             </div>
         </div>
     </div>

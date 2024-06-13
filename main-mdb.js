@@ -1,5 +1,4 @@
 const OUTPUT_BASE_NAME_KEY = '_MDB_BASE_NAME';
-const lineSepStr = '------------------------------------------------';
 // let arrPathsAndRefs = [];
 let gArrStrPathsAndRefs = [];
 const MDB_CONFIG = {

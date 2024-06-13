@@ -1,4 +1,4 @@
-const APP_VERSION = '3.2';
+const APP_VERSION = '4.0';
 const LOCALSTORE_BASE_NAME = 'OPENMCT_SCRIPTING';
 const LOCALSTORE_MDB_EXTRACT = 'MDB_EXTRACT';
 const ESC_CHARS = {
@@ -8,4 +8,5 @@ const ESC_CHARS = {
     'backslash': '$BS',
     'doublequotes': '$DDQ'
 }
+const lineSepStr = '------------------------------------------------';
 let config = {};

@@ -123,6 +123,7 @@ function outputJSON() {
         updateTime.getMinutes().toString().padStart(2, '0') + ':' +
         updateTime.getSeconds().toString().padStart(2, '0') + ' | ' +
         outputJSON.length + ' chars';
+    outputMsg(lineSepStr);
     outputMsg(oStr);
     btnDownloadJson.removeAttribute('disabled');
 }
@@ -136,14 +137,6 @@ downloadJson = function () {
 
     downloadFile(file);
 }
-
-// downloadTelemList = function () {
-//     const filename = config.outputBaseName.concat(' - Uniques.csv');
-//     const list = globalArrUniquePaths.join('\n');
-//     const file = new File([list], filename, {type: 'text/csv'});
-//     downloadFile(file);
-//     return false;
-// }
 
 downloadFile = function (file) {
     const link = document.createElement('a');
