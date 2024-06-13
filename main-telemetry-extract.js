@@ -14,6 +14,11 @@ let CUR_FILE_TYPE = 'json';
 let gObjByTelem = {};
 let gStrArrByTelem = [];
 
+const OUTPUTMSG_ARR = [[
+    'File',
+    'Telemetry Refs'
+]];
+
 storeOutputBaseName();
 loadLocalSettings();
 
@@ -134,13 +139,13 @@ prlExtractTelemetry = function (filenames, values) {
         const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
         arrAllProcsAndTelem.push(...arrStepsAndTelem);
 
-        outputMsg(filenames[i] + ' has ' + arrStepsAndTelem.length + ' telem ref(s)');
+        OUTPUTMSG_ARR.push([
+            filenames[i],
+            arrStepsAndTelem.length
+        ]);
     }
 
     const objProcByTelem = procByTelem(arrAllProcsAndTelem);
-
-    console.log('prlExtractTelemetry arrAllProcsAndTelem', arrAllProcsAndTelem, objProcByTelem);
-
     gObjByTelem = objProcByTelem;
 
     prlPackageExtractedTelemetryForCsv(gObjByTelem);
@@ -156,7 +161,11 @@ gcsExtractTelemetry = function (filenames, values) {
 
         const telemCnt = arrTelem.length;
         nonUniqueTelemCntr += telemCnt;
-        outputMsg(filenames[i] + ' has ' + telemCnt + ' telem ref(s)');
+
+        OUTPUTMSG_ARR.push([
+            filenames[i],
+            telemCnt
+        ]);
     }
 
     const objGcsByTelem = gcsByTelem(arrAllGcsAndTelem);
@@ -168,12 +177,9 @@ gcsExtractTelemetry = function (filenames, values) {
 
 jsonExtractTelemetry = function (filename, value) {
     const jsonExtract = JSON.parse(value);
-    // console.log('jsonExtractTelemetry', jsonExtract);
 
     let arrAllContainersAndTelem = extractCompositionKeysToObjArray(jsonExtract);
     const objOpenMCTContainerByTelem = openMCTContainerByTelem(arrAllContainersAndTelem);
-    // console.log('jsonExtractTelemetry arrAllContainersAndTelem', arrAllContainersAndTelem);
-    console.log('jsonExtractTelemetry objOpenMCTContainerByTelem', objOpenMCTContainerByTelem);
 
     gObjByTelem = objOpenMCTContainerByTelem;
 
@@ -182,7 +188,6 @@ jsonExtractTelemetry = function (filename, value) {
 
 /*********************************** FILE PROCESSING - PACKAGING FOR OUTPUT */
 prlPackageExtractedTelemetryForCsv = function (objByTelem) {
-    // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
     const outTelemByProcArr = telemByProcToCsvArr(objProcByTelem);
 
     let outTelemByProcStrArr = [];
@@ -194,8 +199,12 @@ prlPackageExtractedTelemetryForCsv = function (objByTelem) {
 
     gStrArrByTelem = outTelemByProcStrArr;
 
-    outputMsg(lineSepStr);
-    outputMsg('prl extraction done.  Total telem count = ' + Object.keys(objByTelem).length);
+    OUTPUTMSG_ARR.push([
+        'TOTAL UNIQUE TELEM REFERENCES',
+        Object.keys(objByTelem).length
+    ])
+
+    outputMsg(htmlGridFromArray(OUTPUTMSG_ARR));
 
     btnDownloadTelem.removeAttribute('disabled');
     if (MDB_CONNECTED) {
@@ -204,13 +213,16 @@ prlPackageExtractedTelemetryForCsv = function (objByTelem) {
 }
 
 gcsPackageExtractedTelemetryForCsv = function (objByTelem) {
-    // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
     const outGcsByTelemArr = gcsByTelemToCsvArr(objByTelem);
 
     gStrArrByTelem = outGcsByTelemArr;
 
-    outputMsg(lineSepStr);
-    outputMsg('gcs extraction done.  Total telem count = ' + Object.keys(objByTelem).length);
+    OUTPUTMSG_ARR.push([
+        'TOTAL UNIQUE TELEM REFERENCES',
+        Object.keys(objByTelem).length
+    ])
+
+    outputMsg(htmlGridFromArray(OUTPUTMSG_ARR));
 
     btnDownloadTelem.removeAttribute('disabled');
     if (MDB_CONNECTED) {
@@ -219,15 +231,18 @@ gcsPackageExtractedTelemetryForCsv = function (objByTelem) {
 }
 
 jsonPackageExtractedTelemetryForCsv = function (objByTelem) {
-    // console.log(CUR_FILE_TYPE, 'objByTelem', objByTelem, gObjByTelem);
     const arrOut = openMCTContainerByTelemToCsvArr(objByTelem);
 
     gStrArrByTelem = arrOut;
 
     console.log('jsonPackageExtractedTelemetryForCsv', gStrArrByTelem);
 
-    outputMsg(lineSepStr);
-    outputMsg('JSON extraction done.  Total telem count = ' + Object.keys(objByTelem).length);
+    OUTPUTMSG_ARR.push([
+        'TOTAL UNIQUE TELEM REFERENCES',
+        Object.keys(objByTelem).length
+    ])
+
+    outputMsg(htmlGridFromArray(OUTPUTMSG_ARR));
 
     btnDownloadTelem.removeAttribute('disabled');
     if (MDB_CONNECTED) {
