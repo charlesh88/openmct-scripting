@@ -30,15 +30,13 @@
                     <div class="c-config__value">
                         <select id="inputType">
                             <option value="gcs">GCS (.py)</option>
-                            <option value="prl" selected>Pride procedure (.prl)</option>
+                            <option value="json">Open MCT JSON (.json)</option>
+                            <option value="prl">Pride procedure (.prl)</option>
                         </select>
                     </div>
                     <div class="c-config__label">Input Files</div>
                     <div class="c-config__value">
-                        <input id="inputGCS" class="upload-file-btn --hidden" type="file" accept=".py"
-                               multiple/>
-                        <input id="inputPRL" class="upload-file-btn --hidden" type="file" accept=".prl"
-                               multiple/>
+                        <input id="inputFile" type="file" class="upload-file-btn"/>
                     </div>
                 </div>
             </div>
@@ -66,8 +64,9 @@
 <script src="input-output.js"></script>
 <script src="utilities.js"></script>
 <script src="component-mdb.js"></script>
-<script src="telemetry-extract-prl.js"></script>
 <script src="telemetry-extract-gcs.js"></script>
+<script src="telemetry-extract-json.js"></script>
+<script src="telemetry-extract-prl.js"></script>
 <script src="telemetry-extract.js"></script>
 <script src="telemetry-validate.js"></script>
 <script src="main-telemetry-extract.js"></script>

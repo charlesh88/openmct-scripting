@@ -6,7 +6,7 @@ async function validateParamsAgainstYamcsMdb(arrParamPaths) {
             const testPath = url.replace(/\[\d*]/g, ''); // Remove any elements in brackets
             const fullUrl = YAMCS_URL.concat(testPath);
             const response = await fetch(fullUrl);
-            return  arrV[url] = {
+            return arrV[url] = {
                 'testPath': testPath,
                 'validated': response.status === 200
             };

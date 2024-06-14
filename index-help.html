@@ -23,6 +23,7 @@
                 <li><a href="#ProcedureDisplays">Procedure Displays</a></li>
                 <li><a href="#StackedViews">Stacked Views</a></li>
                 <li><a href="#ExtractTelemetry">Extract Telemetry</a></li>
+                <li><a href="#FindReplace">Find / Replace Text</a></li>
             </ul>
             <h2 id="overview">Overview</h2>
             <p>Allows large scale creation of a variety of Open MCT views, many with integrated Conditional styling.
@@ -50,7 +51,7 @@
             <h2 class="feature-hdr" id="MatrixLayout">Matrix Layout</h2>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-imported-result.png"
                     alt="Picture of tool interface" title="Matrix Layout imported result"></p>
-            <h3 id="what-it-does">What It Does</h3>
+            <h3>What It Does</h3>
             <ul>
                 <li>Uses two input CSV files, one for telemetry and conditions and the other for layout and creates a
                     single
@@ -430,7 +431,7 @@
                 </tbody>
             </table>
 
-            <h3 id="matrix-layout-layout-csv-input-file">Matrix Layout &quot;Layout&quot; CSV Input File</h3>
+            <h3>Matrix Layout &quot;Layout&quot; CSV Input File</h3>
             <p>The matrix layout defines a grid with variable column widths and row heights.</p>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-layout.png"
                     alt="Picture of CSV file"
@@ -559,7 +560,7 @@
             <p><img class="screenshot"
                     src="documentation/images/openmct-scripting-conditional-graphics-imported-result.png"
                     alt="Picture of rendered Display Layout" title="Conditional Graphics Example"></p>
-            <h3 id="what-it-does">What It Does</h3>
+            <h3>What It Does</h3>
             <ul>
                 <li>Generates one or more &quot;image view&quot; objects within a single Display Layout.
                     <ul>
@@ -605,7 +606,7 @@
                     All generated image views will be the same size in the Display Layout.
                 </li>
             </ul>
-            <h3 id="input-csv-file">Input CSV file</h3>
+           <h3>Input CSV file</h3>
             <p>Example input using telemetry paths as a data source:</p>
             <p><img class="screenshot"
                     src="documentation/images/openmct-scripting-csv-condition-graphics.png"
@@ -697,7 +698,8 @@
                     <td>Style values for background color, text color and border style respectively.
                     </td>
                     <td>#555555<br/>
-                    1px solid #ff0000</td>
+                        1px solid #ff0000
+                    </td>
                 </tr>
                 <tr>
                     <td class='em'>imageUrl</td>
@@ -771,7 +773,7 @@
             </ul>
             <h2 class="feature-hdr" id="StackedViews">Stacked Views</h2>
             <!--IMAGE HERE-->
-            <h3 id="what-it-does">What It Does</h3>
+            <h3>What It Does</h3>
             <ul>
                 <li>Takes in multiple telemetry source files and creates both a Stacked Plot and a Flexible Layout for
                     each.
@@ -798,13 +800,13 @@
             <ul>
                 <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
             </ul>
-            <h3 id="example-source">Example Source</h3>
+            <h3>Example Source</h3>
             <ul>
                 <li>Example that creates 3 overlay plots in a Stacked View: <a
                         href="documentation/files/stacked-view-input-example-1.csv">Stacked View example 1 .csv</a></li>
             </ul>
             <h2 class="feature-hdr" id="ExtractTelemetry">Extract Telemetry</h2>
-            <h3 id="what-it-does">What It Does</h3>
+            <h3>What It Does</h3>
             <ul>
                 <li>Takes in multiple source files and creates CSV file outputs that list parameters, their usage and
                     optionally if they validated against a Yamcs database.
@@ -818,7 +820,7 @@
                     not be found.
                 </li>
             </ul>
-            <h3 id="interface">Interface</h3>
+            <h3>Interface</h3>
             <p><img class="screenshot"
                     src="documentation/images/openmct-scripting-interface-telem-extract.png"
                     alt="Picture of Extract Telemetry web interface" title="Extract Telemetry Interface"></p>
@@ -842,6 +844,36 @@
                     button will enable after files have been selected. Click again to validate extracted parameters.
                 </li>
             </ul>
+
+            <h2 class="feature-hdr" id="FindReplace">Find / Replace</h2>
+            <h3>What It Does</h3>
+            <ul>
+                <li>Allows bulk find and replace of strings in any valid text file, such as .txt, .json, .js, .py, etc. Takes in a single source file and a CVS
+                    table file of search / replace pairs.
+                </li>
+            </ul>
+            <h3>Interface</h3>
+            <p><img class="screenshot"
+                    src="documentation/images/openmct-scripting-interface-find-replace.png"
+                    alt="Picture of Find / Replace web interface" title="Find / Replace Interface"></p>
+            <ul>
+                <li><strong>Source file</strong> uploads a source text file.
+                </li>
+                <li><strong>Find/Replace CSV</strong> uploads a two-column CSV file of values to search for and replace in the source file.
+                </li>
+                <li><strong>Download</strong>  the resulting replaced text as a file.
+                </li>
+            </ul>
+
+            <h3>Find / Replace CSV input file</h3>
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-find-replace-csv.png"
+                    alt="Picture of CSV file"
+                    title="Find / Replace CSV file"></p>
+            <ul>
+                <li>The file must have a header row, but the names of the columns are not important.</li>
+                <li>Values in the first column will be searched for in the source file and replaced with those in the second column, same row.</li>
+            </ul>
+            <p>&nbsp;</p>
         </div>
     </div>
 </div>
