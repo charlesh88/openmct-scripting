@@ -492,8 +492,17 @@
                     <td>YES</td>
                     <td>SYSTEMS,<strong>_span(3)</strong></td>
                     <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of columns,
-                        starting
-                        at the element&#39;s current column.
+                        starting at the element&#39;s current column.
+                    </td>
+                </tr>
+                <tr>
+                    <td>Span multiple rows</td>
+                    <td>_rspan(#)</td>
+                    <td>YES</td>
+                    <td>YES</td>
+                    <td>SYSTEMS,<strong>_rspan(2)</strong></td>
+                    <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of rows,
+                        starting at the element&#39;s current row.
                     </td>
                 </tr>
                 <tr>
@@ -606,7 +615,7 @@
                     All generated image views will be the same size in the Display Layout.
                 </li>
             </ul>
-           <h3>Input CSV file</h3>
+            <h3>Input CSV file</h3>
             <p>Example input using telemetry paths as a data source:</p>
             <p><img class="screenshot"
                     src="documentation/images/openmct-scripting-csv-condition-graphics.png"
@@ -848,7 +857,8 @@
             <h2 class="feature-hdr" id="FindReplace">Find / Replace</h2>
             <h3>What It Does</h3>
             <ul>
-                <li>Allows bulk find and replace of strings in any valid text file, such as .txt, .json, .js, .py, etc. Takes in a single source file and a CVS
+                <li>Allows bulk find and replace of strings in any valid text file, such as .txt, .json, .js, .py, etc.
+                    Takes in a single source file and a CVS
                     table file of search / replace pairs.
                 </li>
             </ul>
@@ -859,9 +869,10 @@
             <ul>
                 <li><strong>Source file</strong> uploads a source text file.
                 </li>
-                <li><strong>Find/Replace CSV</strong> uploads a two-column CSV file of values to search for and replace in the source file.
+                <li><strong>Find/Replace CSV</strong> uploads a two-column CSV file of values to search for and replace
+                    in the source file.
                 </li>
-                <li><strong>Download</strong>  the resulting replaced text as a file.
+                <li><strong>Download</strong> the resulting replaced text as a file.
                 </li>
             </ul>
 
@@ -871,7 +882,9 @@
                     title="Find / Replace CSV file"></p>
             <ul>
                 <li>The file must have a header row, but the names of the columns are not important.</li>
-                <li>Values in the first column will be searched for in the source file and replaced with those in the second column, same row.</li>
+                <li>Values in the first column will be searched for in the source file and replaced with those in the
+                    second column, same row.
+                </li>
             </ul>
             <p>&nbsp;</p>
         </div>

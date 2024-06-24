@@ -127,6 +127,11 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     let curY = 0;
     let dlItem = {};
     const arrColWidths = rowArr[0];
+    const arrColHeights = [];
+    for (let r = 0; r < rowArr.length; r++) {
+        arrColHeights.push(rowArr[r][0]);
+    }
+
     const arrGridMargin = arrColWidths[0].length > 0 ? arrColWidths[0].split(',') : [2, 2, 2];
     const gridDimensions = [
         parseInt(arrGridMargin[0]),
@@ -179,8 +184,9 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
             // Process each cell in the matrix
             const cObj = unpackCell(row[c].trim());
 
-            let colW = parseInt(arrColWidths[c]);
+            const colW = parseInt(arrColWidths[c]);
             let itemW = colW;
+            let itemH = rowH;
 
             if (cObj.span) {
                 // Span includes the current column, c
@@ -188,6 +194,13 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                 for (let i = c + 1; i < (c + parseInt(cObj.span)); i++) {
                     itemW += parseInt(arrColWidths[i]) + itemMargin;
                 }
+            }
+
+            if (cObj.rspan) {
+                for (let i = c + 1; i < (c + parseInt(cObj.rspan)); i++) {
+                    itemH += parseInt(arrColHeights[i]) + itemMargin;
+                }
+
             }
 
             if (cObj.cellValue.length > 0) {
@@ -199,7 +212,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                             alphaFormat: cObj.telemetryObject.alphaFormat,
                             alphaShowsUnit: cObj.telemetryObject.alphaShowsUnit,
                             ident: cObj.cellValue.replaceAll('/', '~'),
-                            itemH: rowH,
+                            itemH: itemH,
                             itemW: itemW,
                             style: (cObj.style) ? cObj.style : cObj.telemetryObject.alphaStyle,
                             x: curX,
@@ -227,7 +240,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         // Add Condition Widget to the layout
                         dlMatrix.addSubObjectViewInPlace({
                             itemW: itemW,
-                            itemH: rowH,
+                            itemH: itemH,
                             x: curX,
                             y: curY,
                             ident: cw.identifier.key,
@@ -258,7 +271,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         // Add Hyperlink to the layout
                         dlMatrix.addSubObjectViewInPlace({
                             itemW: itemW,
-                            itemH: rowH,
+                            itemH: itemH,
                             x: curX,
                             y: curY,
                             ident: linkBtn.identifier.key,
@@ -275,7 +288,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         // Create as a text object
                         dlItem = dlMatrix.addTextView({
                             itemW: itemW,
-                            itemH: rowH,
+                            itemH: itemH,
                             style: cObj.style,
                             text: restoreEscChars(cObj.cellValue),
                             x: curX,
@@ -302,6 +315,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
 function unpackCell(strCell) {
     const matrixCell = {
+        'rspan': undefined,
         'type': 'text',
         'span': undefined,
         'style': undefined,
@@ -326,27 +340,33 @@ function unpackCell(strCell) {
         matrixCell.type = 'cw';
     }
 
-    let curIndex = findIndexInArray(arr, '_span', false);
-    if (curIndex > -1) {
-        matrixCell.span = Number(getStrBetween(arr[curIndex], '_span(', ')'));
+    let arrIndex = findIndexInArray(arr, '_span', false);
+    if (arrIndex > -1) {
+        matrixCell.span = Number(getStrBetween(arr[arrIndex], '_span(', ')'));
     }
 
-    curIndex = findIndexInArray(arr, '_style', false);
-    if (curIndex > -1) {
+    arrIndex = findIndexInArray(arr, '_rspan', false);
+    if (arrIndex > -1) {
+        // console.log('has rspan');
+        matrixCell.rspan = Number(getStrBetween(arr[arrIndex], '_rspan(', ')'));
+    }
+
+    arrIndex = findIndexInArray(arr, '_style', false);
+    if (arrIndex > -1) {
         matrixCell.style = stylesFromObj(
-            convertStringToJSON(getStrBetween(arr[curIndex], '_style(', ')')),
+            convertStringToJSON(getStrBetween(arr[arrIndex], '_style(', ')')),
             STYLES_DEFAULTS);
     }
 
-    curIndex = findIndexInArray(arr, '_link', false);
-    if (curIndex > -1) {
+    arrIndex = findIndexInArray(arr, '_link', false);
+    if (arrIndex > -1) {
         matrixCell.type = 'link';
     }
 
     // Capture URLs which can be applied to both Hyperlinks and Condition Widgets
-    curIndex = findIndexInArray(arr, '_url', false);
-    if (curIndex > -1) {
-        matrixCell.url = getStrBetween(arr[curIndex], '_url(', ')');
+    arrIndex = findIndexInArray(arr, '_url', false);
+    if (arrIndex > -1) {
+        matrixCell.url = getStrBetween(arr[arrIndex], '_url(', ')');
     }
 
     return matrixCell;
