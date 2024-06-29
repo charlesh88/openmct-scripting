@@ -2,6 +2,7 @@ const INPUT_TYPE = "csv";
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
 let folderConditionWidgets;
+let gArrBadTelemRefs = [];
 
 storeOutputBaseName();
 loadLocalSettings();
@@ -173,7 +174,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         'Object',
         'Type'
     ]];
-    // Iterate through telemetry collection
+    // Iterate through rows
     for (let r = 1; r < rowArr.length; r++) {
         const row = rowArr[r];
         const rowH = parseInt(row[0]);
@@ -311,6 +312,13 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
     outputJSON();
     outputMsg('Matrix layout generated');
+    if (gArrBadTelemRefs.length > 0) {
+        outputMsg(lineSepStr);
+        outputMsg('Layout telemetry not found:');
+        for (const path in gArrBadTelemRefs) {
+            outputMsg(path);
+        }
+    }
 }
 
 function unpackCell(strCell) {
@@ -332,8 +340,13 @@ function unpackCell(strCell) {
     });
 
     if (matrixCell.cellValue.startsWith('~')) {
-        matrixCell.telemetryObject = TELEMETRY_OBJECTS.find(e => e.dataSource === matrixCell.cellValue);
-        matrixCell.type = 'alpha';
+        const tO = TELEMETRY_OBJECTS.find(e => e.dataSource === matrixCell.cellValue);
+        if (tO) {
+            matrixCell.telemetryObject = tO;
+            matrixCell.type = 'alpha';
+        } else {
+            gArrBadTelemRefs.push(matrixCell.cellValue);
+        }
     }
 
     if (arr.includes('_cw')) {
