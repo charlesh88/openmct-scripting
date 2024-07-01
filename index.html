@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title>Open MCT Views Generator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles/styles.css">
 </head>
 
 <body translate="no">
 <div class="c-app">
     <div class="c-nav" id="nav"></div>
     <div class="head">
-        <h1>Generate Open MCT Matrix Layout from CSV <span id="app-version" class="app-version"></span></h1>
+        <h1>Generate Open MCT Matrix Layout from CSV REFACTORED <span id="app-version" class="app-version"></span></h1>
         <div class="desc">Create arbitrary grid-based Display Layouts with telemetry and text labels in a variety of views.</div>
     </div>
     <div class="page">
@@ -25,8 +25,8 @@
                 </div>
                 <div class="c-config">
                     <h2>Inputs</h2>
-                    <div class="c-config__label">Telemetry CSV</div>
-                    <div class="c-config__value"><input class="upload-file-btn" type="file" id="inputCsv"
+                    <div class="c-config__label">Condition CSV</div>
+                    <div class="c-config__value"><input class="upload-file-btn" type="file" id="inputConditionCsv"
                                                         accept=".csv"/>
                     </div>
                     <div class="c-config__label">Layout CSV</div>
@@ -50,16 +50,16 @@
     </div>
 </div>
 
-<script src="common.js"></script>
-<script src="input-output.js"></script>
-<script src="ConditionSetsAndWidgets.js"></script>
-<script src="DisplayLayouts.js"></script>
-<script src="DomainObjects.js"></script>
-<script src="utilities.js"></script>
-<script src="ui-elements.js"></script>
-<script src="main-csv-to-matrix.js"></script>
-<script src="nav.js"></script>
-<script src="main.js"></script>
+<script src="js/common.js"></script>
+<script src="js/input-output.js"></script>
+<script src="js/ConditionSetsAndWidgets.js"></script>
+<script src="js/DisplayLayouts.js"></script>
+<script src="js/DomainObjects.js"></script>
+<script src="js/utilities.js"></script>
+<script src="js/ui-elements.js"></script>
+<script src="main-csv-to-matrix-2.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
 
