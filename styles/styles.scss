@@ -8,13 +8,25 @@ $scrollbarTrackColorBg: rgba(#000, 0.2);
 $scrollbarThumbColor: #666;
 $scrollbarThumbColorHov: #777;
 
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('IBMPlexSans-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans Condensed';
+  src: url('IBMPlexSansCondensed-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 
 /**************************************************************** HTML ELEMENTS */
 body {
   background: $colorBodyBg;
   color: $colorBodyFg;
-  font-family: "IBM Plex Sans", Helvetica, sans serif;
+  font-family: "IBM Plex Sans", Helvetica, sans-serif;
   font-size: 0.8em;
   margin: 0;
 }
