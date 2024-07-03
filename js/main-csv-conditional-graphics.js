@@ -62,19 +62,19 @@ function parseCSVTelemetry(csv) {
     rowObjs = csvToObjArray(csv);
     config = getConfigFromForm();
 
-    // Create the root folder
-    folderRoot = new Obj(config.outputBaseName, 'folder', true);
-    root.addJson(folderRoot);
-    objJson.rootId = folderRoot.identifier.key;
+    // Create the ROOT folder
+    FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+    ROOT.addJson(FOLDER_ROOT);
+    OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
 
-    // Create a Display Layout for the conditional image and add it to the root folder
+    // Create a Display Layout for the conditional image and add it to the ROOT folder
     let dlCondImage = new DisplayLayout({
         'name': 'DL '.concat(config.outputBaseName),
         'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
     });
-    root.addJson(dlCondImage);
-    folderRoot.addToComposition(dlCondImage.identifier.key);
-    dlCondImage.setLocation(folderRoot);
+    ROOT.addJson(dlCondImage);
+    FOLDER_ROOT.addToComposition(dlCondImage.identifier.key);
+    dlCondImage.setLocation(FOLDER_ROOT);
 
     outputMsg('Condition-driven Image CSV imported, '
         .concat(rowObjs.length.toString())
@@ -156,9 +156,9 @@ function parseCSVTelemetry(csv) {
                     })
 
                     dataSourceObj.id = swgObj.identifier.key;
-                    root.addJson(swgObj);
-                    folderRoot.addToComposition(swgObj.identifier.key);
-                    swgObj.setLocation(folderRoot);
+                    ROOT.addJson(swgObj);
+                    FOLDER_ROOT.addToComposition(swgObj.identifier.key);
+                    swgObj.setLocation(FOLDER_ROOT);
                     dataSources[dataSourceObj.name] = dataSourceObj;
                     addDataSourceToConditionSet = true;
                     outputMsgArr.push([
@@ -192,10 +192,10 @@ function parseCSVTelemetry(csv) {
                     'dataSource': dataSourceObj.id
                 });
 
-                // Add the CS to folderRoot compositions and set its location to folderRoot
-                root.addJson(curConditionSet);
-                folderRoot.addToComposition(curConditionSet.identifier.key);
-                curConditionSet.setLocation(folderRoot);
+                // Add the CS to FOLDER_ROOT compositions and set its location to FOLDER_ROOT
+                ROOT.addJson(curConditionSet);
+                FOLDER_ROOT.addToComposition(curConditionSet.identifier.key);
+                curConditionSet.setLocation(FOLDER_ROOT);
                 outputMsgArr.push([
                     curConditionSet.name,
                     'Condition Set'

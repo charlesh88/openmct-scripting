@@ -219,14 +219,14 @@ const SineWaveGenerator = function (name, argsObj) {
     }
 }
 
-let objJson, root, alphasItemPlacementTracker, widgetsItemPlacementTracker, folderRoot;
+let OBJ_JSON, ROOT, alphasItemPlacementTracker, widgetsItemPlacementTracker, FOLDER_ROOT;
 
 initDomainObjects = function () {
-    objJson = {};
-    root = objJson.openmct = new Container();
+    OBJ_JSON = {};
+    ROOT = OBJ_JSON.openmct = new Container();
     alphasItemPlacementTracker = {};
     widgetsItemPlacementTracker = {};
-    folderRoot = '';
+    FOLDER_ROOT = '';
 }
 
 function findInComposition(domainObjToSearch, objToFind) {

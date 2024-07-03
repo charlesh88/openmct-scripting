@@ -114,8 +114,8 @@ function csvToObjArray(str) {
 
 /************************************************* OUTPUTS AND DOWNLOADING */
 function outputJSON() {
-    console.log('outputJSON', objJson);
-    let outputJSON = JSON.stringify(objJson, null, 4);
+    console.log('outputJSON', OBJ_JSON);
+    let outputJSON = JSON.stringify(OBJ_JSON, null, 4);
     const updateTime = new Date();
     const oStr =
         'Generated ' +
@@ -130,7 +130,7 @@ function outputJSON() {
 
 downloadJson = function () {
     const filename = (config.outputBaseName.length > 0) ? config.outputBaseName : 'Scripted Open MCT';
-    const strJson = JSON.stringify(objJson, null, 4);
+    const strJson = JSON.stringify(OBJ_JSON, null, 4);
     const file = new File([strJson], filename.concat('.json'), {
         type: 'text/json',
     })

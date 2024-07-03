@@ -20,40 +20,40 @@ function processInputCsvs(filenames, values) {
     let existingOverlayPlots = []; // Array of objects, with props name and obj
     let folders = {};
 
-    // Create the root folder
-    let folderRoot = new Obj(config.outputBaseName, 'folder', true);
-    root.addJson(folderRoot);
-    objJson.rootId = folderRoot.identifier.key;
+    // Create the ROOT folder
+    let FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+    ROOT.addJson(FOLDER_ROOT);
+    OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
 
     // Make a folder to hold Overlay Plots
     let folderOverlayPlots = new Obj('Overlay Plots', 'folder', true);
-    root.addJson(folderOverlayPlots);
-    folderRoot.addToComposition(folderOverlayPlots.identifier.key);
-    folderOverlayPlots.setLocation(folderRoot);
+    ROOT.addJson(folderOverlayPlots);
+    FOLDER_ROOT.addToComposition(folderOverlayPlots.identifier.key);
+    folderOverlayPlots.setLocation(FOLDER_ROOT);
 
     // Make a folder to hold Stacked Plots
     let folderStackedPlots = new Obj('Stacked Plots', 'folder', true);
-    root.addJson(folderStackedPlots);
-    folderRoot.addToComposition(folderStackedPlots.identifier.key);
-    folderStackedPlots.setLocation(folderRoot);
+    ROOT.addJson(folderStackedPlots);
+    FOLDER_ROOT.addToComposition(folderStackedPlots.identifier.key);
+    folderStackedPlots.setLocation(FOLDER_ROOT);
 
     // Make a folder to hold Flexible Layouts
     let folderFlexLayouts = new Obj('Flexible Layouts', 'folder', true);
-    root.addJson(folderFlexLayouts);
-    folderRoot.addToComposition(folderFlexLayouts.identifier.key);
-    folderFlexLayouts.setLocation(folderRoot);
+    ROOT.addJson(folderFlexLayouts);
+    FOLDER_ROOT.addToComposition(folderFlexLayouts.identifier.key);
+    folderFlexLayouts.setLocation(FOLDER_ROOT);
 
     for (let i = 0; i < filenames.length; i++) {
         const csvObjArray = csvToObjArray(values[i]);
         const holderName = filenames[i].split('.')[0];
 
         let stackedPlotObj = new StackedPlot('SP '.concat(holderName));
-        root.addJson(stackedPlotObj);
+        ROOT.addJson(stackedPlotObj);
         folderStackedPlots.addToComposition(stackedPlotObj.identifier.key);
         stackedPlotObj.setLocation(folderStackedPlots);
 
         let flexLayoutObj = new FlexibleLayout('FL '.concat(holderName));
-        root.addJson(flexLayoutObj);
+        ROOT.addJson(flexLayoutObj);
         folderFlexLayouts.addToComposition(flexLayoutObj.identifier.key);
         flexLayoutObj.setLocation(folderFlexLayouts);
 
@@ -77,7 +77,7 @@ function processInputCsvs(filenames, values) {
                     plotObj = new OverlayPlot(overlayPlotName);
                     folderOverlayPlots.addToComposition(plotObj.identifier.key);
                     plotObj.setLocation(folderOverlayPlots);
-                    root.addJson(plotObj);
+                    ROOT.addJson(plotObj);
                     existingOverlayPlots.push(plotObj);
                 }
 

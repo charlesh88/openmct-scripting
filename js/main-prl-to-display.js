@@ -82,36 +82,36 @@ processPrlFiles = function (filenames, values) {
     if (procKeys && procKeys.length > 0) {
         initDomainObjects();
         config = getConfigFromForm();
-        let root = objJson.openmct = new Container();
+        let ROOT = OBJ_JSON.openmct = new Container();
 
-        // Create the root folder
-        let folderRoot = new Obj(config.outputBaseName, 'folder', true);
-        root.addJson(folderRoot);
-        objJson.rootId = folderRoot.identifier.key;
+        // Create the ROOT folder
+        let FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+        ROOT.addJson(FOLDER_ROOT);
+        OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
 
         // Create a Display Layouts folder
         let folderDL = new Obj('Display Layouts', 'folder', true);
-        root.addJson(folderDL);
-        folderRoot.addToComposition(folderDL.identifier.key);
-        folderDL.setLocation(folderRoot);
+        ROOT.addJson(folderDL);
+        FOLDER_ROOT.addToComposition(folderDL.identifier.key);
+        folderDL.setLocation(FOLDER_ROOT);
 
         // Create a Stacked Plots folder
         let folderSP = new Obj('Stacked Plots', 'folder', true);
-        root.addJson(folderSP);
-        folderRoot.addToComposition(folderSP.identifier.key);
-        folderSP.setLocation(folderRoot);
+        ROOT.addJson(folderSP);
+        FOLDER_ROOT.addToComposition(folderSP.identifier.key);
+        folderSP.setLocation(FOLDER_ROOT);
 
         // Create a Tabs view for Display Layouts
         let tabsDL = new TabsView('Procedure Displays', false);
-        root.addJson(tabsDL);
-        folderRoot.addToComposition(tabsDL.identifier.key);
-        tabsDL.setLocation(folderRoot);
+        ROOT.addJson(tabsDL);
+        FOLDER_ROOT.addToComposition(tabsDL.identifier.key);
+        tabsDL.setLocation(FOLDER_ROOT);
 
         // Create a Tabs view for Stacked Plots
         let tabsSP = new TabsView('Procedure Stacked Plots', false);
-        root.addJson(tabsSP);
-        folderRoot.addToComposition(tabsSP.identifier.key);
-        tabsSP.setLocation(folderRoot);
+        ROOT.addJson(tabsSP);
+        FOLDER_ROOT.addToComposition(tabsSP.identifier.key);
+        tabsSP.setLocation(FOLDER_ROOT);
 
         for (let i = 0; i < procKeys.length; i++) {
             // Make a Display Layout for the current proc
@@ -122,7 +122,7 @@ processPrlFiles = function (filenames, values) {
             const stepKeys = Object.keys(curProcObjSteps);
             let uniqueTelemPaths = [];
 
-            //Create a Display Layout for alphas and add it to the root folder
+            //Create a Display Layout for alphas and add it to the ROOT folder
             let procDisplayLayout = new DisplayLayout({
                 'name': procNameShort,
                 'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
@@ -195,7 +195,7 @@ processPrlFiles = function (filenames, values) {
             } // Closes steps context
 
             // Add the proc's Display Layout
-            root.addJson(procDisplayLayout);
+            ROOT.addJson(procDisplayLayout);
             tabsDL.addToComposition(procDisplayLayout.identifier.key);
             folderDL.addToComposition(procDisplayLayout.identifier.key);
             procDisplayLayout.setLocation(folderDL);
@@ -207,7 +207,7 @@ processPrlFiles = function (filenames, values) {
             });
 
             // Add the proc's Stacked Plot
-            root.addJson(procStackedPlot);
+            ROOT.addJson(procStackedPlot);
             tabsSP.addToComposition(procStackedPlot.identifier.key);
             folderSP.addToComposition(procStackedPlot.identifier.key);
             procStackedPlot.setLocation(folderSP);

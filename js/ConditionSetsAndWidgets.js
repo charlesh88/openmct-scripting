@@ -169,3 +169,49 @@ const ConditionWidget = function (argsObj) {
         os.styles = telemetryObject.objStyles; // TODO: may need copyObj here
     }
 }
+
+const ConditionWidget2 = function (argsObj) {
+    /*
+    argsObj like:
+    {
+        name: str,
+        style: {},
+        conditionSet: str,
+        conditions: [],
+        url: str,
+    }
+     */
+
+    const telemetryObject = argsObj.telemetryObject;
+    const label = argsObj.name; //telemetryObject ? telemetryObject.name : argsObj.cellValue;
+
+    Obj.call(this, 'CW ' + label, 'conditionWidget', false);
+    this.configuration = {};
+    let os = this.configuration.objectStyles = {};
+    os.styles = [];
+    os.staticStyle = createOpenMCTStyleObj(argsObj.style);
+    this.label = label;
+    this.conditionalLabel = '';
+    this.url = argsObj.url;
+
+    if (argsObj.conditions) {
+        os.conditionSetIdentifier = createIdentifier(argsObj.conditionSet);
+        this.configuration.useConditionSetOutputAsLabel = argsObj.useCondOutAsLabel;
+
+    }
+
+
+    if (telemetryObject && telemetryObject.cs) {
+        os.conditionSetIdentifier = createIdentifier(telemetryObject.cs.identifier.key);
+        this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condWidgetUsesOutputAsLabel === 'TRUE');
+
+        for (const cond of telemetryObject.cs.configuration.conditionCollection) {
+            if (cond.isDefault) {
+                os.selectedConditionId = cond.id;
+                os.defaultConditionId = cond.id;
+            }
+        }
+        os.styles = telemetryObject.objStyles; // TODO: may need copyObj here
+    }
+}
+

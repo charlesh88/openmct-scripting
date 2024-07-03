@@ -58,28 +58,28 @@ function parseCSVTelemetry(csv) {
 
     config = getConfigFromForm();
 
-    // Create the root folder
-    folderRoot = new Obj(config.outputBaseName, 'folder', true);
-    root.addJson(folderRoot);
-    objJson.rootId = folderRoot.identifier.key;
+    // Create the ROOT folder
+    FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+    ROOT.addJson(FOLDER_ROOT);
+    OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
 
-    // Create a folder to hold Condition Sets and add it to the root folder
+    // Create a folder to hold Condition Sets and add it to the ROOT folder
     let folderConditionSets = new Obj('Condition Sets', 'folder', true);
-    root.addJson(folderConditionSets);
-    folderRoot.addToComposition(folderConditionSets.identifier.key);
-    folderConditionSets.setLocation(folderRoot);
+    ROOT.addJson(folderConditionSets);
+    FOLDER_ROOT.addToComposition(folderConditionSets.identifier.key);
+    folderConditionSets.setLocation(FOLDER_ROOT);
 
-    // Create a folder to hold Condition Widgets and add it to the root folder
+    // Create a folder to hold Condition Widgets and add it to the ROOT folder
     folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
-    root.addJson(folderConditionWidgets);
-    folderRoot.addToComposition(folderConditionWidgets.identifier.key);
-    folderConditionWidgets.setLocation(folderRoot);
+    ROOT.addJson(folderConditionWidgets);
+    FOLDER_ROOT.addToComposition(folderConditionWidgets.identifier.key);
+    folderConditionWidgets.setLocation(FOLDER_ROOT);
 
     // Create a LAD Table
     let LadTable = new Obj('LAD Table', 'LadTable', true);
-    root.addJson(LadTable);
-    folderRoot.addToComposition(LadTable.identifier.key);
-    LadTable.setLocation(folderRoot);
+    ROOT.addJson(LadTable);
+    FOLDER_ROOT.addToComposition(LadTable.identifier.key);
+    LadTable.setLocation(FOLDER_ROOT);
 
     for (const telemetryObject of TELEMETRY_OBJECTS) {
         const curIndex = TELEMETRY_OBJECTS.indexOf(telemetryObject);
@@ -109,7 +109,7 @@ function parseCSVTelemetry(csv) {
 
             TELEMETRY_OBJECTS[curIndex].cs = cs;
             TELEMETRY_OBJECTS[curIndex].objStyles = telemObjStyles;
-            root.addJson(cs);
+            ROOT.addJson(cs);
             folderConditionSets.addToComposition(cs.identifier.key);
             cs.setLocation(folderConditionSets);
         }
@@ -139,15 +139,15 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     ];
     const itemMargin = parseInt(arrGridMargin[2]);
 
-    // Create a layout for the matrix and add it to the root folder
+    // Create a layout for the matrix and add it to the ROOT folder
     let dlMatrix = new DisplayLayout({
         'name': 'DL '.concat(config.outputBaseName),
         'layoutGrid': gridDimensions,
         'itemMargin': itemMargin
     });
-    root.addJson(dlMatrix);
-    folderRoot.addToComposition(dlMatrix.identifier.key);
-    dlMatrix.setLocation(folderRoot);
+    ROOT.addJson(dlMatrix);
+    FOLDER_ROOT.addToComposition(dlMatrix.identifier.key);
+    dlMatrix.setLocation(FOLDER_ROOT);
 
     outputMsg('Matrix layout started: '
         .concat(arrColWidths.length.toString())
@@ -160,13 +160,13 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         .concat(itemMargin)
     );
 
-    // Create a folder to hold Hyperlinks and add it to the root folder
+    // Create a folder to hold Hyperlinks and add it to the ROOT folder
     let folderHyperlinks;
     if (csv.includes('_link')) {
         folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
-        root.addJson(folderHyperlinks);
-        folderRoot.addToComposition(folderHyperlinks.identifier.key);
-        folderHyperlinks.setLocation(folderRoot);
+        ROOT.addJson(folderHyperlinks);
+        FOLDER_ROOT.addToComposition(folderHyperlinks.identifier.key);
+        folderHyperlinks.setLocation(FOLDER_ROOT);
     }
 
     const outputMsgArr = [[
@@ -233,7 +233,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                     case 'cw':
                         // Create as a Condition Widget
                         let cw = new ConditionWidget(cObj);
-                        root.addJson(cw);
+                        ROOT.addJson(cw);
                         folderConditionWidgets.addToComposition(cw.identifier.key);
                         cw.setLocation(folderConditionWidgets);
 
@@ -264,7 +264,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                             label: text
                         });
 
-                        root.addJson(linkBtn);
+                        ROOT.addJson(linkBtn);
                         folderHyperlinks.addToComposition(linkBtn.identifier.key);
                         linkBtn.setLocation(folderHyperlinks);
 

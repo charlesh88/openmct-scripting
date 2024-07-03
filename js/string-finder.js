@@ -103,7 +103,7 @@ replaceStrings = function() {
 }
 
 saveReplacedFile = function () {
-    // const strJson = JSON.stringify(objJson, null, 4);
+    // const strJson = JSON.stringify(OBJ_JSON, null, 4);
     const filename = inputFileName.replaceAll(".json", " replaced.json");
 
     const file = new File([replacedFileText], filename, {

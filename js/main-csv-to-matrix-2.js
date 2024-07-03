@@ -42,7 +42,7 @@ function uploadConditionFile(files) {
         // Values will be an array that contains an item
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
-        createConditionSetObjs(values[0]);
+        createConditionSets(values[0]);
     });
 }
 
@@ -109,7 +109,6 @@ function createOpenMCTCondObj2(args) {
     let condSummaryArr = [];
 
 
-
     condObj.configuration = {
         'name': args.name,
         'output': args.output,
@@ -148,9 +147,9 @@ function createOpenMCTCondObj2(args) {
     return condObj;
 }
 
-function createConditionSetObjs(csv) {
-    document.getElementById('inputConditionCsv').toggleAttribute('disabled');
-    document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
+function createConditionSets(csv) {
+    // document.getElementById('inputConditionCsv').toggleAttribute('disabled');
+    // document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
 
     let cs;
 
@@ -177,26 +176,54 @@ function createConditionSetObjs(csv) {
         }
 
         cs = CONDITION_SETS[setName];
-
         cs.configuration.conditionCollection.push(
             createOpenMCTCondObj2(condObject)
         );
     }
 
-/*
-    TODO:
-    - [ ] Create Condition Sets folder, add to composition,etc.
-*/
+    // Create the ROOT folder
+    FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
 
-    console.log(CONDITION_SETS);
+    ROOT.addJson(FOLDER_ROOT);
+    OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
 
-    return cs;
+    // Create a folder to hold Conditionals and add it to the ROOT folder
+    let folderConditionals;
+    folderConditionals = new Obj('Conditionals', 'folder', true);
+    ROOT.addJson(folderConditionals);
+    FOLDER_ROOT.addToComposition(folderConditionals.identifier.key);
+    folderConditionals.setLocation(FOLDER_ROOT);
+
+    const arrCsKeys = Object.keys(CONDITION_SETS);
+    for (let i = 0; i < arrCsKeys.length; i++) {
+        const curCs = CONDITION_SETS[arrCsKeys[i]];
+        ROOT.addJson(curCs);
+        folderConditionals.addToComposition(curCs.identifier.key);
+        curCs.setLocation(folderConditionals);
+    }
+
+    console.log('CONDITION_SETS', CONDITION_SETS);
+
+    return true;
 }
 
 function createOpenMCTMatrixLayout(csv) {
     // Toggle the matrix file upload button to disabled
-    document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
+    // document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
     outputMsg(lineSepStr);
+
+    if (!ROOT) {
+        initDomainObjects();
+    }
+
+    config = getConfigFromForm();
+
+    if (!FOLDER_ROOT) {
+        // Create the ROOT folder if not already created
+        FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+        ROOT.addJson(FOLDER_ROOT);
+        OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
+    }
 
     const rowArr = csvToArray(csv);
 
@@ -215,15 +242,18 @@ function createOpenMCTMatrixLayout(csv) {
     ];
     const itemMargin = parseInt(arrGridMargin[2]);
 
-    // Create a layout for the matrix and add it to the root folder
+    // Create a layout for the matrix and add it to the ROOT folder
     let dlMatrix = new DisplayLayout({
         'name': 'DL '.concat(config.outputBaseName),
         'layoutGrid': gridDimensions,
         'itemMargin': itemMargin
     });
-    root.addJson(dlMatrix);
-    folderRoot.addToComposition(dlMatrix.identifier.key);
-    dlMatrix.setLocation(folderRoot);
+    console.log('ROOT', ROOT, dlMatrix);
+
+    ROOT.addJson(dlMatrix);
+
+    FOLDER_ROOT.addToComposition(dlMatrix.identifier.key);
+    dlMatrix.setLocation(FOLDER_ROOT);
 
     outputMsg('Matrix layout started: '
         .concat(arrColWidths.length.toString())
@@ -236,13 +266,13 @@ function createOpenMCTMatrixLayout(csv) {
         .concat(itemMargin)
     );
 
-    // Create a folder to hold Hyperlinks and add it to the root folder
+    // Create a folder to hold Hyperlinks and add it to the ROOT folder
     let folderHyperlinks;
     if (csv.includes('_link')) {
         folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
-        root.addJson(folderHyperlinks);
-        folderRoot.addToComposition(folderHyperlinks.identifier.key);
-        folderHyperlinks.setLocation(folderRoot);
+        ROOT.addJson(folderHyperlinks);
+        FOLDER_ROOT.addToComposition(folderHyperlinks.identifier.key);
+        folderHyperlinks.setLocation(FOLDER_ROOT);
     }
 
     const outputMsgArr = [[
@@ -281,24 +311,21 @@ function createOpenMCTMatrixLayout(csv) {
 
             if (cObj.cellValue.length > 0) {
                 // console.log('- > ',cObj.cellValue, cObj);
+                console.log('----> cObj', cObj);
+
                 switch (cObj.type) {
                     case 'alpha':
                         // Create as an alphanumeric
                         dlItem = dlMatrix.addTelemetryView({
-                            alphaFormat: cObj.telemetryObject.alphaFormat,
-                            alphaShowsUnit: cObj.telemetryObject.alphaShowsUnit,
-                            ident: cObj.cellValue.replaceAll('/', '~'),
+                            alphaFormat: cObj.alphaformat,
+                            alphaShowsUnit: cObj.showunits,
+                            ident: cObj.telemetryPath.replaceAll('/', '~'),
                             itemH: itemH,
                             itemW: itemW,
-                            style: (cObj.style) ? cObj.style : cObj.telemetryObject.alphaStyle,
+                            style: cObj.style, // TODO: make sure undefined is Ok here
                             x: curX,
                             y: curY
                         });
-
-                        if (cObj.telemetryObject.objStyles && cObj.telemetryObject.alphaUsesCond === 'TRUE') {
-                            dlMatrix.configuration.objectStyles[dlItem.id].styles = cObj.telemetryObject.objStyles;
-                            dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(cObj.telemetryObject.cs.identifier.key);
-                        }
 
                         dlMatrix.addToComposition(cObj.cellValue, getNamespace(cObj.cellValue));
                         outputMsgArr.push([
@@ -309,7 +336,7 @@ function createOpenMCTMatrixLayout(csv) {
                     case 'cw':
                         // Create as a Condition Widget
                         let cw = new ConditionWidget(cObj);
-                        root.addJson(cw);
+                        ROOT.addJson(cw);
                         folderConditionWidgets.addToComposition(cw.identifier.key);
                         cw.setLocation(folderConditionWidgets);
 
@@ -340,7 +367,7 @@ function createOpenMCTMatrixLayout(csv) {
                             label: text
                         });
 
-                        root.addJson(linkBtn);
+                        ROOT.addJson(linkBtn);
                         folderHyperlinks.addToComposition(linkBtn.identifier.key);
                         linkBtn.setLocation(folderHyperlinks);
 
@@ -390,12 +417,37 @@ function createOpenMCTMatrixLayout(csv) {
 }
 
 function unpackCell(strCell) {
+    function getCellArgValue(arr, argToFind) {
+        // argToFind like 'span', 'rspan', etc.
+        const arrIndex = findIndexInArray(arr, argToFind, false);
+        if (arrIndex > -1) {
+            return getStrBetween(
+                arr[arrIndex],
+                '_'.concat(argToFind).concat('('), ')'
+            )
+        }
+
+        return undefined;
+    }
+
+    function unpackCellConditions(condStr) {
+        // Will be like {name:ImgID_200,backgroundColor:#368215,color:#ffffff},{name:Default,border:1px solid #555555}
+        return replaceCommasInBrackets(condStr, ESC_CHARS.comma)
+            .split(',')
+            .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
+    }
+
+
     const matrixCell = {
+        'alphaformat': undefined,
         'conditions': undefined,
         'rspan': undefined,
-        'type': 'text',
+        'showunits': undefined,
         'span': undefined,
         'style': undefined,
+        'telemetryPath': undefined,
+        'useCondOutAsLabel': undefined,
+        'type': 'text',
         'url': undefined
     }
 
@@ -409,52 +461,49 @@ function unpackCell(strCell) {
     });
 
     if (matrixCell.cellValue.startsWith('~')) {
-        matrixCell.telemetryObject = TELEMETRY_OBJECTS.find(e => e.dataSource === matrixCell.cellValue);
+        // TODO: refactor this to add path and taxonomy, not lookup in TELEMETRY_OBJECTS
+        // matrixCell.telemetryObject = TELEMETRY_OBJECTS.find(e => e.dataSource === matrixCell.cellValue);
+        matrixCell.telemetryPath = matrixCell.cellValue;
+        matrixCell.alphaformat = getCellArgValue(arr, 'alphaformat');
+        if (arr.includes('_showunits')) {
+            matrixCell.showunits = true;
+        }
         matrixCell.type = 'alpha';
     }
 
     if (arr.includes('_cw')) {
         matrixCell.type = 'cw';
-    }
 
-
-    let arrIndex = findIndexInArray(arr, '_span', false);
-    if (arrIndex > -1) {
-        matrixCell.span = Number(getStrBetween(arr[arrIndex], '_span(', ')'));
-    }
-
-    arrIndex = findIndexInArray(arr, '_conditions', false);
-    if (arrIndex > -1) {
-        const conditionsStr = getStrBetween(arr[arrIndex], '_conditions(', ')')
-
-        // 200,_conditions("ImgID_200":{"style:{"backgroundColor":"#368215","color":"#ffffff"}},"Default":{"border":"1px solid #555555"})
-        matrixCell.conditions = stylesFromObj(
-            convertStringToJSON(getStrBetween(arr[arrIndex], '_conditions(', ')')),
-            STYLES_DEFAULTS);
-    }
-
-    arrIndex = findIndexInArray(arr, '_rspan', false);
-    if (arrIndex > -1) {
-        // console.log('has rspan');
-        matrixCell.rspan = Number(getStrBetween(arr[arrIndex], '_rspan(', ')'));
-    }
-
-    arrIndex = findIndexInArray(arr, '_style', false);
-    if (arrIndex > -1) {
-        matrixCell.style = stylesFromObj(
-            convertStringToJSON(getStrBetween(arr[arrIndex], '_style(', ')')),
-            STYLES_DEFAULTS);
-    }
-
-    arrIndex = findIndexInArray(arr, '_link', false);
-    if (arrIndex > -1) {
+        if (arr.includes('_outIsLabel')) {
+            matrixCell.useCondOutAsLabel = true;
+        }
+    } else if (arr.includes('_link')) {
         matrixCell.type = 'link';
     }
 
-    // Capture URLs which can be applied to both Hyperlinks and Condition Widgets
-    arrIndex = findIndexInArray(arr, '_url', false);
-    if (arrIndex > -1) {
-        matrixCell.url = getStrBetween(arr[arrIndex], '_url(', ')');
+    matrixCell.url = getCellArgValue(arr, 'url');
+
+    const span = getCellArgValue(arr, 'span');
+    if (span) {
+        matrixCell.span = Number(span)
+    }
+
+    const rspan = getCellArgValue(arr, 'rspan');
+    if (rspan) {
+        matrixCell.rspan = Number(rspan)
+    }
+
+    const conditions = getCellArgValue(arr, 'conditions');
+    if (conditions) {
+        matrixCell.conditions = unpackCellConditions(conditions);
+        // console.log('matrixCell', matrixCell, matrixCell.conditions)
+    }
+
+    const style = getCellArgValue(arr, 'style');
+    if (style) {
+        matrixCell.style = stylesFromObj(
+            convertStringToJSON(style),
+            STYLES_DEFAULTS);
     }
 
     return matrixCell;
