@@ -120,6 +120,17 @@ function getStrBetweenRegex(str, regex) {
     return result[0];
 }
 
+function replaceCommasInBrackets(inStr, replaceChar) {
+    // Regular expression to match text inside curly brackets
+    const regex = /\{([^{}]*)\}/g;
+
+    // Replace the commas within the curly brackets
+    return inStr.replace(regex, (match, p1) => {
+        // Replace commas with dollar signs within the match
+        return '{' + p1.replace(/,/g, replaceChar) + '}';
+    });
+}
+
 toggleHiddenClass = function (arrIDs) {
     for (let i = 0; i < arrIDs.length; i++) {
         if (arrIDs[i].className.includes('--hidden')) {
