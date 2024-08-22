@@ -176,8 +176,8 @@ const ConditionWidget2 = function (argsObj) {
     {
         name: str,
         style: {},
-        conditionSet: str,
-        conditions: [],
+        styleCondSet: str,
+        styleConds: [],
         url: str,
     }
      */
@@ -194,8 +194,9 @@ const ConditionWidget2 = function (argsObj) {
     this.conditionalLabel = '';
     this.url = argsObj.url;
 
-    if (argsObj.conditions) {
-        os.conditionSetIdentifier = createIdentifier(argsObj.conditionSet);
+    // TODO: refactor this to move into its own function
+    if (argsObj.styleConds) {
+        // os.conditionSetIdentifier = createIdentifier(argsObj.styleCondSet);
         this.configuration.useConditionSetOutputAsLabel = argsObj.useCondOutAsLabel;
 
     }
@@ -214,4 +215,3 @@ const ConditionWidget2 = function (argsObj) {
         os.styles = telemetryObject.objStyles; // TODO: may need copyObj here
     }
 }
-

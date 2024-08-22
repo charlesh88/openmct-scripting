@@ -188,4 +188,20 @@ const DisplayLayout = function (args) {
 
         return { itemPos, args };
     }
+
+    this.addObjectStylesForLayoutObj = function (layoutObjId, argsObj) {
+        // Adds an entry into this layout's objectStyles {}
+        // Entry is a keyed to the layoutObjId and includes a styles []
+        // console.log('argsObj', argsObj);
+
+        const condSetAndStylesArr = getCondSetAndStylesArr(argsObj);
+
+        this.configuration.objectStyles[layoutObjId] = {
+            styles: condSetAndStylesArr.styles,
+            conditionSetIdentifier: {
+                namespace: "",
+                key: condSetAndStylesArr.conditionSetIdentifier
+            }
+        }
+    }
 }

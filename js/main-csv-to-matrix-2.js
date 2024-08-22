@@ -1,3 +1,11 @@
+/*
+DESIGN:
+1. Read in single Conditions CSV file and create Condition Sets with conditions; each CS and condition must have unique names.
+1. Create a folder to hold the Condition Sets.
+1. Read in multiple Layout CSV files. For each file, look at each cell element and create it accordingly.
+1. If the cell has a _conds() tag, find the condition by set name using the _condset() tag and condition name in CONDITION_SETS
+ */
+
 const INPUT_TYPE = "csv";
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
@@ -148,11 +156,12 @@ function createOpenMCTCondObj2(args) {
 }
 
 function createConditionSets(csv) {
-    // document.getElementById('inputConditionCsv').toggleAttribute('disabled');
-    // document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
-
+    // TODO: GRAB TELEM DEFINITIONS FROM CONDITIONS AND ADD UNIQUES TO EACH CONDITION SET'S COMPOSITION
+    let curSetName = '';
+    let curSetTelemetry = [];
     let cs;
 
+    // condObjs is an array of short-handed conditions, in one or more condition sets
     const condObjs = csvToObjArray(csv);
 
     outputMsg('Condition file imported, '
@@ -169,16 +178,31 @@ function createConditionSets(csv) {
                 .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
         }
 
-        const setName = condObject.setName;
-
-        if (!CONDITION_SETS[setName]) {
-            CONDITION_SETS[setName] = new ConditionSet2(condObject)
+        if (condObject.setName) {
+            // setName only needs to be defined once in the csv for each Condition Set to be created
+            curSetName = condObject.setName;
+        } else if (!curSetName.length > 0) {
+            // There's no curSetName and setName has not been defined, abort
+            console.error('No setName has been defined');
+            return false;
         }
 
-        cs = CONDITION_SETS[setName];
+        if (!CONDITION_SETS[curSetName]) {
+            CONDITION_SETS[curSetName] = new ConditionSet2(condObject)
+        }
+
+        cs = CONDITION_SETS[curSetName];
         cs.configuration.conditionCollection.push(
             createOpenMCTCondObj2(condObject)
         );
+
+        if (condObject.setTelemetry) {
+            if (!curSetTelemetry.includes(condObject.setTelemetry)) {
+                // If setTelemetry hasn't been added to the set's composition, do it.
+                curSetTelemetry.push(condObject.setTelemetry);
+                cs.addToComposition(condObject.setTelemetry, "taxonomy");
+            }
+        }
     }
 
     // Create the ROOT folder
@@ -203,6 +227,7 @@ function createConditionSets(csv) {
     }
 
     console.log('CONDITION_SETS', CONDITION_SETS);
+    console.log('OBJ_JSON',OBJ_JSON);
 
     return true;
 }
@@ -310,15 +335,14 @@ function createOpenMCTMatrixLayout(csv) {
             }
 
             if (cObj.cellValue.length > 0) {
-                // console.log('- > ',cObj.cellValue, cObj);
-                console.log('----> cObj', cObj);
+                // console.log('----> cObj', cObj.cellValue, cObj);
 
                 switch (cObj.type) {
                     case 'alpha':
                         // Create as an alphanumeric
                         dlItem = dlMatrix.addTelemetryView({
-                            alphaFormat: cObj.alphaformat,
-                            alphaShowsUnit: cObj.showunits,
+                            alphaFormat: cObj.alphaFormat,
+                            alphaShowsUnit: cObj.showUnits,
                             ident: cObj.telemetryPath.replaceAll('/', '~'),
                             itemH: itemH,
                             itemW: itemW,
@@ -335,8 +359,10 @@ function createOpenMCTMatrixLayout(csv) {
                         break;
                     case 'cw':
                         // Create as a Condition Widget
-                        let cw = new ConditionWidget(cObj);
+                        let cw = new ConditionWidget2(cObj);
                         ROOT.addJson(cw);
+
+                        // TODO: gotta create a folder for Condition Widgets if it doesn't exist yet
                         folderConditionWidgets.addToComposition(cw.identifier.key);
                         cw.setLocation(folderConditionWidgets);
 
@@ -397,6 +423,10 @@ function createOpenMCTMatrixLayout(csv) {
                             x: curX,
                             y: curY
                         });
+
+                        // TODO: add hook here to add Conditional Styling if present
+                        dlMatrix.addObjectStylesForLayoutObj(dlItem.id, cObj);
+
                         outputMsgArr.push([
                             dlItem.text,
                             'Text'
@@ -431,7 +461,8 @@ function unpackCell(strCell) {
     }
 
     function unpackCellConditions(condStr) {
-        // Will be like {name:ImgID_200,backgroundColor:#368215,color:#ffffff},{name:Default,border:1px solid #555555}
+        // Will be like {set:CS1},{name:ImgID_200,backgroundColor:#368215,color:#ffffff},{name:Default,border:1px solid #555555}
+        // Each condition's name must be unique
         return replaceCommasInBrackets(condStr, ESC_CHARS.comma)
             .split(',')
             .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
@@ -439,10 +470,11 @@ function unpackCell(strCell) {
 
 
     const matrixCell = {
-        'alphaformat': undefined,
-        'conditions': undefined,
+        'alphaFormat': undefined,
+        'styleCondSet': undefined,
+        'styleConds': undefined,
         'rspan': undefined,
-        'showunits': undefined,
+        'showUnits': undefined,
         'span': undefined,
         'style': undefined,
         'telemetryPath': undefined,
@@ -464,9 +496,9 @@ function unpackCell(strCell) {
         // TODO: refactor this to add path and taxonomy, not lookup in TELEMETRY_OBJECTS
         // matrixCell.telemetryObject = TELEMETRY_OBJECTS.find(e => e.dataSource === matrixCell.cellValue);
         matrixCell.telemetryPath = matrixCell.cellValue;
-        matrixCell.alphaformat = getCellArgValue(arr, 'alphaformat');
-        if (arr.includes('_showunits')) {
-            matrixCell.showunits = true;
+        matrixCell.alphaFormat = getCellArgValue(arr, 'alphaFormat');
+        if (arr.includes('_showUnits')) {
+            matrixCell.showUnits = true;
         }
         matrixCell.type = 'alpha';
     }
@@ -493,10 +525,14 @@ function unpackCell(strCell) {
         matrixCell.rspan = Number(rspan)
     }
 
-    const conditions = getCellArgValue(arr, 'conditions');
-    if (conditions) {
-        matrixCell.conditions = unpackCellConditions(conditions);
-        // console.log('matrixCell', matrixCell, matrixCell.conditions)
+    const styleConds = getCellArgValue(arr, 'conds');
+    if (styleConds) {
+        // Expects the first element in the array to be {set: setName}
+        const conditionsArr = unpackCellConditions(styleConds);
+        matrixCell.styleCondSet = conditionsArr[0].set;
+        conditionsArr.shift();
+        matrixCell.styleConds = conditionsArr;
+        // console.log('matrixCell', matrixCell, matrixCell.styleConds)
     }
 
     const style = getCellArgValue(arr, 'style');
@@ -507,4 +543,102 @@ function unpackCell(strCell) {
     }
 
     return matrixCell;
+}
+
+/**************************************** CONDITIONAL STYLING */
+function getObjectStylesForDomainObj (openMCTDomainObj, argsObj) {
+    // Expects openMCTDomainObj will have a configuration.objectStyles {}
+    // Adds the CS identifier and a styles [] into that.
+    // Returns openMCTDomainObj
+    // TODO: consider migrating this to a function of DomainObjects.js Obj() function
+
+}
+
+function getCondSetAndStylesArr (argsObj) {
+    /*
+    Creates a styles [] from argsObj, which is a passed in instance of cObj
+    argsObj:
+        styleCondSet: name of Condition Set
+        styleConds: array of objects with condition names and style arguments
+    1. Get the ref'd CS by looking it up in CONDITION_SETS by name.
+    1. Iterate through named conditions in styleConds and create conditional styles accordingly.
+    1. Return an obj with a conditionSetIdentifier value and a styles []. Recipient will have to decode and use.
+     */
+    const o = {};
+
+    const openMCTCondSet = CONDITION_SETS[argsObj.styleCondSet];
+    if (openMCTCondSet) {
+        o.conditionSetIdentifier = openMCTCondSet.identifier.key;
+
+        // Iterate through the named conditions and styles in argsObj.styleConds and formulate a
+        // valid styles []
+        const stylesArr = [];
+        const conditionCollection = openMCTCondSet.configuration.conditionCollection;
+        for (let i = 0; i < argsObj.styleConds.length; i++) {
+            const styleCondName = argsObj.styleConds[i].name;
+            // Look for a matching condition in conditionCollection [].configuration.name;
+            // Get the resulting [].configuration.id
+            const openMCTCond = searchArrayOfObjects(conditionCollection, 'configuration.name', styleCondName);
+            if (openMCTCond) {
+                // console.log('openMCTCond',openMCTCond);
+                stylesArr.push(createOpenMCTStyleObj(argsObj.styleConds[i],openMCTCond.id));
+            }
+        }
+
+        o.styles = stylesArr;
+        return o;
+    }
+
+    return undefined;
+}
+
+function createOpenMCTCondObj(args) {
+    /*
+    "id": "3fbee1a9-496d-45ed-865e-60f9632a11ec",
+    "configuration": {
+      "name": "Disabled",
+      "output": "Disabled",
+      "trigger": "any",
+      "criteria": [
+        {
+          "id": "3f8b53a4-8dc0-4c59-a722-3687dacc70e2",
+          "telemetry": "any",
+          "operation": "lessThan",
+          "input": [
+            1
+          ],
+          "metadata": "value"
+        }
+      ]
+    },
+    "summary": "Match if any criteria are met:  any telemetry Value  < 1 "
+     */
+
+    const condObj = {};
+    condObj.isDefault = args.isDefault;
+    condObj.id = createUUID();
+    condObj.configuration = {
+        'name': args.name,
+        'output': args.output,
+        'trigger': args.isDefault ? 'all' : args.trigger,
+        'criteria': args.isDefault ? [] :
+            [{
+                'id': createUUID(),
+                'telemetry': args.telemetry,
+                'operation': args.operation,
+                'input': args.input,
+                'metadata': args.metadata
+            }]
+    };
+    condObj.summary = args.isDefault ? 'Scripted: default' :
+        'Scripted: match if any criteria are met: '
+            .concat(args.telemetry)
+            .concat(' telemetry ')
+            .concat(args.metadata)
+            .concat(' ')
+            .concat(args.operation)
+            .concat(' ')
+            .concat(args.input.toString())
+
+    return condObj;
 }
