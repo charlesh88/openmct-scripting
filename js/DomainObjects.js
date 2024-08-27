@@ -192,7 +192,7 @@ function findInComposition(domainObjToSearch, objToFind) {
         const needleKey = Object.keys(objToFind).length > 0 ? Object.keys(objToFind)[0] : objToFind;
         return haystackKeys.includes(needleKey);
     } catch (er) {
-        console.log('objectInComposition er', er);
+        console.error('objectInComposition er', er);
         return null;
     }
 }

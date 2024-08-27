@@ -238,12 +238,11 @@ function arrSortAndKeyByProperty(arr, property) {
 function strRemoveRegex(str, regex) {
     return str.replace(regex, '');
 }
+function getNestedPropertyValue(obj, path) {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
 
 function searchArrayOfObjects(array, nestedPropertyPath, searchValue) {
-    function getNestedPropertyValue(obj, path) {
-        return path.split('.').reduce((acc, part) => acc && acc[part], obj);
-    }
-
     for (let i = 0; i < array.length; i++) {
         let value = getNestedPropertyValue(array[i], nestedPropertyPath);
         if (value && value === searchValue) {

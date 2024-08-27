@@ -142,7 +142,9 @@ function createOpenMCTCondObj2(args) {
             condObj.configuration.criteria.push(
                 {
                     'id': createUUID(),
-                    'telemetry': criteriaObj.telemetry,
+                    'telemetry': criteriaObj.telemetry.includes('~')?
+                        createIdentifier(criteriaObj.telemetry, 'taxonomy') :
+                        criteriaObj.telemetry,
                     'operation': criteriaObj.operation,
                     'input': criteriaObj.input,
                     'metadata': criteriaObj.metadata
@@ -156,7 +158,6 @@ function createOpenMCTCondObj2(args) {
 }
 
 function createConditionSets(csv) {
-    // TODO: GRAB TELEM DEFINITIONS FROM CONDITIONS AND ADD UNIQUES TO EACH CONDITION SET'S COMPOSITION
     let curSetName = '';
     let curSetTelemetry = [];
     let cs;
@@ -171,11 +172,17 @@ function createConditionSets(csv) {
 
     config = getConfigFromForm();
 
+
     for (const condObject of condObjs) {
+        let defCondDefined = false;
         if (!condObject.isDefault) {
-            condObject.criteriaArr = replaceCommasInBrackets(condObject.criteria, ESC_CHARS.comma)
+            condObject.criteriaArr = replaceCommasInBrackets(
+                condObject.criteria, ESC_CHARS.comma)
                 .split(',')
                 .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
+            // console.log('condObject.criteriaArr',condObject)
+        } else {
+            defCondDefined = true;
         }
 
         if (condObject.setName) {
@@ -188,20 +195,53 @@ function createConditionSets(csv) {
         }
 
         if (!CONDITION_SETS[curSetName]) {
-            CONDITION_SETS[curSetName] = new ConditionSet2(condObject)
+            CONDITION_SETS[curSetName] = new ConditionSet2(condObject);
+            curSetTelemetry = []; // Reset if we're making a new CS this round.
         }
 
         cs = CONDITION_SETS[curSetName];
+        // cs.addCondition(createOpenMCTCondObj2(condObject));
         cs.configuration.conditionCollection.push(
             createOpenMCTCondObj2(condObject)
         );
 
         if (condObject.setTelemetry) {
-            if (!curSetTelemetry.includes(condObject.setTelemetry)) {
-                // If setTelemetry hasn't been added to the set's composition, do it.
-                curSetTelemetry.push(condObject.setTelemetry);
-                cs.addToComposition(condObject.setTelemetry, "taxonomy");
+            // Telemetry has been defined in the .csv file for the current Condition Set
+            const arrSetTelem = (condObject.setTelemetry.split(','));
+            for (const telem of arrSetTelem) {
+                if (!curSetTelemetry.includes(telem)) {
+                    // If setTelemetry hasn't been added to the set's composition, do it.
+                    curSetTelemetry.push(telem);
+                    cs.addToComposition(telem, "taxonomy");
+                }
             }
+        }
+    }
+
+    // Look through all created Condition Sets and make sure they have a default condition.
+    // If not, add one.
+    // console.log('CONDITION_SETS', CONDITION_SETS);
+    const csKeys = Object.keys(CONDITION_SETS);
+
+    for (let k = 0; k < csKeys.length; k++) {
+        let csHasDefault = false;
+        const cs = CONDITION_SETS[csKeys[k]];
+        const cColl = cs.configuration.conditionCollection;
+        // console.log(csKeys[k], cColl, cColl.length);
+        for (const c of cColl) {
+            if (c.isDefault === 'TRUE') {
+                csHasDefault = true;
+            }
+            // console.log('c',c, c.isDefault === 'TRUE');
+        }
+
+        if (!csHasDefault) {
+            // No default condition, so add it.
+            cColl.push(createOpenMCTCondObj2({
+                name: 'Default',
+                isDefault: true,
+                output: 'Default'
+            }))
         }
     }
 
@@ -273,7 +313,7 @@ function createOpenMCTMatrixLayout(csv) {
         'layoutGrid': gridDimensions,
         'itemMargin': itemMargin
     });
-    console.log('ROOT', ROOT, dlMatrix);
+    // console.log('ROOT', ROOT, dlMatrix);
 
     ROOT.addJson(dlMatrix);
 
@@ -424,7 +464,7 @@ function createOpenMCTMatrixLayout(csv) {
                             y: curY
                         });
 
-                        // TODO: add hook here to add Conditional Styling if present
+                        // Add Conditional Styling if present
                         dlMatrix.addObjectStylesForLayoutObj(dlItem.id, cObj);
 
                         outputMsgArr.push([
@@ -554,7 +594,7 @@ function getObjectStylesForDomainObj (openMCTDomainObj, argsObj) {
 
 }
 
-function getCondSetAndStylesArr (argsObj) {
+function getCondSetAndStyles (argsObj) {
     /*
     Creates a styles [] from argsObj, which is a passed in instance of cObj
     argsObj:

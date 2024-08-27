@@ -69,7 +69,7 @@ const DisplayLayout = function (args) {
 
     this.addTextAndAlphaViewPair = function (args) {
         // Opinionated. Wants to create a text label to the left of an input. Inputs get styled with a border.
-        const ALPHA_STYLE = { border: '1px solid #555555' };
+        const ALPHA_STYLE = {border: '1px solid #555555'};
         const response = {};
         const combinedArgs = copyObj(args);
         combinedArgs.itemW = args.labelW + config.itemMargin + args.itemW;
@@ -186,21 +186,21 @@ const DisplayLayout = function (args) {
             args.placeIndex += 1;
         }
 
-        return { itemPos, args };
+        return {itemPos, args};
     }
 
     this.addObjectStylesForLayoutObj = function (layoutObjId, argsObj) {
         // Adds an entry into this layout's objectStyles {}
         // Entry is a keyed to the layoutObjId and includes a styles []
         // console.log('argsObj', argsObj);
-
-        const condSetAndStylesArr = getCondSetAndStylesArr(argsObj);
-
-        this.configuration.objectStyles[layoutObjId] = {
-            styles: condSetAndStylesArr.styles,
-            conditionSetIdentifier: {
-                namespace: "",
-                key: condSetAndStylesArr.conditionSetIdentifier
+        const condSetAndStyles = getCondSetAndStyles(argsObj);
+        if (condSetAndStyles) {
+            this.configuration.objectStyles[layoutObjId] = {
+                styles: condSetAndStyles.styles,
+                conditionSetIdentifier: {
+                    namespace: "",
+                    key: condSetAndStyles.conditionSetIdentifier
+                }
             }
         }
     }
