@@ -392,6 +392,10 @@ function createOpenMCTMatrixLayout(csv) {
                         });
 
                         dlMatrix.addToComposition(cObj.cellValue, getNamespace(cObj.cellValue));
+
+                        // Add Conditional Styling if present
+                        dlMatrix.addObjectStylesForLayoutObj(dlItem.id, cObj);
+
                         outputMsgArr.push([
                             dlItem.identifier.key,
                             'Alphanumeric'
