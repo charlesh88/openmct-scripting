@@ -221,7 +221,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 
                         if (cObj.telemetryObject.objStyles && cObj.telemetryObject.alphaUsesCond === 'TRUE') {
                             dlMatrix.configuration.objectStyles[dlItem.id].styles = cObj.telemetryObject.objStyles;
-                            dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createIdentifier(cObj.telemetryObject.cs.identifier.key);
+                            dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createOpenMCTIdentifier(cObj.telemetryObject.cs.identifier.key);
                         }
 
                         dlMatrix.addToComposition(cObj.cellValue, getNamespace(cObj.cellValue));
@@ -232,7 +232,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         break;
                     case 'cw':
                         // Create as a Condition Widget
-                        let cw = new ConditionWidget(cObj);
+                        let cw = new ConditionWidgetDeprecated(cObj);
                         ROOT.addJson(cw);
                         folderConditionWidgets.addToComposition(cw.identifier.key);
                         cw.setLocation(folderConditionWidgets);

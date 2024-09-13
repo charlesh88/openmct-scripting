@@ -205,7 +205,7 @@ function parseCSVTelemetry(csv) {
                 addDataSourceToConditionSet = false;
 
                 // Add the conditionSetIdentifier to the current image view's objectStyles collection
-                dlCondImage.configuration.objectStyles[curImageViewObj.id].conditionSetIdentifier = createIdentifier(curConditionSet.identifier.key);
+                dlCondImage.configuration.objectStyles[curImageViewObj.id].conditionSetIdentifier = createOpenMCTIdentifier(curConditionSet.identifier.key);
             }
 
             if (addDataSourceToConditionSet) {
@@ -214,7 +214,7 @@ function parseCSVTelemetry(csv) {
             }
 
             // Create a new condition and add it to curConditionSet
-            const curCondition = createOpenMCTCondObj(rowObj);
+            const curCondition = createOpenMCTCondObjDeprecated(rowObj);
 
             curConditionSet.configuration.conditionCollection.push(curCondition);
 

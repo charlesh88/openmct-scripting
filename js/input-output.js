@@ -80,12 +80,13 @@ function csvToArray(str, delimiter = ',') {
         if (valuesArr.length > 0) {
             const valuesArrFormatted = valuesArr.map(function (value) {
                 value = value
+                    .replaceAll('http:','http'.concat(ESC_CHARS.colon)) // Escape colons in URLs
+                    .replaceAll('https:','https'.concat(ESC_CHARS.colon))
                     .replaceAll('\\~', ESC_CHARS.tilde) // Escape escaped tildes. These get restored later.
                     .replaceAll('\\/', ESC_CHARS.backslash) // Escape escaped slashes. These get restored later.
                     .replaceAll('\"', '') // Kill all remaining double-quotes.
                     .replaceAll(ESC_CHARS.comma, ',') // Restore escaped "vanilla" commas.
                     .replaceAll(ESC_CHARS.doublequotes, '\"') // Restore escaped double-double quotes.
-                    .replaceAll('/','~'); // Convert remaining / to Open MCT path format
 
                 return value;
             })

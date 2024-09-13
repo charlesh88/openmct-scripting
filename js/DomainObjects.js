@@ -1,4 +1,4 @@
-/********************************** DOMAIN OBJS */
+/******************************************************* DOMAIN OBJS */
 const Container = function () {
     this.addJson = function (child) {
         this[child.identifier.key] = child;
@@ -14,51 +14,88 @@ const Obj = function (name, type, hasComposition) {
     this.modified = datetime;
     this.location = null;
     this.persisted = datetime;
-    this.identifier = createIdentifier(id);
+    this.identifier = createOpenMCTIdentifier(id);
+    this.configuration = {
+        objectStyles: {
+            styles: [],
+            staticStyle: {}
+        },
+        fontStyle: {
+            fontSize: 'default',
+            font: 'default'
+        }
+    };
 
     if (hasComposition) {
         this.composition = [];
 
         this.addToComposition = function (childIdentifierKey, namespace) {
-            this.composition.push(createIdentifier(childIdentifierKey, namespace));
+            this.composition.push(createOpenMCTIdentifier(childIdentifierKey, namespace));
         }
     }
 
     this.setLocation = function (location) {
         this.location = location.identifier.key;
     }
-}
 
-function createOpenMCTStyleObj(args = undefined, condId = undefined) {
-    // TODO: make sure all functions calling this now pass the right stuff
-    const objStyleDefaults = {
-        'backgroundColor': '',
-        'border': '',
-        'color': '',
-        'isStyleInvisible': '',
-        'output': '',
-        'url': ''
+    this.addStaticStyleForObj = function(argsObj) {
+        this.configuration.objectStyles.staticStyle = createOpenMCTStyleObj(argsObj.style);
     }
 
-    let obj = {};
-    if (condId) {
-        obj.conditionId = condId;
-    }
-    obj.style = copyObj(objStyleDefaults);
-    if (args) {
-        // console.log('createOpenMCTStyleObj args',args);
-        for (const key in objStyleDefaults) {
-            if (args[key]) {
-                obj.style[key] = args[key];
+    this.addCondStylesForObj = function (argsObj) {
+        const condSetAndStyles = getCondSetAndStyles(argsObj);
+        if (condSetAndStyles) {
+            this.configuration.objectStyles = {
+                styles: condSetAndStyles.styles,
+                conditionSetIdentifier: {
+                    namespace: "",
+                    key: condSetAndStyles.conditionSetIdentifier
+                }
             }
         }
-    }
 
-    return obj;
+    }
 }
 
-function getNamespace(source) {
-    return (source.indexOf('~') != -1) ? 'taxonomy' : '';
+/***************************************** CONDITION SETS AND WIDGETS */
+const ConditionSet = function (telemetryObject) {
+    Obj.call(this, telemetryObject.name, 'conditionSet', true);
+    this.configuration = {
+        conditionTestData: [],
+        conditionCollection: []
+    };
+
+    this.composition.push(createOpenMCTIdentifier(telemetryObject.dataSource, telemetryObject.dataSource.includes('~') ? 'taxonomy' : ''));
+
+    this.addCondition = function (condArgsObj) {
+        const cond = createOpenMCTCondObjDeprecated(condArgsObj);
+        this.configuration.conditionCollection.push(cond);
+        return cond.id;
+    }
+}
+
+const ConditionWidget = function (argsObj) {
+    /* argsObj like:
+    {
+        name: str,
+        style: {},
+        styleCondSet: str,
+        styleConds: [],
+        url: str
+    } */
+
+    // console.log('argsObj',argsObj);
+    const label = argsObj.name;
+
+    Obj.call(this, 'CW ' + label, 'conditionWidget', false);
+
+    this.label = label;
+    this.conditionalLabel = '';
+    this.url = argsObj.url.replace(ESC_CHARS.colon,':');
+    this.configuration.useConditionSetOutputAsLabel = (argsObj.useCondOutAsLabel)?
+        argsObj.useCondOutAsLabel : false;
+    this.addStaticStyleForObj(argsObj);
+    this.addCondStylesForObj(argsObj);
 }
 
 const TabsView = function (name, keepAlive = true) {
@@ -74,7 +111,7 @@ const StackedPlot = function (name) {
 
     this.addToSeries = function (telemObj) {
         let seriesObj = {};
-        seriesObj.identifier = createIdentifier(telemObj.DataSource, 'taxonomy');
+        seriesObj.identifier = createOpenMCTIdentifier(telemObj.DataSource, 'taxonomy');
         seriesObj.series = plotSeriesProps(telemObj); // Yes, this is right: there'obj a nested series node in series, for Stacked Plots only
 
         this.configuration.series.push(seriesObj);
@@ -88,7 +125,7 @@ const OverlayPlot = function (name) {
 
     this.addToSeries = function (telemObj) {
         let seriesObj = plotSeriesProps(telemObj);
-        seriesObj.identifier = createIdentifier(telemObj.DataSource, 'taxonomy');
+        seriesObj.identifier = createOpenMCTIdentifier(telemObj.DataSource, 'taxonomy');
 
         this.configuration.series.push(seriesObj);
     };
@@ -130,7 +167,7 @@ const FlexibleLayout = function (name) {
     this.addFrame = function (key, namespace) {
         this.configuration.containers[0].frames.push({
             id: createUUID(),
-            domainObjectIdentifier: createIdentifier(key, namespace),
+            domainObjectIdentifier: createOpenMCTIdentifier(key, namespace),
             noFrame: false
         });
     }
@@ -179,6 +216,34 @@ initDomainObjects = function () {
     FOLDER_ROOT = '';
 }
 
+/******************************************************* DOMAIN OBJECT HELPER FUNCTIONS */
+function createOpenMCTStyleObj(args = undefined, condId = undefined) {
+    // TODO: make sure all functions calling this now pass the right stuff
+    const objStyleDefaults = {
+        'backgroundColor': '',
+        'border': '',
+        'color': '',
+        'isStyleInvisible': '',
+        'output': '',
+        'url': ''
+    }
+
+    let obj = {};
+    if (condId) {
+        obj.conditionId = condId;
+    }
+    obj.style = copyObj(objStyleDefaults);
+    if (args) {
+        // console.log('createOpenMCTStyleObj args',args);
+        for (const key in objStyleDefaults) {
+            if (args[key]) {
+                obj.style[key] = args[key];
+            }
+        }
+    }
+
+    return obj;
+}
 function findInComposition(domainObjToSearch, objToFind) {
     // objToFind can be a string or a domain object
     haystackKeys = [];
@@ -196,3 +261,32 @@ function findInComposition(domainObjToSearch, objToFind) {
         return null;
     }
 }
+
+const ConditionWidgetDeprecated = function (argsObj) {
+    // TODO: DEPRECATE THIS!!
+    const telemetryObject = argsObj.telemetryObject;
+    const label = telemetryObject ? telemetryObject.name : argsObj.cellValue;
+
+    Obj.call(this, 'CW ' + label, 'conditionWidget', false);
+    this.configuration = {};
+    let os = this.configuration.objectStyles = {};
+    os.styles = [];
+    os.staticStyle = createOpenMCTStyleObj(argsObj.style);
+    this.label = label;
+    this.conditionalLabel = '';
+    this.url = argsObj.url;
+
+    if (telemetryObject && telemetryObject.cs) {
+        os.conditionSetIdentifier = createOpenMCTIdentifier(telemetryObject.cs.identifier.key);
+        this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condWidgetUsesOutputAsLabel === 'TRUE');
+
+        for (const cond of telemetryObject.cs.configuration.conditionCollection) {
+            if (cond.isDefault) {
+                os.selectedConditionId = cond.id;
+                os.defaultConditionId = cond.id;
+            }
+        }
+        os.styles = telemetryObject.objStyles; // TODO: may need copyObj here
+    }
+}
+

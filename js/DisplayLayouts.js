@@ -39,7 +39,7 @@ const DisplayLayout = function (args) {
         const response = {};
         const subObj = this.createBaseItem(args);
         subObj.type = 'subobject-view';
-        subObj.identifier = createIdentifier(args.ident);
+        subObj.identifier = createOpenMCTIdentifier(args.ident);
         subObj.hasFrame = args.hasFrame;
 
         const posObj = this.calcItemPosition(args);
@@ -58,7 +58,7 @@ const DisplayLayout = function (args) {
         const response = {};
         const subObj = this.createBaseItem(args);
         subObj.type = 'subobject-view';
-        subObj.identifier = createIdentifier(args.ident);
+        subObj.identifier = createOpenMCTIdentifier(args.ident);
         subObj.hasFrame = args.hasFrame;
         subObj.x = args.x;
         subObj.y = args.y;
@@ -150,7 +150,7 @@ const DisplayLayout = function (args) {
         subObj.x = args.x;
         subObj.y = args.y;
         subObj.type = 'telemetry-view';
-        subObj.identifier = createIdentifier(args.ident, 'taxonomy');
+        subObj.identifier = createOpenMCTIdentifier(args.ident, 'taxonomy');
         subObj.displayMode = 'value';
         subObj.value = 'value';
         subObj.format = args.alphaFormat;
@@ -189,9 +189,10 @@ const DisplayLayout = function (args) {
         return {itemPos, args};
     }
 
-    this.addObjectStylesForLayoutObj = function (layoutObjId, argsObj) {
+    this.addCondStylesForLayoutObj = function (layoutObjId, argsObj) {
         // Adds an entry into this layout's objectStyles {}
         // Entry is a keyed to the layoutObjId and includes a styles []
+
         // console.log('argsObj', argsObj);
         const condSetAndStyles = getCondSetAndStyles(argsObj);
         if (condSetAndStyles) {

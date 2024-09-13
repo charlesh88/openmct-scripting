@@ -1,10 +1,23 @@
 /********************************** UTILITIES */
-function createIdentifier(id, namespace) {
-    let o = {};
-    o.namespace = (namespace) ? namespace : '';
-    o.key = id;
+function getNamespace(source) {
+    return (source.includes('~')) ? 'taxonomy' : '';
+}
 
-    return o;
+function convertToOpenMCTTelemPath(path) {
+    // Convert / paths to Open MCT ~ format
+    return path.replaceAll('/','~');
+}
+
+function createOpenMCTIdentifier(key, namespace) {
+    key = convertToOpenMCTTelemPath(key);
+    // If key includes '~', set namespace to 'taxonomy'
+    if (!namespace) {
+        namespace = getNamespace(key);
+    }
+    return {
+        key: key,
+        namespace: (namespace) ? namespace : ''
+    }
 }
 
 function createUUID() {
@@ -23,7 +36,7 @@ function isGUID(key) {
 }
 
 function convertStringToJSON(inputString) {
-    const ESC_COMMA = "$";
+    const ESC_COMMA = ESC_CHARS.comma;
     // Remove whitespace and line breaks from the input string
     // inputString = inputString.replace(/\s+/g, '');
 
