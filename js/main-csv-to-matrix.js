@@ -1,16 +1,17 @@
 const INPUT_TYPE = "csv";
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
+let CONDITION_SETS = [];
 let folderConditionWidgets;
 
 storeOutputBaseName();
 loadLocalSettings();
-inputCsv.addEventListener("change", function (ev) {
-    uploadTelemetryFile(ev.currentTarget.files);
+inputConditionCsv.addEventListener("change", function (ev) {
+    uploadConditionFile(ev.currentTarget.files);
 }, false);
 
 inputMatrixCsv.addEventListener("change", function (ev) {
-    uploadMatrixFile(ev.currentTarget.files, 'csv');
+    uploadMatrixFile2(ev.currentTarget.files, 'csv');
 }, false);
 
 function getConfigFromForm() {
@@ -22,7 +23,7 @@ function getConfigFromForm() {
     return config;
 }
 
-function uploadTelemetryFile(files) {
+function uploadConditionFile(files) {
     initDomainObjects();
     let readers = [];
     let filenames = [];
@@ -41,86 +42,174 @@ function uploadTelemetryFile(files) {
         // Values will be an array that contains an item
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
-        parseCSVTelemetry(values[0]);
+        createConditionSets(values[0]);
     });
 }
 
-function parseCSVTelemetry(csv) {
-    document.getElementById('inputCsv').toggleAttribute('disabled');
-    document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
+function uploadMatrixFile2(files, fileType) {
+    let readers = [];
+    let filenames = [];
 
-    TELEMETRY_OBJECTS = csvToObjArray(csv);
+    // Abort if there were no files selected
+    if (!files.length) return;
 
-    outputMsg('Telemetry file imported, '
-        .concat(TELEMETRY_OBJECTS.length.toString())
+    // Store promises in array
+    for (let i = 0; i < files.length; i++) {
+        filenames.push(files[i].name);
+        readers.push(readFileAsText(files[i]));
+    }
+
+    // Trigger Promises
+    Promise.all(readers).then((values) => {
+        createOpenMCTMatrixLayout(values[0]);
+    });
+}
+
+const ConditionSet2 = function (condSetArgsObj) {
+    Obj.call(this, condSetArgsObj.setName, 'conditionSet', true);
+    this.configuration = {};
+    this.configuration.conditionTestData = [];
+    this.configuration.conditionCollection = [];
+
+    this.addCondition = function (condObj) {
+        this.configuration.conditionCollection.push(
+            createOpenMCTCondObj(condObj)
+        );
+    }
+}
+
+function createConditionSets(csv) {
+    let curSetName = '';
+    let curSetTelemetry = [];
+    let cs;
+
+    // condObjs is an array of short-handed conditions, in one or more condition sets
+    const condObjs = csvToObjArray(csv);
+
+    outputMsg('Condition file imported, '
+        .concat(condObjs.length.toString())
         .concat(' rows found')
     );
 
     config = getConfigFromForm();
 
+
+    for (const condObject of condObjs) {
+        let defCondDefined = false;
+        if (!condObject.isDefault) {
+            condObject.criteriaArr = replaceCommasInBrackets(
+                condObject.criteria, ESC_CHARS.comma)
+                .split(',')
+                .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
+            // console.log('condObject.criteriaArr',condObject)
+        } else {
+            defCondDefined = true;
+        }
+
+        if (condObject.setName) {
+            // setName only needs to be defined once in the csv for each Condition Set to be created
+            curSetName = condObject.setName;
+        } else if (!curSetName.length > 0) {
+            // There's no curSetName and setName has not been defined, abort
+            console.error('No setName has been defined');
+            return false;
+        }
+
+        if (!CONDITION_SETS[curSetName]) {
+            CONDITION_SETS[curSetName] = new ConditionSet2(condObject);
+            curSetTelemetry = []; // Reset if we're making a new CS this round.
+        }
+
+        cs = CONDITION_SETS[curSetName];
+        // cs.addCondition(createOpenMCTCondObj(condObject));
+        cs.configuration.conditionCollection.push(
+            createOpenMCTCondObj(condObject)
+        );
+
+        if (condObject.setTelemetry) {
+            // Telemetry has been defined in the .csv file for the current Condition Set
+            const arrSetTelem = (condObject.setTelemetry.split(','));
+            for (const telem of arrSetTelem) {
+                if (!curSetTelemetry.includes(telem)) {
+                    // If setTelemetry hasn't been added to the set's composition, do it.
+                    curSetTelemetry.push(telem);
+                    cs.addToComposition(telem, "taxonomy");
+                }
+            }
+        }
+    }
+
+    // Look through all created Condition Sets and make sure they have a default condition.
+    // If not, add one.
+    // console.log('CONDITION_SETS', CONDITION_SETS);
+    const csKeys = Object.keys(CONDITION_SETS);
+
+    for (let k = 0; k < csKeys.length; k++) {
+        let csHasDefault = false;
+        const cs = CONDITION_SETS[csKeys[k]];
+        const cColl = cs.configuration.conditionCollection;
+        // console.log(csKeys[k], cColl, cColl.length);
+        for (const c of cColl) {
+            if (c.isDefault === 'TRUE') {
+                csHasDefault = true;
+            }
+            // console.log('c',c, c.isDefault === 'TRUE');
+        }
+
+        if (!csHasDefault) {
+            // No default condition, so add it.
+            cColl.push(createOpenMCTCondObj({
+                name: 'Default',
+                isDefault: true,
+                output: 'Default'
+            }))
+        }
+    }
+
     // Create the ROOT folder
     FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+
     ROOT.addJson(FOLDER_ROOT);
     OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
 
-    // Create a folder to hold Condition Sets and add it to the ROOT folder
-    let folderConditionSets = new Obj('Condition Sets', 'folder', true);
+    // Create a folder to hold Conditionals and add it to the ROOT folder
+    let folderConditionSets;
+    folderConditionSets = new Obj('Condition Sets', 'folder', true);
     ROOT.addJson(folderConditionSets);
     FOLDER_ROOT.addToComposition(folderConditionSets.identifier.key);
     folderConditionSets.setLocation(FOLDER_ROOT);
 
-    // Create a folder to hold Condition Widgets and add it to the ROOT folder
-    folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
-    ROOT.addJson(folderConditionWidgets);
-    FOLDER_ROOT.addToComposition(folderConditionWidgets.identifier.key);
-    folderConditionWidgets.setLocation(FOLDER_ROOT);
-
-    // Create a LAD Table
-    let LadTable = new Obj('LAD Table', 'LadTable', true);
-    ROOT.addJson(LadTable);
-    FOLDER_ROOT.addToComposition(LadTable.identifier.key);
-    LadTable.setLocation(FOLDER_ROOT);
-
-    for (const telemetryObject of TELEMETRY_OBJECTS) {
-        const curIndex = TELEMETRY_OBJECTS.indexOf(telemetryObject);
-
-        LadTable.addToComposition(telemetryObject.dataSource, getNamespace(telemetryObject.dataSource));
-
-        // Allow static styling to be defined in the telemetry file.
-        // Will be overridden by styling in the matrix file, if present.
-        if (telemetryObject.alphaStyle.length > 0) {
-            telemetryObject.alphaStyle = stylesFromObj(convertStringToJSON(telemetryObject.alphaStyle), STYLES_DEFAULTS);
-        }
-
-        // If conditions defined for this telemetry parameter, create a Condition Set and add conditions
-        if (telemetryObject.cond1.length > 0) {
-            const telemObjCondStyles = unpackTelemetryObjectCondStyles(telemetryObject);
-            const telemObjStyles = [];
-            let cs = new ConditionSet(telemetryObject);
-
-            for (const key in telemObjCondStyles) {
-                const condId = cs.addCondition(telemObjCondStyles[key]);
-
-                // Use condId to add a series of styleObjs to a styleObjs array
-                telemObjStyles.push(
-                    createOpenMCTStyleObj(telemObjCondStyles[key], condId)
-                );
-            }
-
-            TELEMETRY_OBJECTS[curIndex].cs = cs;
-            TELEMETRY_OBJECTS[curIndex].objStyles = telemObjStyles;
-            ROOT.addJson(cs);
-            folderConditionSets.addToComposition(cs.identifier.key);
-            cs.setLocation(folderConditionSets);
-        }
+    const arrCsKeys = Object.keys(CONDITION_SETS);
+    for (let i = 0; i < arrCsKeys.length; i++) {
+        const curCs = CONDITION_SETS[arrCsKeys[i]];
+        ROOT.addJson(curCs);
+        folderConditionSets.addToComposition(curCs.identifier.key);
+        curCs.setLocation(folderConditionSets);
     }
-    console.log('TELEMETRY_OBJECTS', TELEMETRY_OBJECTS);
+
+    console.log('CONDITION_SETS', CONDITION_SETS);
+    console.log('OBJ_JSON',OBJ_JSON);
+
+    return true;
 }
 
-function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
+function createOpenMCTMatrixLayout(csv) {
     // Toggle the matrix file upload button to disabled
-    document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
+    // document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
     outputMsg(lineSepStr);
+
+    if (!ROOT) {
+        initDomainObjects();
+    }
+
+    config = getConfigFromForm();
+
+    if (!FOLDER_ROOT) {
+        // Create the ROOT folder if not already created
+        FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+        ROOT.addJson(FOLDER_ROOT);
+        OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
+    }
 
     const rowArr = csvToArray(csv);
 
@@ -145,7 +234,10 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         'layoutGrid': gridDimensions,
         'itemMargin': itemMargin
     });
+    // console.log('ROOT', ROOT, dlMatrix);
+
     ROOT.addJson(dlMatrix);
+
     FOLDER_ROOT.addToComposition(dlMatrix.identifier.key);
     dlMatrix.setLocation(FOLDER_ROOT);
 
@@ -161,6 +253,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
     );
 
     // Create a folder to hold Hyperlinks and add it to the ROOT folder
+    // TODO: MOVE THIS INTO THE FUNCTION THAT MAKES LINK OBJECTS
     let folderHyperlinks;
     if (csv.includes('_link')) {
         folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
@@ -173,7 +266,7 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
         'Object',
         'Type'
     ]];
-    // Iterate through telemetry collection
+    // Iterate through matrix rows
     for (let r = 1; r < rowArr.length; r++) {
         const row = rowArr[r];
         const rowH = parseInt(row[0]);
@@ -204,27 +297,27 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
             }
 
             if (cObj.cellValue.length > 0) {
-                // console.log('- > ',cObj.cellValue, cObj);
+                // console.log('----> cObj', cObj.cellValue, cObj);
+
                 switch (cObj.type) {
                     case 'alpha':
                         // Create as an alphanumeric
                         dlItem = dlMatrix.addTelemetryView({
-                            alphaFormat: cObj.telemetryObject.alphaFormat,
-                            alphaShowsUnit: cObj.telemetryObject.alphaShowsUnit,
-                            ident: cObj.cellValue.replaceAll('/', '~'),
+                            alphaFormat: cObj.alphaFormat,
+                            alphaShowsUnit: cObj.showUnits,
+                            ident: cObj.telemetryPath,
                             itemH: itemH,
                             itemW: itemW,
-                            style: (cObj.style) ? cObj.style : cObj.telemetryObject.alphaStyle,
+                            style: cObj.style, // TODO: make sure undefined is Ok here
                             x: curX,
                             y: curY
                         });
 
-                        if (cObj.telemetryObject.objStyles && cObj.telemetryObject.alphaUsesCond === 'TRUE') {
-                            dlMatrix.configuration.objectStyles[dlItem.id].styles = cObj.telemetryObject.objStyles;
-                            dlMatrix.configuration.objectStyles[dlItem.id].conditionSetIdentifier = createOpenMCTIdentifier(cObj.telemetryObject.cs.identifier.key);
-                        }
-
                         dlMatrix.addToComposition(cObj.cellValue, getNamespace(cObj.cellValue));
+
+                        // Add Conditional Styling if present
+                        dlMatrix.addCondStylesForLayoutObj(dlItem.id, cObj);
+
                         outputMsgArr.push([
                             dlItem.identifier.key,
                             'Alphanumeric'
@@ -232,8 +325,18 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                         break;
                     case 'cw':
                         // Create as a Condition Widget
-                        let cw = new ConditionWidgetDeprecated(cObj);
+                        let cw = new ConditionWidget(cObj);
                         ROOT.addJson(cw);
+
+                        console.log('cw with cond styles',cw);
+                        // Create a folder for Condition Widgets if it doesn't exist
+                        if (!folderConditionWidgets) {
+                            folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
+                            ROOT.addJson(folderConditionWidgets);
+                            FOLDER_ROOT.addToComposition(folderConditionWidgets.identifier.key);
+                            folderConditionWidgets.setLocation(FOLDER_ROOT);
+                        }
+
                         folderConditionWidgets.addToComposition(cw.identifier.key);
                         cw.setLocation(folderConditionWidgets);
 
@@ -294,6 +397,10 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
                             x: curX,
                             y: curY
                         });
+
+                        // Add Conditional Styling if present
+                        dlMatrix.addCondStylesForLayoutObj(dlItem.id, cObj);
+
                         outputMsgArr.push([
                             dlItem.text,
                             'Text'
@@ -314,11 +421,41 @@ function createOpenMCTMatrixLayoutJSONfromCSV(csv) {
 }
 
 function unpackCell(strCell) {
+    function getCellArgValue(arr, argToFind) {
+        // argToFind like 'span', 'rspan', etc.
+        const arrIndex = findIndexInArray(arr, argToFind, false);
+        if (arrIndex > -1) {
+            return getStrBetween(
+                arr[arrIndex],
+                '_'.concat(argToFind).concat('('), ')'
+            )
+        }
+
+        return undefined;
+    }
+
+    function unpackCellArgObj(objStr) {
+        // Will be like {set:CS1},{name:ImgID_200,backgroundColor:#368215,color:#ffffff},{name:Default,border:1px solid #555555}
+        // Returns an array of objects
+        return replaceCommasInBrackets(objStr, ESC_CHARS.comma)
+            .split(',')
+            .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
+    }
+
+
     const matrixCell = {
+        'alphaFormat': undefined,
+        'cw': undefined,
+        'name': undefined,
+        'styleCondSet': undefined,
+        'styleConds': undefined,
         'rspan': undefined,
-        'type': 'text',
+        'showUnits': undefined,
         'span': undefined,
         'style': undefined,
+        'telemetryPath': undefined,
+        'useCondOutAsLabel': undefined,
+        'type': 'text',
         'url': undefined
     }
 
@@ -331,43 +468,95 @@ function unpackCell(strCell) {
         return '_'.concat(val)
     });
 
-    if (matrixCell.cellValue.startsWith('~')) {
-        matrixCell.telemetryObject = TELEMETRY_OBJECTS.find(e => e.dataSource === matrixCell.cellValue);
+    // console.log('arr',arr);
+
+    if (matrixCell.cellValue.startsWith('/')) {
+        matrixCell.telemetryPath = matrixCell.cellValue
+        matrixCell.alphaFormat = getCellArgValue(arr, 'alphaFormat');
+        if (arr.includes('_showUnits')) {
+            matrixCell.showUnits = true;
+        }
         matrixCell.type = 'alpha';
     }
 
-    if (arr.includes('_cw')) {
-        matrixCell.type = 'cw';
+    const cw = getCellArgValue(arr, 'cw');
+    if (cw) {
+        const cwProps = unpackCellArgObj(cw)[0];
+        matrixCell.name = matrixCell.cellValue;
+        matrixCell.type = 'cw'
+        matrixCell.useCondOutAsLabel = cwProps.useCondOutput;
+        matrixCell.url = cwProps.url;
+        console.log('matrixCell',matrixCell);
     }
 
-    let arrIndex = findIndexInArray(arr, '_span', false);
-    if (arrIndex > -1) {
-        matrixCell.span = Number(getStrBetween(arr[arrIndex], '_span(', ')'));
+    // TODO: ADD FUNCTIONALITY FOR HYPERLINKS
+    //     matrixCell.type = 'link';
+
+    const span = getCellArgValue(arr, 'span');
+    if (span) {
+        matrixCell.span = Number(span)
     }
 
-    arrIndex = findIndexInArray(arr, '_rspan', false);
-    if (arrIndex > -1) {
-        // console.log('has rspan');
-        matrixCell.rspan = Number(getStrBetween(arr[arrIndex], '_rspan(', ')'));
+    const rspan = getCellArgValue(arr, 'rspan');
+    if (rspan) {
+        matrixCell.rspan = Number(rspan)
     }
 
-    arrIndex = findIndexInArray(arr, '_style', false);
-    if (arrIndex > -1) {
+    const styleConds = getCellArgValue(arr, 'conds');
+    if (styleConds) {
+        // Expects the first element in the array to be {set: setName}
+        const conditionsArr = unpackCellArgObj(styleConds);
+        matrixCell.styleCondSet = conditionsArr[0].set;
+        conditionsArr.shift();
+        matrixCell.styleConds = conditionsArr;
+        // console.log('matrixCell', matrixCell, matrixCell.styleConds)
+    }
+
+    const style = getCellArgValue(arr, 'style');
+    if (style) {
         matrixCell.style = stylesFromObj(
-            convertStringToJSON(getStrBetween(arr[arrIndex], '_style(', ')')),
+            convertStringToJSON(style),
             STYLES_DEFAULTS);
     }
 
-    arrIndex = findIndexInArray(arr, '_link', false);
-    if (arrIndex > -1) {
-        matrixCell.type = 'link';
-    }
-
-    // Capture URLs which can be applied to both Hyperlinks and Condition Widgets
-    arrIndex = findIndexInArray(arr, '_url', false);
-    if (arrIndex > -1) {
-        matrixCell.url = getStrBetween(arr[arrIndex], '_url(', ')');
-    }
-
     return matrixCell;
+}
+
+/**************************************** CONDITIONAL STYLING */
+function getCondSetAndStyles (argsObj) {
+    /*
+    Creates a styles [] from argsObj, which is a passed in instance of cObj
+    argsObj:
+        styleCondSet: name of Condition Set
+        styleConds: array of objects with condition names and style arguments
+    1. Get the ref'd CS by looking it up in CONDITION_SETS by name.
+    1. Iterate through named conditions in styleConds and create conditional styles accordingly.
+    1. Return an obj with a conditionSetIdentifier value and a styles []. Recipient will have to decode and use.
+     */
+    const o = {};
+
+    const openMCTCondSet = CONDITION_SETS[argsObj.styleCondSet];
+    if (openMCTCondSet) {
+        o.conditionSetIdentifier = openMCTCondSet.identifier.key;
+
+        // Iterate through the named conditions and styles in argsObj.styleConds and formulate a
+        // valid styles []
+        const stylesArr = [];
+        const conditionCollection = openMCTCondSet.configuration.conditionCollection;
+        for (let i = 0; i < argsObj.styleConds.length; i++) {
+            const styleCondName = argsObj.styleConds[i].name;
+            // Look for a matching condition in conditionCollection [].configuration.name;
+            // Get the resulting [].configuration.id
+            const openMCTCond = searchArrayOfObjects(conditionCollection, 'configuration.name', styleCondName);
+            if (openMCTCond) {
+                // console.log('openMCTCond',openMCTCond);
+                stylesArr.push(createOpenMCTStyleObj(argsObj.styleConds[i],openMCTCond.id));
+            }
+        }
+
+        o.styles = stylesArr;
+        return o;
+    }
+
+    return undefined;
 }

@@ -11,8 +11,8 @@
 <div class="c-app">
     <div class="c-nav" id="nav"></div>
     <div class="head">
-        <h1>Generate Open MCT Matrix Layout from CSV <span id="app-version" class="app-version"></span></h1>
-        <div class="desc">Create arbitrary grid-based Display Layouts with telemetry and text labels in a variety of views.</div>
+        <h1>Generate Open MCT Matrix Layout from CSV <span class="--beta">Beta</span> <span id="app-version" class="app-version"></span></h1>
+        <div class="desc">Create arbitrary grid-based Display Layouts with telemetry and conditionals.</div>
     </div>
     <div class="page">
         <div class="page-main --main">
@@ -25,14 +25,14 @@
                 </div>
                 <div class="c-config">
                     <h2>Inputs</h2>
-                    <div class="c-config__label">Telemetry CSV</div>
-                    <div class="c-config__value"><input class="upload-file-btn" type="file" id="inputCsv"
+                    <div class="c-config__label">Condition CSV</div>
+                    <div class="c-config__value"><input class="upload-file-btn" type="file" id="inputConditionCsv"
                                                         accept=".csv"/>
                     </div>
                     <div class="c-config__label">Layout CSV</div>
                     <div class="c-config__value">
                         <input class="upload-file-btn" type="file" id="inputMatrixCsv"
-                               accept=".csv" disabled/></div>
+                               accept=".csv"/></div>
                 </div>
             </div>
 

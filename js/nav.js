@@ -4,10 +4,6 @@ const navArray = [
         "pathname": "index.html"
     },
     {
-        "name": "Matrix REFACTORED",
-        "pathname": "index-csv-to-matrix-2.html"
-    },
-    {
         "name": "Conditional Graphics",
         "pathname": "index-csv-conditional-graphics.html"
     },

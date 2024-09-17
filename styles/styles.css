@@ -469,4 +469,11 @@ form {
   border: none;
 }
 
+.--beta {
+  background: #ff7200;
+  border-radius: 4px;
+  color: #ffff81;
+  padding: 1px 7px;
+}
+
 /*# sourceMappingURL=styles.css.map */
