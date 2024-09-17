@@ -1,8 +1,16 @@
+/*
+DESIGN:
+1. Read in single Conditions CSV file and create Condition Sets with conditions; each CS and condition must have unique names.
+1. Create a folder to hold the Condition Sets.
+1. Read in multiple Layout CSV files. For each file, look at each cell element and create it accordingly.
+1. If the cell has a _conds() tag, find the condition by set name using the _condset() tag and condition name in CONDITION_SETS
+ */
+
 const INPUT_TYPE = "csv";
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
 let CONDITION_SETS = [];
-let folderConditionWidgets;
+let CONFIG_MATRIX;
 
 storeOutputBaseName();
 loadLocalSettings();
@@ -11,16 +19,14 @@ inputConditionCsv.addEventListener("change", function (ev) {
 }, false);
 
 inputMatrixCsv.addEventListener("change", function (ev) {
-    uploadMatrixFile2(ev.currentTarget.files, 'csv');
+    uploadMatrixFiles(ev.currentTarget.files, 'csv');
 }, false);
 
 function getConfigFromForm() {
     // Get form values
-    const config = {};
-
-    config.outputBaseName = document.getElementById('output-base-name').value;
-
-    return config;
+    return {
+        outputBaseName: document.getElementById('output-base-name').value
+    };
 }
 
 function uploadConditionFile(files) {
@@ -46,7 +52,7 @@ function uploadConditionFile(files) {
     });
 }
 
-function uploadMatrixFile2(files, fileType) {
+function uploadMatrixFiles(files, fileType) {
     let readers = [];
     let filenames = [];
 
@@ -61,21 +67,8 @@ function uploadMatrixFile2(files, fileType) {
 
     // Trigger Promises
     Promise.all(readers).then((values) => {
-        createOpenMCTMatrixLayout(values[0]);
+        createOpenMCTMatrixLayouts(filenames, values);
     });
-}
-
-const ConditionSet2 = function (condSetArgsObj) {
-    Obj.call(this, condSetArgsObj.setName, 'conditionSet', true);
-    this.configuration = {};
-    this.configuration.conditionTestData = [];
-    this.configuration.conditionCollection = [];
-
-    this.addCondition = function (condObj) {
-        this.configuration.conditionCollection.push(
-            createOpenMCTCondObj(condObj)
-        );
-    }
 }
 
 function createConditionSets(csv) {
@@ -91,8 +84,7 @@ function createConditionSets(csv) {
         .concat(' rows found')
     );
 
-    config = getConfigFromForm();
-
+    CONFIG_MATRIX = getConfigFromForm();
 
     for (const condObject of condObjs) {
         let defCondDefined = false;
@@ -116,7 +108,7 @@ function createConditionSets(csv) {
         }
 
         if (!CONDITION_SETS[curSetName]) {
-            CONDITION_SETS[curSetName] = new ConditionSet2(condObject);
+            CONDITION_SETS[curSetName] = new ConditionSet(condObject);
             curSetTelemetry = []; // Reset if we're making a new CS this round.
         }
 
@@ -167,7 +159,7 @@ function createConditionSets(csv) {
     }
 
     // Create the ROOT folder
-    FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+    FOLDER_ROOT = new Obj(CONFIG_MATRIX.outputBaseName, 'folder', true);
 
     ROOT.addJson(FOLDER_ROOT);
     OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
@@ -188,236 +180,250 @@ function createConditionSets(csv) {
     }
 
     console.log('CONDITION_SETS', CONDITION_SETS);
-    console.log('OBJ_JSON',OBJ_JSON);
+    console.log('OBJ_JSON', OBJ_JSON);
+    config = CONFIG_MATRIX;
 
     return true;
 }
 
-function createOpenMCTMatrixLayout(csv) {
-    // Toggle the matrix file upload button to disabled
-    // document.getElementById('inputMatrixCsv').toggleAttribute('disabled');
-    outputMsg(lineSepStr);
+function createOpenMCTMatrixLayouts(filenames, values) {
+    let folderConditionWidgets;
+    let folderHyperlinks;
+    let folderDisplayLayouts;
+    let tabsView;
 
     if (!ROOT) {
         initDomainObjects();
     }
 
-    config = getConfigFromForm();
+    if (!CONFIG_MATRIX) {
+        CONFIG_MATRIX = getConfigFromForm();
+    }
 
     if (!FOLDER_ROOT) {
-        // Create the ROOT folder if not already created
-        FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
+        // Create the ROOT folder if not already created by Condition Sets
+        FOLDER_ROOT = new Obj(CONFIG_MATRIX.outputBaseName, 'folder', true);
         ROOT.addJson(FOLDER_ROOT);
         OBJ_JSON.rootId = FOLDER_ROOT.identifier.key;
     }
 
-    const rowArr = csvToArray(csv);
+    if (filenames.length > 1) {
+        // If more than one layout file, create a folder and a Tabs View to contain the layouts.
+        folderDisplayLayouts = new Obj('Display Layouts','folder',true);
+        addDomainObject(folderDisplayLayouts,FOLDER_ROOT);
 
-    let curY = 0;
-    let dlItem = {};
-    const arrColWidths = rowArr[0];
-    const arrColHeights = [];
-    for (let r = 0; r < rowArr.length; r++) {
-        arrColHeights.push(rowArr[r][0]);
+        tabsView = new TabsView(CONFIG_MATRIX.outputBaseName, false);
+        addDomainObject(tabsView,FOLDER_ROOT);
     }
 
-    const arrGridMargin = arrColWidths[0].length > 0 ? arrColWidths[0].split(',') : [2, 2, 2];
-    const gridDimensions = [
-        parseInt(arrGridMargin[0]),
-        parseInt(arrGridMargin[1])
-    ];
-    const itemMargin = parseInt(arrGridMargin[2]);
+    // ITERATE THROUGH LAYOUT FILES
+    for (let i = 0; i < filenames.length; i++) {
+        const rowArr = csvToArray(values[i]);
+        const layoutName = filenames[i].toString().replaceAll('.csv','');
 
-    // Create a layout for the matrix and add it to the ROOT folder
-    let dlMatrix = new DisplayLayout({
-        'name': 'DL '.concat(config.outputBaseName),
-        'layoutGrid': gridDimensions,
-        'itemMargin': itemMargin
-    });
-    // console.log('ROOT', ROOT, dlMatrix);
-
-    ROOT.addJson(dlMatrix);
-
-    FOLDER_ROOT.addToComposition(dlMatrix.identifier.key);
-    dlMatrix.setLocation(FOLDER_ROOT);
-
-    outputMsg('Matrix layout started: '
-        .concat(arrColWidths.length.toString())
-        .concat(' columns and ')
-        .concat(rowArr.length.toString())
-        .concat(' rows;')
-        .concat(' grid dimensions: ')
-        .concat(gridDimensions.join(','))
-        .concat(' item margin: ')
-        .concat(itemMargin)
-    );
-
-    // Create a folder to hold Hyperlinks and add it to the ROOT folder
-    // TODO: MOVE THIS INTO THE FUNCTION THAT MAKES LINK OBJECTS
-    let folderHyperlinks;
-    if (csv.includes('_link')) {
-        folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
-        ROOT.addJson(folderHyperlinks);
-        FOLDER_ROOT.addToComposition(folderHyperlinks.identifier.key);
-        folderHyperlinks.setLocation(FOLDER_ROOT);
-    }
-
-    const outputMsgArr = [[
-        'Object',
-        'Type'
-    ]];
-    // Iterate through matrix rows
-    for (let r = 1; r < rowArr.length; r++) {
-        const row = rowArr[r];
-        const rowH = parseInt(row[0]);
-        let curX = 0;
-
-        // Iterate through row cells
-        for (let c = 1; c < row.length; c++) {
-            // Process each cell in the matrix
-            const cObj = unpackCell(row[c].trim());
-
-            const colW = parseInt(arrColWidths[c]);
-            let itemW = colW;
-            let itemH = rowH;
-
-            if (cObj.span) {
-                // Span includes the current column, c
-                // Add widths from columns to be spanned to itemW
-                for (let i = c + 1; i < (c + parseInt(cObj.span)); i++) {
-                    itemW += parseInt(arrColWidths[i]) + itemMargin;
-                }
-            }
-
-            if (cObj.rspan) {
-                for (let i = c + 1; i < (c + parseInt(cObj.rspan)); i++) {
-                    itemH += parseInt(arrColHeights[i]) + itemMargin;
-                }
-
-            }
-
-            if (cObj.cellValue.length > 0) {
-                // console.log('----> cObj', cObj.cellValue, cObj);
-
-                switch (cObj.type) {
-                    case 'alpha':
-                        // Create as an alphanumeric
-                        dlItem = dlMatrix.addTelemetryView({
-                            alphaFormat: cObj.alphaFormat,
-                            alphaShowsUnit: cObj.showUnits,
-                            ident: cObj.telemetryPath,
-                            itemH: itemH,
-                            itemW: itemW,
-                            style: cObj.style, // TODO: make sure undefined is Ok here
-                            x: curX,
-                            y: curY
-                        });
-
-                        dlMatrix.addToComposition(cObj.cellValue, getNamespace(cObj.cellValue));
-
-                        // Add Conditional Styling if present
-                        dlMatrix.addCondStylesForLayoutObj(dlItem.id, cObj);
-
-                        outputMsgArr.push([
-                            dlItem.identifier.key,
-                            'Alphanumeric'
-                        ]);
-                        break;
-                    case 'cw':
-                        // Create as a Condition Widget
-                        let cw = new ConditionWidget(cObj);
-                        ROOT.addJson(cw);
-
-                        console.log('cw with cond styles',cw);
-                        // Create a folder for Condition Widgets if it doesn't exist
-                        if (!folderConditionWidgets) {
-                            folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
-                            ROOT.addJson(folderConditionWidgets);
-                            FOLDER_ROOT.addToComposition(folderConditionWidgets.identifier.key);
-                            folderConditionWidgets.setLocation(FOLDER_ROOT);
-                        }
-
-                        folderConditionWidgets.addToComposition(cw.identifier.key);
-                        cw.setLocation(folderConditionWidgets);
-
-                        // Add Condition Widget to the layout
-                        dlMatrix.addSubObjectViewInPlace({
-                            itemW: itemW,
-                            itemH: itemH,
-                            x: curX,
-                            y: curY,
-                            ident: cw.identifier.key,
-                            hasFrame: false
-                        });
-
-                        dlMatrix.addToComposition(cw.identifier.key);
-                        outputMsgArr.push([
-                            cw.label,
-                            'Condition Widget'
-                        ]);
-                        break;
-                    case 'link':
-                        // Create as a Link
-                        // TODO: make sure link objects are being created and styled properly
-                        const text = restoreEscChars(cObj.cellValue);
-                        let linkBtn = new HyperLink(text, {
-                            format: 'button',
-                            target: '_blank',
-                            url: cObj.url,
-                            label: text
-                        });
-
-                        ROOT.addJson(linkBtn);
-                        folderHyperlinks.addToComposition(linkBtn.identifier.key);
-                        linkBtn.setLocation(folderHyperlinks);
-
-                        // Add Hyperlink to the layout
-                        dlMatrix.addSubObjectViewInPlace({
-                            itemW: itemW,
-                            itemH: itemH,
-                            x: curX,
-                            y: curY,
-                            ident: linkBtn.identifier.key,
-                            hasFrame: false
-                        });
-
-                        dlMatrix.addToComposition(linkBtn.identifier.key);
-                        outputMsgArr.push([
-                            linkBtn.label,
-                            'Link'
-                        ]);
-                        break;
-                    default:
-                        // Create as a text object
-                        dlItem = dlMatrix.addTextView({
-                            itemW: itemW,
-                            itemH: itemH,
-                            style: cObj.style,
-                            text: restoreEscChars(cObj.cellValue),
-                            x: curX,
-                            y: curY
-                        });
-
-                        // Add Conditional Styling if present
-                        dlMatrix.addCondStylesForLayoutObj(dlItem.id, cObj);
-
-                        outputMsgArr.push([
-                            dlItem.text,
-                            'Text'
-                        ]);
-                }
-            }
-
-            curX += colW + itemMargin;
+        let curY = 0;
+        let dlItem = {};
+        const arrColWidths = rowArr[0];
+        const arrColHeights = [];
+        for (let r = 0; r < rowArr.length; r++) {
+            arrColHeights.push(rowArr[r][0]);
         }
 
-        curY += rowH + itemMargin;
+        const arrGridMargin = arrColWidths[0].length > 0 ? arrColWidths[0].split(',') : [2, 2, 2];
+        const gridDimensions = [
+            parseInt(arrGridMargin[0]),
+            parseInt(arrGridMargin[1])
+        ];
+        const itemMargin = parseInt(arrGridMargin[2]);
+
+        // Create a layout for the matrix and add it to the ROOT folder
+        let dlMatrix = new DisplayLayout({
+            'name': layoutName,
+            'layoutGrid': gridDimensions,
+            'itemMargin': itemMargin
+        });
+
+        if (tabsView) {
+            addDomainObject(dlMatrix,folderDisplayLayouts);
+            tabsView.addToComposition(dlMatrix.identifier.key);
+        } else {
+            addDomainObject(dlMatrix,FOLDER_ROOT);
+        }
+
+        outputMsg(lineSepStr);
+        outputMsg('Matrix layout started for '.concat(layoutName));
+        outputMsg(arrColWidths.length.toString()
+            .concat(' columns and ')
+            .concat(rowArr.length.toString())
+            .concat(' rows;')
+            .concat(' grid dimensions: ')
+            .concat(gridDimensions.join(','))
+            .concat(' item margin: ')
+            .concat(itemMargin)
+        );
+
+        const outputMsgArr = [[
+            'Object',
+            'Type'
+        ]];
+
+        // Iterate through matrix rows
+        for (let r = 1; r < rowArr.length; r++) {
+            const row = rowArr[r];
+            const rowH = parseInt(row[0]);
+            let curX = 0;
+
+            // Iterate through row cells
+            for (let c = 1; c < row.length; c++) {
+                // Process each cell in the matrix
+                const cObj = unpackCell(row[c].trim());
+
+                const colW = parseInt(arrColWidths[c]);
+                let itemW = colW;
+                let itemH = rowH;
+
+                if (cObj.span) {
+                    // Span includes the current column, c
+                    // Add widths from columns to be spanned to itemW
+                    for (let i = c + 1; i < (c + parseInt(cObj.span)); i++) {
+                        itemW += parseInt(arrColWidths[i]) + itemMargin;
+                    }
+                }
+
+                if (cObj.rspan) {
+                    for (let i = c + 1; i < (c + parseInt(cObj.rspan)); i++) {
+                        itemH += parseInt(arrColHeights[i]) + itemMargin;
+                    }
+
+                }
+
+                if (cObj.cellValue.length > 0) {
+                    // console.log('----> cObj', cObj.cellValue, cObj);
+
+                    switch (cObj.type) {
+                        case 'alpha':
+                            // Create as an alphanumeric
+                            dlItem = dlMatrix.addTelemetryView({
+                                alphaFormat: cObj.alphaFormat,
+                                alphaShowsUnit: cObj.showUnits,
+                                ident: cObj.telemetryPath,
+                                itemH: itemH,
+                                itemW: itemW,
+                                style: cObj.style,
+                                x: curX,
+                                y: curY
+                            });
+
+                            dlMatrix.addToComposition(cObj.cellValue, getNamespace(cObj.cellValue));
+
+                            // Add Conditional Styling if present
+                            dlMatrix.addCondStylesForLayoutObj(dlItem.id, cObj);
+
+                            outputMsgArr.push([
+                                dlItem.identifier.key,
+                                'Alphanumeric'
+                            ]);
+                            break;
+                        case 'cw':
+                            // Create as a Condition Widget
+
+                            // Create a folder for Condition Widgets if it doesn't exist
+                            if (!folderConditionWidgets) {
+                                folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
+                                addDomainObject(folderConditionWidgets,FOLDER_ROOT);
+                            }
+
+                            let cw = new ConditionWidget(cObj);
+                            addDomainObject(cw,folderConditionWidgets);
+
+                            // Add Condition Widget to the layout
+                            dlMatrix.addSubObjectViewInPlace({
+                                itemW: itemW,
+                                itemH: itemH,
+                                x: curX,
+                                y: curY,
+                                ident: cw.identifier.key,
+                                hasFrame: false
+                            });
+
+                            dlMatrix.addToComposition(cw.identifier.key);
+                            outputMsgArr.push([
+                                cw.label,
+                                'Condition Widget'
+                            ]);
+                            break;
+                        case 'link':
+                            // Create as a Link
+                            // TODO: MAKE THIS WORK
+                            const text = restoreEscChars(cObj.cellValue);
+                            let linkBtn = new HyperLink(text, {
+                                format: 'button',
+                                target: '_blank',
+                                url: cObj.url,
+                                label: text
+                            });
+
+                            // Create a folder to hold Hyperlinks and add it to the ROOT folder
+                            if (!folderHyperlinks) {
+                                folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
+                                ROOT.addJson(folderHyperlinks);
+                                FOLDER_ROOT.addToComposition(folderHyperlinks.identifier.key);
+                                folderHyperlinks.setLocation(FOLDER_ROOT);
+                            }
+
+                            ROOT.addJson(linkBtn);
+                            folderHyperlinks.addToComposition(linkBtn.identifier.key);
+                            linkBtn.setLocation(folderHyperlinks);
+
+                            // Add Hyperlink to the layout
+                            dlMatrix.addSubObjectViewInPlace({
+                                itemW: itemW,
+                                itemH: itemH,
+                                x: curX,
+                                y: curY,
+                                ident: linkBtn.identifier.key,
+                                hasFrame: false
+                            });
+
+                            dlMatrix.addToComposition(linkBtn.identifier.key);
+                            outputMsgArr.push([
+                                linkBtn.label,
+                                'Link'
+                            ]);
+                            break;
+                        default:
+                            // Create as a text object
+                            dlItem = dlMatrix.addTextView({
+                                itemW: itemW,
+                                itemH: itemH,
+                                style: cObj.style,
+                                text: restoreEscChars(cObj.cellValue),
+                                x: curX,
+                                y: curY
+                            });
+
+                            // Add Conditional Styling if present
+                            dlMatrix.addCondStylesForLayoutObj(dlItem.id, cObj);
+
+                            outputMsgArr.push([
+                                dlItem.text,
+                                'Text'
+                            ]);
+                    }
+                }
+
+                curX += colW + itemMargin;
+            }
+
+            curY += rowH + itemMargin;
+        }
+
+        outputMsg(htmlGridFromArray(outputMsgArr));
     }
 
-    outputMsg(htmlGridFromArray(outputMsgArr));
-
     outputJSON();
-    outputMsg('Matrix layout generated');
+    outputMsg('Matrix layouts generated');
+    config = CONFIG_MATRIX;
 }
 
 function unpackCell(strCell) {
@@ -486,7 +492,7 @@ function unpackCell(strCell) {
         matrixCell.type = 'cw'
         matrixCell.useCondOutAsLabel = cwProps.useCondOutput;
         matrixCell.url = cwProps.url;
-        console.log('matrixCell',matrixCell);
+        console.log('matrixCell', matrixCell);
     }
 
     // TODO: ADD FUNCTIONALITY FOR HYPERLINKS
@@ -523,7 +529,7 @@ function unpackCell(strCell) {
 }
 
 /**************************************** CONDITIONAL STYLING */
-function getCondSetAndStyles (argsObj) {
+function getCondSetAndStyles(argsObj) {
     /*
     Creates a styles [] from argsObj, which is a passed in instance of cObj
     argsObj:
@@ -550,7 +556,7 @@ function getCondSetAndStyles (argsObj) {
             const openMCTCond = searchArrayOfObjects(conditionCollection, 'configuration.name', styleCondName);
             if (openMCTCond) {
                 // console.log('openMCTCond',openMCTCond);
-                stylesArr.push(createOpenMCTStyleObj(argsObj.styleConds[i],openMCTCond.id));
+                stylesArr.push(createOpenMCTStyleObj(argsObj.styleConds[i], openMCTCond.id));
             }
         }
 

@@ -58,19 +58,17 @@ const Obj = function (name, type, hasComposition) {
 }
 
 /***************************************** CONDITION SETS AND WIDGETS */
-const ConditionSet = function (telemetryObject) {
-    Obj.call(this, telemetryObject.name, 'conditionSet', true);
+const ConditionSet = function (condSetArgsObj) {
+    Obj.call(this, condSetArgsObj.setName, 'conditionSet', true);
     this.configuration = {
         conditionTestData: [],
         conditionCollection: []
     };
 
-    this.composition.push(createOpenMCTIdentifier(telemetryObject.dataSource, telemetryObject.dataSource.includes('~') ? 'taxonomy' : ''));
-
-    this.addCondition = function (condArgsObj) {
-        const cond = createOpenMCTCondObjDeprecated(condArgsObj);
-        this.configuration.conditionCollection.push(cond);
-        return cond.id;
+    this.addCondition = function (condObj) {
+        this.configuration.conditionCollection.push(
+            createOpenMCTCondObj(condObj)
+        );
     }
 }
 
@@ -262,31 +260,8 @@ function findInComposition(domainObjToSearch, objToFind) {
     }
 }
 
-const ConditionWidgetDeprecated = function (argsObj) {
-    // TODO: DEPRECATE THIS!!
-    const telemetryObject = argsObj.telemetryObject;
-    const label = telemetryObject ? telemetryObject.name : argsObj.cellValue;
-
-    Obj.call(this, 'CW ' + label, 'conditionWidget', false);
-    this.configuration = {};
-    let os = this.configuration.objectStyles = {};
-    os.styles = [];
-    os.staticStyle = createOpenMCTStyleObj(argsObj.style);
-    this.label = label;
-    this.conditionalLabel = '';
-    this.url = argsObj.url;
-
-    if (telemetryObject && telemetryObject.cs) {
-        os.conditionSetIdentifier = createOpenMCTIdentifier(telemetryObject.cs.identifier.key);
-        this.configuration.useConditionSetOutputAsLabel = (telemetryObject.condWidgetUsesOutputAsLabel === 'TRUE');
-
-        for (const cond of telemetryObject.cs.configuration.conditionCollection) {
-            if (cond.isDefault) {
-                os.selectedConditionId = cond.id;
-                os.defaultConditionId = cond.id;
-            }
-        }
-        os.styles = telemetryObject.objStyles; // TODO: may need copyObj here
-    }
+function addDomainObject(domainObject, container) {
+    container.addToComposition(domainObject.identifier.key);
+    ROOT.addJson(domainObject);
+    domainObject.setLocation(container);
 }
-
