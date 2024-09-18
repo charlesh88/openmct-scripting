@@ -1,11 +1,7 @@
-function initAlphasItemPlacementTracker() {
-    alphasItemPlacementTracker.placeIndex = 0;
-    alphasItemPlacementTracker.shiftIndex = 0;
-}
-
-function initWidgetsItemPlacementTracker() {
-    widgetsItemPlacementTracker.placeIndex = 0;
-    widgetsItemPlacementTracker.shiftIndex = 0;
+const DL_ITEM_PLACEMENT = {};
+function initLayoutItemPlacement() {
+    DL_ITEM_PLACEMENT.placeIndex = 0;
+    DL_ITEM_PLACEMENT.shiftIndex = 0;
 }
 
 function displayLayoutConvertPxToGridUnits(gridUnit, px) {

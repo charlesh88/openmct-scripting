@@ -10,4 +10,5 @@ const ESC_CHARS = {
     'doublequotes': '$DDQ'
 }
 const lineSepStr = '------------------------------------------------';
+let OBJ_JSON, ROOT, FOLDER_ROOT;
 let config = {};

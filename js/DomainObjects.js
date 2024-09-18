@@ -204,13 +204,9 @@ const SineWaveGenerator = function (name, argsObj) {
     }
 }
 
-let OBJ_JSON, ROOT, alphasItemPlacementTracker, widgetsItemPlacementTracker, FOLDER_ROOT;
-
 initDomainObjects = function () {
     OBJ_JSON = {};
     ROOT = OBJ_JSON.openmct = new Container();
-    alphasItemPlacementTracker = {};
-    widgetsItemPlacementTracker = {};
     FOLDER_ROOT = '';
 }
 
@@ -261,7 +257,8 @@ function findInComposition(domainObjToSearch, objToFind) {
 }
 
 function addDomainObject(domainObject, container) {
-    container.addToComposition(domainObject.identifier.key);
+    console.log('addDomainObject', domainObject, container);
     ROOT.addJson(domainObject);
+    container.addToComposition(domainObject.identifier.key);
     domainObject.setLocation(container);
 }

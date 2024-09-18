@@ -9,6 +9,7 @@ storeOutputBaseName();
 loadLocalSettings();
 
 inputPRL.addEventListener("change", function (ev) {
+    initDomainObjects();
     uploadFiles(ev.currentTarget.files, 'prl');
 }, false);
 
@@ -82,7 +83,6 @@ processPrlFiles = function (filenames, values) {
     if (procKeys && procKeys.length > 0) {
         initDomainObjects();
         config = getConfigFromForm();
-        let ROOT = OBJ_JSON.openmct = new Container();
 
         // Create the ROOT folder
         let FOLDER_ROOT = new Obj(config.outputBaseName, 'folder', true);
@@ -91,27 +91,19 @@ processPrlFiles = function (filenames, values) {
 
         // Create a Display Layouts folder
         let folderDL = new Obj('Display Layouts', 'folder', true);
-        ROOT.addJson(folderDL);
-        FOLDER_ROOT.addToComposition(folderDL.identifier.key);
-        folderDL.setLocation(FOLDER_ROOT);
+        addDomainObject(folderDL, FOLDER_ROOT);
 
         // Create a Stacked Plots folder
         let folderSP = new Obj('Stacked Plots', 'folder', true);
-        ROOT.addJson(folderSP);
-        FOLDER_ROOT.addToComposition(folderSP.identifier.key);
-        folderSP.setLocation(FOLDER_ROOT);
+        addDomainObject(folderSP, FOLDER_ROOT);
 
         // Create a Tabs view for Display Layouts
         let tabsDL = new TabsView('Procedure Displays', false);
-        ROOT.addJson(tabsDL);
-        FOLDER_ROOT.addToComposition(tabsDL.identifier.key);
-        tabsDL.setLocation(FOLDER_ROOT);
+        addDomainObject(tabsDL, FOLDER_ROOT);
 
         // Create a Tabs view for Stacked Plots
         let tabsSP = new TabsView('Procedure Stacked Plots', false);
-        ROOT.addJson(tabsSP);
-        FOLDER_ROOT.addToComposition(tabsSP.identifier.key);
-        tabsSP.setLocation(FOLDER_ROOT);
+        addDomainObject(tabsSP, FOLDER_ROOT);
 
         for (let i = 0; i < procKeys.length; i++) {
             // Make a Display Layout for the current proc
@@ -129,7 +121,7 @@ processPrlFiles = function (filenames, values) {
                 'itemMargin': config.itemMargin
             });
 
-            initAlphasItemPlacementTracker();
+            initLayoutItemPlacement();
 
             // Per-step context starts here. Note that a telemetry path can be present more than once in a proc.
             for (let s = 0; s < stepKeys.length; s++) {
@@ -156,14 +148,14 @@ processPrlFiles = function (filenames, values) {
                         ident: stepKeys[s],
                         layoutStrategy: config.dlAlphas.layoutStrategy,
                         layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-                        placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
+                        placeIndex: DL_ITEM_PLACEMENT.placeIndex,
+                        shiftIndex: DL_ITEM_PLACEMENT.shiftIndex,
                         text: stepKeys[s].concat(' ').concat(curStepObj.crewMembers)
                     }
                 );
 
-                alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
-                alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
+                DL_ITEM_PLACEMENT.placeIndex = dlItem.placeIndex;
+                DL_ITEM_PLACEMENT.shiftIndex = dlItem.shiftIndex;
 
                 // Iterate through the pathsShort array and make label and alpha pairs for each
                 for (let p = 0; p < curStepObj.paths.length; p++) {
@@ -179,8 +171,8 @@ processPrlFiles = function (filenames, values) {
                         labelW: labelWidth,
                         layoutStrategy: config.dlAlphas.layoutStrategy,
                         layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-                        placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
+                        placeIndex: DL_ITEM_PLACEMENT.placeIndex,
+                        shiftIndex: DL_ITEM_PLACEMENT.shiftIndex,
                         text: curStepObj.pathsShort[p]
                     });
 
@@ -189,16 +181,14 @@ processPrlFiles = function (filenames, values) {
                         uniqueTelemPaths.push(curStepPath);
                     }
                     // procStackedPlot.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
-                    alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
-                    alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
+                    DL_ITEM_PLACEMENT.placeIndex = dlItem.placeIndex;
+                    DL_ITEM_PLACEMENT.shiftIndex = dlItem.shiftIndex;
                 }
             } // Closes steps context
 
             // Add the proc's Display Layout
-            ROOT.addJson(procDisplayLayout);
+            addDomainObject(procDisplayLayout, folderDL);
             tabsDL.addToComposition(procDisplayLayout.identifier.key);
-            folderDL.addToComposition(procDisplayLayout.identifier.key);
-            procDisplayLayout.setLocation(folderDL);
 
             //Create a Stacked Plot for telemetry
             let procStackedPlot = new StackedPlot(procNameShort);
@@ -207,10 +197,8 @@ processPrlFiles = function (filenames, values) {
             });
 
             // Add the proc's Stacked Plot
-            ROOT.addJson(procStackedPlot);
+            addDomainObject(procStackedPlot, folderSP);
             tabsSP.addToComposition(procStackedPlot.identifier.key);
-            folderSP.addToComposition(procStackedPlot.identifier.key);
-            procStackedPlot.setLocation(folderSP);
         } // Closes single procedure context
     }
 
