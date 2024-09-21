@@ -93,7 +93,6 @@ function createConditionSets(csv) {
                 condObject.criteria, ESC_CHARS.comma)
                 .split(',')
                 .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
-            // console.log('condObject.criteriaArr',condObject)
         } else {
             defCondDefined = true;
         }
@@ -103,7 +102,7 @@ function createConditionSets(csv) {
             curSetName = condObject.setName;
         } else if (!curSetName.length > 0) {
             // There's no curSetName and setName has not been defined, abort
-            console.error('No setName has been defined');
+            console.error('No setName has been defined',condObject);
             return false;
         }
 
@@ -113,7 +112,6 @@ function createConditionSets(csv) {
         }
 
         cs = CONDITION_SETS[curSetName];
-        // cs.addCondition(createOpenMCTCondObj(condObject));
         cs.configuration.conditionCollection.push(
             createOpenMCTCondObj(condObject)
         );
@@ -133,19 +131,16 @@ function createConditionSets(csv) {
 
     // Look through all created Condition Sets and make sure they have a default condition.
     // If not, add one.
-    // console.log('CONDITION_SETS', CONDITION_SETS);
     const csKeys = Object.keys(CONDITION_SETS);
 
     for (let k = 0; k < csKeys.length; k++) {
         let csHasDefault = false;
         const cs = CONDITION_SETS[csKeys[k]];
         const cColl = cs.configuration.conditionCollection;
-        // console.log(csKeys[k], cColl, cColl.length);
         for (const c of cColl) {
             if (c.isDefault === 'TRUE') {
                 csHasDefault = true;
             }
-            // console.log('c',c, c.isDefault === 'TRUE');
         }
 
         if (!csHasDefault) {
@@ -441,13 +436,12 @@ function unpackCell(strCell) {
     }
 
     function unpackCellArgObj(objStr) {
-        // Will be like {set:CS1},{name:ImgID_200,backgroundColor:#368215,color:#ffffff},{name:Default,border:1px solid #555555}
+        // Will be like {setName:CS1},{condName:ImgID_200,backgroundColor:#368215,color:#ffffff},{condName:Default,border:1px solid #555555}
         // Returns an array of objects
         return replaceCommasInBrackets(objStr, ESC_CHARS.comma)
             .split(',')
             .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
     }
-
 
     const matrixCell = {
         'alphaFormat': undefined,
@@ -473,8 +467,6 @@ function unpackCell(strCell) {
     const arr = a.map(val => {
         return '_'.concat(val)
     });
-
-    // console.log('arr',arr);
 
     if (matrixCell.cellValue.startsWith('/')) {
         matrixCell.telemetryPath = matrixCell.cellValue
@@ -508,14 +500,14 @@ function unpackCell(strCell) {
         matrixCell.rspan = Number(rspan)
     }
 
-    const styleConds = getCellArgValue(arr, 'conds');
+    const styleConds = getCellArgValue(arr, 'conditions');
     if (styleConds) {
-        // Expects the first element in the array to be {set: setName}
+        // Expects the first element in the array to be {setName:<string>}
         const conditionsArr = unpackCellArgObj(styleConds);
-        matrixCell.styleCondSet = conditionsArr[0].set;
+        matrixCell.styleCondSet = conditionsArr[0].setName;
         conditionsArr.shift();
         matrixCell.styleConds = conditionsArr;
-        // console.log('matrixCell', matrixCell, matrixCell.styleConds)
+        console.log('styleConds',matrixCell);
     }
 
     const style = getCellArgValue(arr, 'style');

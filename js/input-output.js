@@ -88,6 +88,7 @@ function csvToArray(str, delimiter = ',') {
                     .replaceAll(ESC_CHARS.comma, ',') // Restore escaped "vanilla" commas.
                     .replaceAll(ESC_CHARS.doublequotes, '\"') // Restore escaped double-double quotes.
 
+                value = normalizeCsvStr(value);
                 return value;
             })
 
@@ -248,4 +249,10 @@ function storeOutputBaseName() {
         storeLocal(LOCALSTORE_BASE_NAME.concat(OUTPUT_BASE_NAME_KEY), document.getElementById('output-base-name').value);
     }, false);
 
+}
+
+/************************************************* MISC */
+function normalizeCsvStr(csvStr) {
+    // Normalizes certain special strings used for clarity for humans into their correct counterparts
+    return csvStr.replaceAll('condName','name');
 }
