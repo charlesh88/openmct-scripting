@@ -6,6 +6,10 @@ DESIGN:
 1. If the cell has a _conds() tag, find the condition by set name using the _condset() tag and condition name in CONDITION_SETS
  */
 
+/* TODOs
+- [ ] Allow a _format() flag to include a printf statement for alphanumerics in the layout file.
+- [ ] Change _span and _rspan to use a single flag _span({col:3}) or _span({col:2,row:2})
+ */
 const INPUT_TYPE = "csv";
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';

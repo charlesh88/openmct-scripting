@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>How To Use</title>
@@ -7,11 +8,11 @@
     <link rel="stylesheet" href="styles/styles.css">
 </head>
 
-<body translate="no" class="help">
+<body class="help" translate="no">
 <div class="c-app">
-    <div class="c-nav" id="nav"></div>
+    <div class="c-nav" id="nav"><br></div>
     <div class="head">
-        <h1>How to Use This Tool <span id="app-version" class="app-version"></span></h1>
+        <h1>How to Use This Tool</h1>
     </div>
     <div class="page --scrolls">
         <div class="page-main --help">
@@ -27,18 +28,15 @@
             </ul>
             <h2 id="overview">Overview</h2>
             <p>Allows large scale creation of a variety of Open MCT views, many with integrated Conditional styling.
-                Source
-                files include tabular CSV, PRIDE .prl files, and Python ground control scripts (GCS). The tool outputs
-                JSON
-                files that are imported into Open MCT.</p>
+                Source files include tabular CSV, PRIDE .prl files, and Python ground control scripts (GCS). The tool
+                outputs JSON files that are imported into Open MCT.</p>
             <ol>
                 <li>Create and/or gather input files.</li>
                 <li>Run those inputs through this tool, which then outputs an Open MCT import-ready JSON file.</li>
                 <li>Import that JSON file into Open MCT in the environment and location desired.</li>
             </ol>
             <p>The tool also provides a capability to extract telemetry paths from GCS scripts and PRIDE PRL files into
-                a
-                CSV output.</p>
+                a CSV output.</p>
             <h2 id="links">Links</h2>
             <ul>
                 <li>Release notes and change history: <a href="documentation/release-notes.md">Open MCT Scripting Tool
@@ -48,191 +46,185 @@
                 <li>Code repo: <a href="https://github.com/charlesh88/openmct-scripting">https://github.com/charlesh88/openmct-scripting</a>
                 </li>
             </ul>
-            <h2 class="feature-hdr" id="MatrixLayout">Matrix Layout</h2>
+            <h2 class="feature-hdr" id="MatrixLayout">Matrix Layout <span class="--beta">Beta</span></h2>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-imported-result.png"
                     alt="Picture of tool interface" title="Matrix Layout imported result"></p>
             <h3>What It Does</h3>
             <ul>
-                <li>Uses two input CSV files, one for telemetry and conditions and the other for layout and creates a
-                    single
-                    Display Layout as a result.
+                <li>Uses two input CSV files, one that defines conditionals and the other for layout; one or more
+                    Display Layouts are created as a result.
                     <ul>
-                        <li>The layout can display telemetry elements in the source file as alphanumerics or Condition
-                            Widgets,
-                            depending on the specification in the matrix layout CSV file.
+                        <li>Multiple Condition Sets can be created in a single file with unlimited Conditions;
+                            Conditions can include unlimited criteria.
                         </li>
-                        <li>The matrix layout defines a grid with variable column widths and row heights.</li>
+                        <li>The matrix layout file(s) define a grid with variable column widths and row heights and can
+                            display alphanumerics, Condition Widgets and text objects.
+                        </li>
                         <li>Elements can be statically and/or conditionally styled.</li>
-                        <li>Text elements can be added as labels; labels can span multiple columns.</li>
                     </ul>
-                </li>
-                <li>Creates Condition Sets for each specified row in the source file which are used by elements in the
-                    Display Layout.
                 </li>
                 <li>Folders that contain the above elements.</li>
             </ul>
             <h3>Interface</h3>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-matrix-layout.png"
-                    alt="Picture of tool interface"
-                    title="Matrix Layout interface"></p>
+                    alt="Picture of tool interface" title="Matrix Layout interface"></p>
             <ul>
                 <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
-                <li><strong>Telemetry CSV Input</strong>: a CSV file that defines paths to telemetry parameters,
-                    properties
-                    and condition properties.
+                <li><strong>Condition CSV Input</strong>: a CSV file that defines Condition Sets and their conditions.
+                    Not required if the Layout file isn&apos;t using conditionals.
                 </li>
-                <li><strong>Layout CSV</strong>: a CSV file that defines column widths, row heights, paths to telemetry
-                    parameters and text labels.
+                <li><strong>Layout CSV</strong>: a CSV file that defines an Open MCT Display Layout in a rows and
+                    columns grid format.
                 </li>
             </ul>
-
-            <h3>Matrix Layout Telemetry CSV Input File</h3>
-            <p>This file defines the telemetry points and associated Condition Sets to be used in the matrix Display
-                Layout. When the condition cells (condDefault, cond1, etc.) are populated for a row, a Condition Set
-                will be
-                created that incorporates and evaluates the telemetry parameter in column &quot;dataSource&quot;.</p>
-
+            <h3>Condition CSV Input File</h3>
+            <p>Defines Condition Sets to be used in the matrix Display Layout. When the condition cells (condDefault,
+                cond1, etc.) are populated for a row, a Condition Set will be created that incorporates and evaluates
+                the telemetry parameter in column &quot;dataSource&quot;.</p>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-telem.png"
-                    alt="Picture of CSV file"
-                    title="Matrix Layout telemetry CSV file"></p>
-
+                    alt="Picture of CSV file" title="Matrix Layout telemetry CSV file"></p>
             <table>
                 <thead>
                 <tr>
-                    <th class='em'>Column</th>
+                    <th class="em">Column</th>
                     <th>Description</th>
                     <th>Example</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td class='em'>name</td>
-                    <td>Name of the parameter; used by generated Condition Widgets. See below for more.</td>
+                    <td class="em">setName</td>
+                    <td>Unique name of a Condition Set for the current condition being defined in this row of the file.
+                        To create a Condition Set with multiple conditions, enter the same Condition Set name for
+                        following rows, or enter a set name leave following cells in this column blank.&nbsp;
+                    </td>
                     <td></td>
                 </tr>
                 <tr>
-                    <td class='em'>dataSource</td>
-                    <td>Full path for the parameter using forward-slashes to denote containers and periods for
-                        aggregates, like: &quot;/SpacecraftSystem/Subsystem/folder/aggregate.parameterName&quot;. Can be
-                        copied directly from Yamcs or other mission spec documents.
+                    <td class="em">setTelemetry</td>
+                    <td>The telemetry parameters to be included in this Condition Set. Enter full paths for each
+                        parameter, separate multiple parameters with commas.
                     </td>
-                    <td>/Spacesystem/Subsystem/parameter_name.aggregate_name</td>
+                    <td></td>
                 </tr>
                 <tr>
-                    <td class='em'>alphaFormat</td>
-                    <td>A printf string to be applied to numeric alphanumerics in a Display Layout. For example, &quot;%.2f&quot;
-                        will round a numeric parameter to two decimal points.
+                    <td class="em">condName</td>
+                    <td>The name of the current Condition in a given set. This must be unique value within a single
+                        Condition Set; names here can be the same across multiple different Condition Sets.
                     </td>
-                    <td>%.2f</td>
+                    <td></td>
                 </tr>
                 <tr>
-                    <td class='em'>alphaShowsUnit</td>
-                    <td>Either TRUE or FALSE to indicate if alphanumerics should include units when they are
-                        available.
+                    <td class="em">criteria</td>
+                    <td>One or more criteria definitions for this Condition; required for all except Default Conditions.
+                        Entries here are in a JSON-like format, with each criteria definition within curly brackets { }.
+                        Criteria definitions include the following required properties, separated by colons:
+                        <ul>
+                            <li><strong>telemetry</strong>: the telemetry to be evaluated in this criterion. Enter
+                                either the full path to one of the telemetry parameters defined in setTelemetry, or
+                                enter &apos;any&apos; for any one of multiple parameters to be evaluated in this
+                                critierion, or &apos;all&apos; to evaluate values from all included parameters. For
+                                example, if three numeric parameters are included in the Condition Set and the operation
+                                is &apos;greaterThan&apos;, using &apos;any&apos; will cause the Condition to match if
+                                any one of the parameters exceeds the value defined in the &apos;input&apos; property,
+                                while using &apos;all&apos; requires every parameter to exceed the input value for the
+                                Condition to match.&nbsp;
+                            </li>
+                            <li><strong>operation</strong>: the evaluation to be performed on telemetry values within
+                                the Condition.
+                            </li>
+                            <li><strong>input</strong>: string or numbers (depending on the operation type) within
+                                square brackets [ ].
+                            </li>
+                            <li><strong>metadata</strong>: the name of telemetry parameter&apos;s field to be evaluated.
+                            </li>
+                        </ul>
                     </td>
-                    <td>TRUE</td>
+                    <td>{telemetry:/Spacesystem/Subsystem/someParameter1,operation:between,input:[1,6],metadata:value}
+                    </td>
                 </tr>
                 <tr>
-                    <td class='em'>alphaUsesCond</td>
-                    <td>Either TRUE or FALSE to indicate if the resulting alphanumeric should use a Condition Set and
-                        conditional styling. If TRUE, then at least one condition must be specified; see below for more.
-                    </td>
-                    <td>TRUE</td>
+                    <td class="em">output</td>
+                    <td>The value that this Condition will output if it matches. Can be TRUE, FALSE or a string.</td>
+                    <td></td>
                 </tr>
                 <tr>
-                    <td class='em'>condWidgetUsesOutputAsLabel</td>
-                    <td>Either TRUE or FALSE to indicate if generated Condition Widgets should use a generated Condition
-                        Set output string as a label. For example, a switch state widget could spec conditions that
-                        output &quot;ON&quot; and &quot;OFF&quot; and setting this to TRUE would cause the widget to
-                        display that text when the relevant conditions are matched. Settiing to FALSE will use the
-                        &quot;name&quot; property specified in that column.
+                    <td class="em">trigger</td>
+                    <td>Defines how multiple criteria in a Condition are evaluated against each other. Enter one of the
+                        following:
+                        <ul>
+                            <li><strong>any</strong>: the Condition will match if any one criteria matches.</li>
+                            <li><strong>all</strong>: all criteria in the Condition must match for the Condition to
+                                match.
+                            </li>
+                            <li><strong>not</strong>: this Condition will match if all of its criteria don&apos;t match.
+                            </li>
+                            <li><strong>xor</strong>: this Condition will match if only one of its criteria match.</li>
+                        </ul>
                     </td>
-                    <td>TRUE</td>
+                    <td></td>
                 </tr>
                 <tr>
-                    <td class='em'>alphaStyle</td>
-                    <td>Optional static styling to be applied to this data source, in whatever form, it manifests in a
-                        Display Layout. Condition and style arguments are denoted in a JSON-like string, enclosed in
-                        curly braces - see below for more info. Note that any Conditional Styling will override this
-                        value.
+                    <td class="em">isDefault</td>
+                    <td>Enter TRUE if the this is a default Condition. Default Conditions only need to be defined if a
+                        particular output value is desired.
                     </td>
-                    <td>{backgroundColor:#660000,color:#ffffff,border:1px solid #ff0000}</td>
+                    <td></td>
                 </tr>
                 <tr>
-                    <td class='em'>condDefault</td>
-                    <td>Properties and styles for the Default condition in the row's Condition Set. Condition and style
-                        arguments are denoted in a JSON-like string, enclosed in curly braces - see below for more
-                        info.a
+                    <td class="em">TEST</td>
+                    <td>Description with &apos;single&apos; quotes and a, comma.Also, no line break. Example with &quot;double&quot;
+                        quotes.
                     </td>
-                    <td>{output:--,border:1px solid #555555}</td>
-                </tr>
-                <tr>
-                    <td class='em'>cond1 - cond10</td>
-                    <td>Styles and evaluation properties for up to ten Conditions in a Condition Set. Headers must be
-                        present for the extent of defined Conditions. e.g. if 99 of 100 rows only use two condition
-                        definitions, but a single row uses three conditions, the CSV must include headers for &quot;cond1&quot;,
-                        &quot;cond2&quot; and &quot;cond3&quot;. Condition and style arguments are denoted in a
-                        JSON-like string, enclosed in curly braces - see below for more info.
-                    </td>
-                    <td>
-                        {output:ERROR,backgroundColor:#660000,color:#ffffff,border:1px solid
-                        #ff0000,operation:greaterThan,input:[100]}
-                    </td>
+                    <td>Example with &quot;double&quot; quotes</td>
                 </tr>
                 </tbody>
             </table>
-
             <h4 id="OpenMCTScriptingTool-ConditionOperation">Style and Condition Arguments</h4>
             <p>Style and condition arguments are defined in a JSON-like string format, in this form: <code>{
-                property:value,property:value,etc. }</code> Note that both property names and values don't use quotes
-                around them.</p>
-
+                property:value,property:value,etc. }</code> Note that both property names and values don&apos;t use
+                quotes around them.</p>
             <table>
                 <thead>
                 <tr>
-                    <th class='em'>Argument Property</th>
+                    <th class="em">Argument Property</th>
                     <th>Description</th>
                     <th>Example</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td class='em'>output</td>
+                    <td class="em">output</td>
                     <td>A string output by a matching condition in a Condition Set.</td>
-                    <td>{output:ERROR}<br/>
-                        {output:Nominal}
-                    </td>
+                    <td>{output:ERROR}<br>{output:Nominal}</td>
                 </tr>
                 <tr>
-                    <td class='em'>operation</td>
-                    <td>One entry from the set of available Operations; see "Condition Operation and Inputs" below for
+                    <td class="em">operation</td>
+                    <td>One entry from the set of available Operations; see &quot;Condition Operation and Inputs&quot;
+                        below for details.
+                    </td>
+                    <td>{operation:greaterThan}<br>{operation:textContains}</td>
+                </tr>
+                <tr>
+                    <td class="em">input</td>
+                    <td>Inputs appropriate for the chosen operation. Values here must be enclosed in square brackets [
+                        ], even when the input is a string. See &quot;Condition Operation and Inputs&quot; below for
                         details.
                     </td>
-                    <td>{operation:greaterThan}<br/>
-                        {operation:textContains}
-                    </td>
+                    <td>{input:[-10,10]}<br>{input:[foo]}</td>
                 </tr>
                 <tr>
-                    <td class='em'>input</td>
-                    <td>Inputs appropriate for the chosen operation. Values here must be enclosed in square brackets [
-                        ], even when the input is a string. See "Condition Operation and Inputs" below for details.
-                    </td>
-                    <td>{input:[-10,10]}<br/>
-                        {input:[foo]}
-                    </td>
-                </tr>
-                <tr>
-                    <td class='em'>backgroundColor</td>
+                    <td class="em">backgroundColor</td>
                     <td>A hex color value for the background of a stylable element, specified as a full hex value.</td>
                     <td>{backgroundColor:#660000}</td>
                 </tr>
                 <tr>
-                    <td class='em'>color</td>
+                    <td class="em">color</td>
                     <td>A hex color value for the text color of a stylable element, specified as a full hex value.</td>
                     <td>{color:#cccccc}</td>
                 </tr>
                 <tr>
-                    <td class='em'>border</td>
+                    <td class="em">border</td>
                     <td>A valid CSS property definition for a border of a stylable element. The color part must be
                         specified as a full hex value.
                     </td>
@@ -240,7 +232,6 @@
                 </tr>
                 </tbody>
             </table>
-
             <h4 id="condition-examples">Style and Condition Examples</h4>
             <table>
                 <thead>
@@ -281,16 +272,15 @@
                         #ffcc00,operation:greaterThan,input:[0.2]}
                     </td>
                 </tr>
-                <td>Enum</td>
-                <td>If the current enum parameter is "enabled", output the string &quot;Enabled&quot; with a green
-                    background and white foreground.
-                </td>
-                <td>{output:Enabled,backgroundColor:#368215,color:#ffffff,operation:enumValueIs,input:[1]}
-                </td>
+                <tr>
+                    <td>Enum</td>
+                    <td>If the current enum parameter is &quot;enabled&quot;, output the string &quot;Enabled&quot; with
+                        a green background and white foreground.
+                    </td>
+                    <td>{output:Enabled,backgroundColor:#368215,color:#ffffff,operation:enumValueIs,input:[1]}</td>
                 </tr>
                 </tbody>
             </table>
-
             <h4>Condition Operations and Inputs</h4>
             <table>
                 <thead>
@@ -308,9 +298,8 @@
                 <tr>
                     <td>All</td>
                     <td>Is Defined</td>
-                    <td>Matches if the telemetry endpoint is present and available from Yamcs, even when it doesn&#39;t
-                        have
-                        a value.
+                    <td>Matches if the telemetry endpoint is present and available from Yamcs, even when it doesn&apos;t
+                        have a value.
                     </td>
                     <td>isDefined, isUndefined</td>
                     <td>No comparison value</td>
@@ -334,9 +323,8 @@
                     <td>Single number</td>
                     <td>100</td>
                     <td>Note that Float and Integer telemetry types and comparisons are not compatible, i.e. a telem
-                        value
-                        of 0.000 will not match a comparison value of 0. Use Greater/less than comparisons in these
-                        cases.
+                        value of 0.000 will not match a comparison value of 0. Use Greater/less than comparisons in
+                        these cases.
                     </td>
                 </tr>
                 <tr>
@@ -355,7 +343,9 @@
                     <td>between, notBetween</td>
                     <td>Two numbers separated by a comma</td>
                     <td>-100,100</td>
-                    <td>Values match <em>between</em> the defined range ends, not inclusive of them. For example, a current value of -100 will not match a between condition of [-100,100].</td>
+                    <td>Values match <em>between</em> the defined range ends, not inclusive of them. For example, a
+                        current value of -100 will not match a between condition of [-100,100].
+                    </td>
                 </tr>
                 <tr>
                     <td>Enumeration</td>
@@ -395,11 +385,11 @@
                 </tr>
                 </tbody>
             </table>
-
             <h4>Escaping Text</h4>
             <p>The tool uses certain special characters (commas, tildes and backslashes) to separate arguments and
-                define telemetry paths - these characters can&#39;t be used in text labels without being escaped. To use
-                these characters for text, they must be escaped with a forward slash &quot;\&quot; as shown below.</p>
+                define telemetry paths - these characters can&apos;t be used in text labels without being escaped. To
+                use these characters for text, they must be escaped with a forward slash &quot;\&quot; as shown
+                below.</p>
             <table>
                 <thead>
                 <tr>
@@ -430,12 +420,10 @@
                 </tr>
                 </tbody>
             </table>
-
             <h3>Matrix Layout &quot;Layout&quot; CSV Input File</h3>
             <p>The matrix layout defines a grid with variable column widths and row heights.</p>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-layout.png"
-                    alt="Picture of CSV file"
-                    title="Matrix Layout telemetry CSV file"></p>
+                    alt="Picture of CSV file" title="Matrix Layout telemetry CSV file"></p>
             <ul>
                 <li>Row 1 defines the width of columns in the grid, in layout grid units.</li>
                 <li>Column A defines the height of each row in the grid, in layout grid units.</li>
@@ -446,8 +434,7 @@
                         </li>
                         <li>The last value is the amount of margin between columns and rows, in grid units.</li>
                         <li>For example, &quot;1, 1, 4&quot; will create a Display Layout with settings of grid X = 1,
-                            grid
-                            Y = 1, and 4 &quot;grid units&quot; of margin between columns and rows.
+                            grid Y = 1, and 4 &quot;grid units&quot; of margin between columns and rows.
                         </li>
                         <li>If values are not provided in A1, the tool will use the default settings of 1, 1, 4.</li>
                     </ul>
@@ -471,8 +458,7 @@
             <h4 id="using-optional-flags-in-the-layout-csv-file">Using Optional Flags in the Layout CSV File</h4>
             <p>Both text and telemetry parameters accept certain &quot;flag&quot; arguments that allow additional
                 capabilities and rendering options. More than one flag can be used at a time, separated with commas.
-                Flags
-                include:</p>
+                Flags include:</p>
             <table>
                 <thead>
                 <tr>
@@ -492,7 +478,7 @@
                     <td>YES</td>
                     <td>SYSTEMS,<strong>_span(3)</strong></td>
                     <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of columns,
-                        starting at the element&#39;s current column.
+                        starting at the element&apos;s current column.
                     </td>
                 </tr>
                 <tr>
@@ -501,8 +487,8 @@
                     <td>YES</td>
                     <td>YES</td>
                     <td>SYSTEMS,<strong>_rspan(2)</strong></td>
-                    <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of rows,
-                        starting at the element&#39;s current row.
+                    <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of rows, starting
+                        at the element&apos;s current row.
                     </td>
                 </tr>
                 <tr>
@@ -512,8 +498,8 @@
                     <td></td>
                     <td>/SpacecraftSystem/Subsystem/aggregate.parameterName,<strong>_cw</strong></td>
                     <td>Renders a Condition Widget for this telemetry parameter. If this parameter is set to use
-                        Conditions
-                        in the telemetry CSV input file, then a Condition Set will be created using those parameters.
+                        Conditions in the telemetry CSV input file, then a Condition Set will be created using those
+                        parameters.
                     </td>
                 </tr>
                 <tr>
@@ -535,9 +521,8 @@
                     <td>BUTTON LABEL,<strong>_cw,_url(<a href="https://someurl.com">https://someurl.com</a>)</strong>
                     </td>
                     <td>Both Condition Widgets and Hyperlink buttons can be provided a _url() parameter; this is
-                        required for
-                        Hyperlinks and optional for Condition Widgets. Note that Open MCT only accepts valid nasa.gov
-                        URLs.
+                        required for Hyperlinks and optional for Condition Widgets. Note that Open MCT only accepts
+                        valid nasa.gov URLs.
                     </td>
                 </tr>
                 <tr>
@@ -555,12 +540,10 @@
             <h3>Source</h3>
             <ul>
                 <li>Telemetry CSV: <a href="documentation/files/matrix-layout-input-telemetry-example-v4.0.csv">Matrix
-                    Layout
-                    inputs Telemetry CSV example</a></li>
+                    Layout inputs Telemetry CSV example</a></li>
                 <li>Matrix Layout CSV: <a href="documentation/files/matrix-layout-input-layout-example-v4.0.csv">Matrix
                     Layout inputs Layout CSV example</a></li>
             </ul>
-
             <h2 class="feature-hdr" id="CondtionalGraphics">Conditional Graphics</h2>
             <p>Generates one or more &quot;image view&quot; objects within a Display Layout. Image views can be
                 conditionally styled to show a given image source when a condition in a Condition Set is matched. This
@@ -590,8 +573,7 @@
                 </li>
             </ul>
             <h3>Interface</h3>
-            <p><img class="screenshot"
-                    src="documentation/images/openmct-scripting-interface-condition-graphics.png"
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-condition-graphics.png"
                     alt="Picture of Conditional Graphics web interface" title="Conditional Graphics Interface"></p>
             <ul>
                 <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
@@ -599,81 +581,65 @@
                     Layouts.
                     <ul>
                         <li>Settings here are per pixel and define the scale of item widths and heights specified
-                            elsewhere.
-                            For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items set to 200
-                            width
-                            and 14 high would then be 400 pixels wide by 28 pixels high.
+                            elsewhere. For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items
+                            set to 200 width and 14 high would then be 400 pixels wide by 28 pixels high.
                         </li>
                         <li>Using smaller numbers here mean that items can be more tightly packed. Using a grid of 1,1
-                            would
-                            make the grid equivalent to pixels.
+                            would make the grid equivalent to pixels.
                         </li>
                     </ul>
                 </li>
                 <li><strong>Image size in px:</strong> the pixel size (not grid units) desired for the resulting image
-                    view.
-                    All generated image views will be the same size in the Display Layout.
+                    view. All generated image views will be the same size in the Display Layout.
                 </li>
             </ul>
             <h3>Input CSV file</h3>
             <p>Example input using telemetry paths as a data source:</p>
-            <p><img class="screenshot"
-                    src="documentation/images/openmct-scripting-csv-condition-graphics.png"
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-csv-condition-graphics.png"
                     alt="Picture of Conditional Graphics web interface" title="Conditional Graphics Interface"></p>
-
-
             <table>
                 <thead>
                 <tr>
-                    <th class='em'>Column</th>
+                    <th class="em">Column</th>
                     <th>Description</th>
                     <th>Example</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td class='em'>imageViewName</td>
-                    <td>The name of the image view object that will be created within the
-                        layout.
-
+                    <td class="em">imageViewName</td>
+                    <td>The name of the image view object that will be created within the layout.
                         <ul>
                             <li>Names must be unique in the sheet. Entering a different name creates a separate image
-                                with
-                                its
-                                own set of conditional styling, if set.
+                                with its own set of conditional styling, if set.
                             </li>
                             <li>To apply a set of conditions to a single image view, use the same name in each row.</li>
                             <li>Image views are always the same dimensions, set in &quot;Image size in px&quot; in the
-                                web
-                                app
-                                interface.
+                                web app interface.
                             </li>
                         </ul>
                     </td>
                     <td></td>
                 </tr>
                 <tr>
-                    <td class='em'>dataSource</td>
-                    <td>A valid path to a telemetry source, a definition for a Sine Wave
-                        Generator
-                        or a name reference to a generator specced in a previous row. See notes below on Sine Wave
-                        Generators.
+                    <td class="em">dataSource</td>
+                    <td>A valid path to a telemetry source, a definition for a Sine Wave Generator or a name reference
+                        to a generator specced in a previous row. See notes below on Sine Wave Generators.
                     </td>
-                    <td>/Spacesystem/Subsystem/parameter_name.aggregate_name<br/>
-                        {"Scripted SWG": {"metadata": "sin", "period": 20, "amplitude": 180, "offset": 180,
-                        "dataRateInHz": 5,"randomness": 0}}
+                    <td>/Spacesystem/Subsystem/parameter_name.aggregate_name<br>{&quot;Scripted SWG&quot;: {&quot;metadata&quot;:
+                        &quot;sin&quot;, &quot;period&quot;: 20, &quot;amplitude&quot;: 180, &quot;offset&quot;: 180,
+                        &quot;dataRateInHz&quot;: 5,&quot;randomness&quot;: 0}}
                     </td>
                 </tr>
                 <tr>
-                    <td class='em'>isDefault</td>
-                    <td>Optional boolean if the condition for this row should be a default. If
-                        no
-                        default is specified, the Condition Set will create an unnamed default condition.
+                    <td class="em">isDefault</td>
+                    <td>Optional boolean if the condition for this row should be a default. If no default is specified,
+                        the Condition Set will create an unnamed default condition.
                     </td>
                     <td>TRUE</td>
                 </tr>
                 <tr>
-                    <td class='em'>operation</td>
+                    <td class="em">operation</td>
                     <td>The condition operation to be performed for this row. See <a
                             href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions in the Telemetry CSV</a>
                         above.
@@ -681,44 +647,35 @@
                     <td>TRUE</td>
                 </tr>
                 <tr>
-                    <td class='em'>input</td>
-                    <td>Nothing, string, single number, or two numbers to be used as the condition
-                        operation evaluators. See <a href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions
-                            in
-                            the
-                            Telemetry CSV</a> above.
+                    <td class="em">input</td>
+                    <td>Nothing, string, single number, or two numbers to be used as the condition operation evaluators.
+                        See <a href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions in the Telemetry
+                            CSV</a> above.
                     </td>
                     <td>0,15</td>
                 </tr>
                 <tr>
-                    <td class='em'>name</td>
-                    <td>The name of the condition that will be created for this row.
-                    </td>
+                    <td class="em">name</td>
+                    <td>The name of the condition that will be created for this row.</td>
                     <td>TRUE</td>
                 </tr>
                 <tr>
-                    <td class='em'>output</td>
-                    <td>The output string of the condition that will be created for this row.
-                    </td>
+                    <td class="em">output</td>
+                    <td>The output string of the condition that will be created for this row.</td>
                     <td></td>
                 </tr>
                 <tr>
-                    <td class='em'>bgColor, fgColor, border</td>
-                    <td>Style values for background color, text color and border style respectively.
-                    </td>
-                    <td>#555555<br/>
-                        1px solid #ff0000
-                    </td>
+                    <td class="em">bgColor, fgColor, border</td>
+                    <td>Style values for background color, text color and border style respectively.</td>
+                    <td>#555555<br>1px solid #ff0000</td>
                 </tr>
                 <tr>
-                    <td class='em'>imageUrl</td>
-                    <td>A full path to an image source file.
-                    </td>
+                    <td class="em">imageUrl</td>
+                    <td>A full path to an image source file.</td>
                     <td>https://www.example.server/images/imagefilename.jpg</td>
                 </tr>
                 </tbody>
             </table>
-
             <h3>Source</h3>
             <ul>
                 <li>Example using dictionary telemetry parameters: <a
@@ -728,7 +685,6 @@
                         href="documentation/files/conditional-graphics-example-sun-angle-swg.csv">Sun Angle 3 SWG
                     input.csv</a></li>
             </ul>
-
             <h2 class="feature-hdr" id="ProcedureDisplays">Procedure Displays</h2>
             <h3>What It Does</h3>
             <ul>
@@ -742,7 +698,7 @@
                         <li>Widths of alphanumerics can be directly set; the width of labels is automatically
                             calculated.
                         </li>
-                        <li><strong>IMPORTANT NOTE</strong>: only fully qualified paths (e.g. &#39;/SpacecraftSystem/Subsystem/etc.&#39;)
+                        <li><strong>IMPORTANT NOTE</strong>: only fully qualified paths (e.g. &apos;/SpacecraftSystem/Subsystem/etc.&apos;)
                             in procedures can be found and extracted; references without in descriptive text may not be
                             found.
                         </li>
@@ -753,8 +709,7 @@
                 <li>Folders that contain the above elements.</li>
             </ul>
             <h3>Interface</h3>
-            <p><img class="screenshot"
-                    src="documentation/images/openmct-scripting-interface-from-procedures.png"
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-from-procedures.png"
                     alt="Picture of Procedure Displays web interface" title="Procedure Displays Interface"></p>
             <ul>
                 <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
@@ -762,14 +717,11 @@
                     Layouts.
                     <ul>
                         <li>Settings here are per pixel and define the scale of item widths and heights specified
-                            elsewhere.
-                            For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items set to 200
-                            width
-                            and 14 high would then be 400 pixels wide by 28 pixels high.
+                            elsewhere. For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items
+                            set to 200 width and 14 high would then be 400 pixels wide by 28 pixels high.
                         </li>
                         <li>Using smaller numbers here mean that items can be more tightly packed. Using a grid of 1,1
-                            would
-                            make the grid equivalent to pixels.
+                            would make the grid equivalent to pixels.
                         </li>
                     </ul>
                 </li>
@@ -791,20 +743,17 @@
                     Stacked Plots and Flexible Layouts.
                     <ul>
                         <li>Overlay Plots of the same name will be created once, and shared amongst multiple Stacked
-                            Plots
-                            and Flexible Layouts.
+                            Plots and Flexible Layouts.
                         </li>
                         <li>Telemetry parameters can specify some properties like the display of limit lines, marker
-                            size
-                            and shape, and line interpolation style.
+                            size and shape, and line interpolation style.
                         </li>
                     </ul>
                 </li>
                 <li>Folders that contain the above elements.</li>
             </ul>
             <h3>Interface</h3>
-            <p><img class="screenshot"
-                    src="documentation/images/openmct-scripting-interface-stacked-views.png"
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-stacked-views.png"
                     alt="Picture of Stacked Views web interface" title="Stacked Views Interface"></p>
             <ul>
                 <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
@@ -820,66 +769,54 @@
                 <li>Takes in multiple source files and creates CSV file outputs that list parameters, their usage and
                     optionally if they validated against a Yamcs database.
                 </li>
-                <li>Allows validation of extracted parameters if a valid Yamcs web api server connection is
-                    available.
+                <li>Allows validation of extracted parameters if a valid Yamcs web api server connection is available.
                 </li>
-                <li><strong>IMPORTANT NOTE</strong>: only fully qualified paths (e.g. &#39;/SpacecraftSystem/Subsystem/etc.&#39;)
-                    in PRIDE procedure files can be found and extracted; references without in descriptive text
-                    may
-                    not be found.
+                <li><strong>IMPORTANT NOTE</strong>: only fully qualified paths (e.g. &apos;/SpacecraftSystem/Subsystem/etc.&apos;)
+                    in PRIDE procedure files can be found and extracted; references without in descriptive text may not
+                    be found.
                 </li>
             </ul>
             <h3>Interface</h3>
-            <p><img class="screenshot"
-                    src="documentation/images/openmct-scripting-interface-telem-extract.png"
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-telem-extract.png"
                     alt="Picture of Extract Telemetry web interface" title="Extract Telemetry Interface"></p>
             <ul>
-                <li><strong>Yamcs URL</strong> allows the entry of a valid "Get Parameter"
-                    <a target="_blank"
-                       href="https://docs.yamcs.org/yamcs-http-api/mdb/get-parameter/">Yamcs
-                        web api</a> URL to allow validation of extracted telemetry parameters against the mission
-                    database. When a valid URL is entered and a good connection to a Yamcs is available, the
-                    indicator to the right of the input will display "Connected", and the "Validate Telemetry"
-                    button will be enabled once telemetry has been extracted. A Yamcs connection is not required in
-                    order to extract telemetry, only to validate it.
+                <li><strong>Yamcs URL</strong> allows the entry of a valid &quot;Get Parameter&quot; <a target="_blank"
+                                                                                                        href="https://docs.yamcs.org/yamcs-http-api/mdb/get-parameter/">Yamcs
+                    web api</a> URL to allow validation of extracted telemetry parameters against the mission database.
+                    When a valid URL is entered and a good connection to a Yamcs is available, the indicator to the
+                    right of the input will display &quot;Connected&quot;, and the &quot;Validate Telemetry&quot; button
+                    will be enabled once telemetry has been extracted. A Yamcs connection is not required in order to
+                    extract telemetry, only to validate it.
                 </li>
                 <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
                 <li><strong>Input File Type</strong>: choose either GCS Python scripts (.py) or PRIDE procedure (.prl).
                 </li>
                 <li><strong>Choose Files</strong> allows you to select one or more of .prl or .py files to use.</li>
-                <li><strong>Download Telemetry CSV</strong> downloads the resulting output CSV.
-                </li>
+                <li><strong>Download Telemetry CSV</strong> downloads the resulting output CSV.</li>
                 <li><strong>Validate Telemetry</strong> If a valid Yamcs URL is entered and the connection is good, this
                     button will enable after files have been selected. Click again to validate extracted parameters.
                 </li>
             </ul>
-
             <h2 class="feature-hdr" id="FindReplace">Find / Replace</h2>
             <h3>What It Does</h3>
             <ul>
                 <li>Allows bulk find and replace of strings in any valid text file, such as .txt, .json, .js, .py, etc.
-                    Takes in a single source file and a CVS
-                    table file of search / replace pairs.
+                    Takes in a single source file and a CVS table file of search / replace pairs.
                 </li>
             </ul>
             <h3>Interface</h3>
-            <p><img class="screenshot"
-                    src="documentation/images/openmct-scripting-interface-find-replace.png"
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-find-replace.png"
                     alt="Picture of Find / Replace web interface" title="Find / Replace Interface"></p>
             <ul>
-                <li><strong>Source file</strong> uploads a source text file.
-                </li>
+                <li><strong>Source file</strong> uploads a source text file.</li>
                 <li><strong>Find/Replace CSV</strong> uploads a two-column CSV file of values to search for and replace
                     in the source file.
                 </li>
-                <li><strong>Download</strong> the resulting replaced text as a file.
-                </li>
+                <li><strong>Download</strong> the resulting replaced text as a file.</li>
             </ul>
-
             <h3>Find / Replace CSV input file</h3>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-find-replace-csv.png"
-                    alt="Picture of CSV file"
-                    title="Find / Replace CSV file"></p>
+                    alt="Picture of CSV file" title="Find / Replace CSV file"></p>
             <ul>
                 <li>The file must have a header row, but the names of the columns are not important.</li>
                 <li>Values in the first column will be searched for in the source file and replaced with those in the
@@ -890,10 +827,9 @@
         </div>
     </div>
 </div>
-
 <script src="js/common.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/main.js"></script>
 </body>
-</html>
 
+</html>
