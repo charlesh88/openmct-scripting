@@ -42,25 +42,6 @@ function uploadFiles(files, fileType) {
     });
 }
 
-function uploadMatrixFile(files, fileType) {
-    let readers = [];
-    let filenames = [];
-
-    // Abort if there were no files selected
-    if (!files.length) return;
-
-    // Store promises in array
-    for (let i = 0; i < files.length; i++) {
-        filenames.push(files[i].name);
-        readers.push(readFileAsText(files[i]));
-    }
-
-    // Trigger Promises
-    Promise.all(readers).then((values) => {
-        createOpenMCTMatrixLayoutJSONfromCSV(values[0]);
-    });
-}
-
 function csvToArray(str, delimiter = ',') {
     // Break the csv into rows
     const arrLines = str.split(/\r?\n/).filter((row) => row.length > 0);
@@ -165,38 +146,12 @@ function outputTable(rowArray = [], startTable = false, endTable = false) {
 
     if (rowArray.length > 0) {
         let rowStr = '<table><tr><td>Some text in a td</td><td>Some text in a td</td><td>Some text in a td</td></tr></table>';
-
-        // for (let i = 0; i < rowArray.length; i++) {
-        //     rowStr = rowStr.concat('<td>'.concat(rowArray[i]).concat('</td>'));
-        // }
-        // rowStr = rowStr.concat('</tr>');
         outputMsgAdd(rowStr);
     }
 
     if (endTable) {
         outputMsgAdd('</table>');
     }
-}
-
-function htmlTableFromArray(arr) {
-    // arr is a multidimensional grid
-    let tableStr = '<table class="c-msg__table">';
-    for (let i = 0; i < arr.length; i++) {
-        let rowStr = (i === 0) ? '<thead><tr>' : '<tr>';
-        const row = arr[i];
-        for (let j = 0; j < row.length; j++) {
-            rowStr = rowStr
-                .concat('<td>')
-                .concat(row[j])
-                .concat('</td>');
-        }
-        rowStr = rowStr.concat((i === 0) ? '</tr></thead>' : '</tr>');
-        tableStr = tableStr.concat(rowStr);
-    }
-
-    tableStr = tableStr.concat('</table>');
-
-    return tableStr;
 }
 
 function htmlGridFromArray(arr) {

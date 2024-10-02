@@ -35,10 +35,17 @@ function isGUID(key) {
     return guidRegex.test(key);
 }
 
+function quoteJsonProperties(jsonStr) {
+    // Use a regular expression to match property names (words before colons) and wrap them in double quotes
+    return jsonStr.replace(/([a-zA-Z0-9_]+)\s*:/g, '"$1":')
+        .replace(/(#\w+)/g, '"$1"')
+        .replaceAll("'",'"');
+}
+
 function convertStringToJSON(inputString) {
     const ESC_COMMA = ESC_CHARS.comma;
     // Remove whitespace and line breaks from the input string
-    // inputString = inputString.replace(/\s+/g, '');
+    inputString = inputString.replace(/\s+/g, '');
 
     // Esc commas within square brackets
     inputString = inputString.replace(/\[(.*?)\]/g, function (match, p1) {
@@ -77,7 +84,6 @@ function convertStringToJSON(inputString) {
         if (value === "true" || value === "false") {
             value = value === "true";
         } else if (!isNaN(value)) {
-            console.log("value 3", value, parseFloat(value), isNaN(value));
             value = parseFloat(value);
         } else if (
             typeof value === "string" &&
@@ -139,9 +145,35 @@ function replaceCommasInBrackets(inStr, replaceChar) {
 
     // Replace the commas within the curly brackets
     return inStr.replace(regex, (match, p1) => {
-        // Replace commas with dollar signs within the match
+        // Replace commas with replaceChars within the match
         return '{' + p1.replace(/,/g, replaceChar) + '}';
     });
+}
+
+function replaceBetweenChars(str, targetChar, replacementChar, startChar = '[', endChar = ']') {
+    // ChatGPT 9/27/24
+    let inside = false;
+    let result = '';
+
+    for (let i = 0; i < str.length; i++) {
+        let currentChar = str[i];
+
+        if (currentChar === startChar) {
+            inside = true;
+        }
+
+        if (inside && currentChar === targetChar) {
+            result += replacementChar;
+        } else {
+            result += currentChar;
+        }
+
+        if (currentChar === endChar) {
+            inside = false;
+        }
+    }
+
+    return result;
 }
 
 toggleHiddenClass = function (arrIDs) {
@@ -263,4 +295,14 @@ function searchArrayOfObjects(array, nestedPropertyPath, searchValue) {
         }
     }
     return null;
+}
+
+function splitStrOnFirstSep(str, sep) {
+    if (!str.includes(sep)) { return [str]; }
+    const esc = '$$$';
+    const sepIndex = str.indexOf(sep);
+    const p = str.substring(0, sepIndex);
+    const v = str.substring(sepIndex + 1);
+    // console.log('p,v',[p,v]);
+    return [p,v];
 }
