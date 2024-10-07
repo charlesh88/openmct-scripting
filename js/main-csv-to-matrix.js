@@ -280,35 +280,18 @@ function createOpenMCTMatrixLayouts(filenames, values) {
             for (let c = 1; c < row.length; c++) {
                 // Process each cell in the matrix
                 const matrixCellStr = row[c].trim();
+                const colW = parseInt(arrColWidths[c]);
                 if (matrixCellStr.length > 0) {
-                    // console.log('matrixCellStr',matrixCellStr)
                     const matrixCellObj = unpackMatrixCellStrToObj(matrixCellStr);
-                    const colW = parseInt(arrColWidths[c]);
                     console.log('matrixCellObj', matrixCellObj);
-                    const cellValue = Object.keys(matrixCellObj)[0];
+
                     if (!matrixCellObj.type) {
-                        if (cellValue.startsWith('/')) {
+                        if (matrixCellObj.name.startsWith('/')) {
                             matrixCellObj.type = 'alpha';
                         } else {
                             matrixCellObj.type = 'text';
                         }
                     }
-                    // console.log('Object.keys(matrixCellObj)', Object.keys(matrixCellObj)[0]);
-                    // const cv = Object.keys(matrixCellObj[0]);
-                    // Identify object types based on matrixCellObj.cellValue
-                    // Will be undefined for empty cells
-
-/*                    if (cv && cv.length > 0) {
-                        // Telemetry
-                        if (cv.startsWith('/')) {
-                            matrixCellObj.telemetryPath = cv;
-                            if (!matrixCellObj.type) {
-                                matrixCellObj.type = 'alpha';
-                            }
-                        }
-                    }
-
-                    console.log('matrixCellObj', matrixCellObj);
 
 
                     let itemW = colW;
@@ -330,159 +313,146 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                                 itemH += parseInt(arrColHeights[i]) + itemMargin;
                             }
                         }
-                    }*/
+                    }
 
+                    switch (matrixCellObj.type) {
+                        case 'alpha':
+                            // Create as an alphanumeric
+                            const argsTelem = {
+                                itemH: itemH,
+                                itemW: itemW,
+                                x: curX,
+                                y: curY,
+                                conditionStyles: matrixCellObj.conditionStyles? matrixCellObj.conditionStyles : undefined,
+                                displayMode: matrixCellObj.options.displayMode? matrixCellObj.options.displayMode : 'value',
+                                format: matrixCellObj.options.format? matrixCellObj.options.format : undefined,
+                                ident: matrixCellObj.name.replaceAll('/','~'),
+                                showUnits: matrixCellObj.options.showUnits? matrixCellObj.options.showUnits : true,
+                                style: matrixCellObj.style? matrixCellObj.style : undefined,
+                                value: matrixCellObj.options.value? matrixCellObj.options.value : 'value'
+                            };
+
+                            dlItem = dlMatrix.addTelemetryView(argsTelem);
+                            dlMatrix.addToComposition(argsTelem.ident, getNamespace(argsTelem.ident));
+
+                            // Add Conditional Styling if present
+                            if (argsTelem.conditionStyles) {
+                                dlMatrix.addCondStylesForLayoutObj(dlItem.id, argsTelem);
+                            }
+
+                            outputMsgArr.push([
+                                dlItem.identifier.key,
+                                'Alphanumeric'
+                            ]);
+                            break;
+                        case 'condition-widget':
+                            // Create as a Condition Widget
+
+                            const argsCW = {
+                                conditionStyles: matrixCellObj.conditionStyles? matrixCellObj.conditionStyles : undefined,
+                                name: restoreEscChars(matrixCellObj.name),
+                                style: matrixCellObj.style? matrixCellObj.style : undefined,
+                                url: matrixCellObj.options.url? matrixCellObj.options.url : undefined,
+                                useConditionSetOutputAsLabel: matrixCellObj.options.useCondOutput? matrixCellObj.options.useCondOutput : false
+                            };
+
+                            // Create a folder for Condition Widgets if it doesn't exist
+                            if (!folderConditionWidgets) {
+                                folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
+                                addDomainObject(folderConditionWidgets, FOLDER_ROOT);
+                            }
+
+                            let cw = new ConditionWidget(argsCW);
+                            addDomainObject(cw, folderConditionWidgets);
+
+                            // Add Condition Widget to the layout
+                            dlMatrix.addSubObjectViewInPlace({
+                                itemW: itemW,
+                                itemH: itemH,
+                                x: curX,
+                                y: curY,
+                                ident: cw.identifier.key,
+                                hasFrame: false
+                            });
+
+                            dlMatrix.addToComposition(cw.identifier.key);
+                            outputMsgArr.push([
+                                cw.label,
+                                'Condition Widget'
+                            ]);
+                            break;
+                        case 'link':
+                            // Create as a Link
+                            // TODO: MAKE THIS WORK
+                            const text = restoreEscChars(matrixCellObj.cellValue);
+                            let linkBtn = new HyperLink(text, {
+                                format: 'button',
+                                target: '_blank',
+                                url: matrixCellObj.url,
+                                label: text
+                            });
+
+                            // Create a folder to hold Hyperlinks and add it to the ROOT folder
+                            if (!folderHyperlinks) {
+                                folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
+                                ROOT.addJson(folderHyperlinks);
+                                FOLDER_ROOT.addToComposition(folderHyperlinks.identifier.key);
+                                folderHyperlinks.setLocation(FOLDER_ROOT);
+                            }
+
+                            ROOT.addJson(linkBtn);
+                            folderHyperlinks.addToComposition(linkBtn.identifier.key);
+                            linkBtn.setLocation(folderHyperlinks);
+
+                            // Add Hyperlink to the layout
+                            dlMatrix.addSubObjectViewInPlace({
+                                itemW: itemW,
+                                itemH: itemH,
+                                x: curX,
+                                y: curY,
+                                ident: linkBtn.identifier.key,
+                                hasFrame: false
+                            });
+
+                            dlMatrix.addToComposition(linkBtn.identifier.key);
+                            outputMsgArr.push([
+                                linkBtn.label,
+                                'Link'
+                            ]);
+                            break;
+                        default:
+                            // Create as a text object
+                            dlItem = dlMatrix.addTextView({
+                                itemW: itemW,
+                                itemH: itemH,
+                                style: matrixCellObj.style,
+                                text: restoreEscChars(matrixCellObj.name),
+                                x: curX,
+                                y: curY
+                            });
+
+                            // Add Conditional Styling if present
+                            dlMatrix.addCondStylesForLayoutObj(dlItem.id, matrixCellObj);
+
+                            outputMsgArr.push([
+                                dlItem.text,
+                                'Text'
+                            ]);
+                    }
                 }
 
-
-                /*                if (matrixCellObj.cellValue.length > 0) {
-                                    // console.log('----> matrixCellObj', matrixCellObj.cellValue, matrixCellObj);
-
-                                    switch (matrixCellObj.type) {
-                                        case 'telemetry':
-                                            // Create as an alphanumeric
-                                            console.log('alpha matrixCellObj', matrixCellObj);
-                                            dlItem = dlMatrix.addTelemetryView({
-                                                display: matrixCellObj.display ? JSON.parse(matrixCellObj.display) : undefined,
-                                                // alphaFormat: matrixCellObj.alphaFormat,
-                                                // alphaShowsUnit: matrixCellObj.showUnits,
-                                                ident: matrixCellObj.telemetryPath,
-                                                itemH: itemH,
-                                                itemW: itemW,
-                                                style: matrixCellObj.style,
-                                                x: curX,
-                                                y: curY
-                                            });
-
-                                            dlMatrix.addToComposition(matrixCellObj.cellValue, getNamespace(matrixCellObj.cellValue));
-
-                                            // Add Conditional Styling if present
-                                            dlMatrix.addCondStylesForLayoutObj(dlItem.id, matrixCellObj);
-
-                                            outputMsgArr.push([
-                                                dlItem.identifier.key,
-                                                'Alphanumeric'
-                                            ]);
-                                            break;
-                                        case 'condition-widget':
-                                            // Create as a Condition Widget
-
-                                            // Create a folder for Condition Widgets if it doesn't exist
-                                            if (!folderConditionWidgets) {
-                                                folderConditionWidgets = new Obj('Condition Widgets', 'folder', true);
-                                                addDomainObject(folderConditionWidgets, FOLDER_ROOT);
-                                            }
-
-                                            let cw = new ConditionWidget(matrixCellObj);
-                                            addDomainObject(cw, folderConditionWidgets);
-
-                                            // Add Condition Widget to the layout
-                                            dlMatrix.addSubObjectViewInPlace({
-                                                itemW: itemW,
-                                                itemH: itemH,
-                                                x: curX,
-                                                y: curY,
-                                                ident: cw.identifier.key,
-                                                hasFrame: false
-                                            });
-
-                                            dlMatrix.addToComposition(cw.identifier.key);
-                                            outputMsgArr.push([
-                                                cw.label,
-                                                'Condition Widget'
-                                            ]);
-                                            break;
-                                        case 'link':
-                                            // Create as a Link
-                                            // TODO: MAKE THIS WORK
-                                            const text = restoreEscChars(matrixCellObj.cellValue);
-                                            let linkBtn = new HyperLink(text, {
-                                                format: 'button',
-                                                target: '_blank',
-                                                url: matrixCellObj.url,
-                                                label: text
-                                            });
-
-                                            // Create a folder to hold Hyperlinks and add it to the ROOT folder
-                                            if (!folderHyperlinks) {
-                                                folderHyperlinks = new Obj('Hyperlinks', 'folder', true);
-                                                ROOT.addJson(folderHyperlinks);
-                                                FOLDER_ROOT.addToComposition(folderHyperlinks.identifier.key);
-                                                folderHyperlinks.setLocation(FOLDER_ROOT);
-                                            }
-
-                                            ROOT.addJson(linkBtn);
-                                            folderHyperlinks.addToComposition(linkBtn.identifier.key);
-                                            linkBtn.setLocation(folderHyperlinks);
-
-                                            // Add Hyperlink to the layout
-                                            dlMatrix.addSubObjectViewInPlace({
-                                                itemW: itemW,
-                                                itemH: itemH,
-                                                x: curX,
-                                                y: curY,
-                                                ident: linkBtn.identifier.key,
-                                                hasFrame: false
-                                            });
-
-                                            dlMatrix.addToComposition(linkBtn.identifier.key);
-                                            outputMsgArr.push([
-                                                linkBtn.label,
-                                                'Link'
-                                            ]);
-                                            break;
-                                        default:
-                                            // Create as a text object
-                                            dlItem = dlMatrix.addTextView({
-                                                itemW: itemW,
-                                                itemH: itemH,
-                                                style: matrixCellObj.style,
-                                                text: restoreEscChars(matrixCellObj.cellValue),
-                                                x: curX,
-                                                y: curY
-                                            });
-
-                                            // Add Conditional Styling if present
-                                            dlMatrix.addCondStylesForLayoutObj(dlItem.id, matrixCellObj);
-
-                                            outputMsgArr.push([
-                                                dlItem.text,
-                                                'Text'
-                                            ]);
-                                    }
-                                }*/
-
-                // curX += colW + itemMargin;
+                curX += colW + itemMargin;
             }
 
-            // curY += rowH + itemMargin;
+            curY += rowH + itemMargin;
         }
 
-        // outputMsg(htmlGridFromArray(outputMsgArr));
+        outputMsg(htmlGridFromArray(outputMsgArr));
     }
 
-    // outputJSON();
-    // outputMsg('Matrix layouts generated');
+    outputJSON();
+    outputMsg('Matrix layouts generated');
     config = CONFIG_MATRIX;
-}
-
-function unpackMatrixJsonCell(strCell) {
-    // DON'T USE THIS
-    // Expects a valid JSON string
-    if (strCell.length > 0) {
-        try {
-            const quotedStr = "{"
-                .concat(quoteJsonProperties(strCell))
-                .concat("}");
-
-            console.log('unpackMatrixJsonCell', quotedStr);
-            return JSON.parse(quotedStr);
-        } catch (er) {
-            console.error(er);
-        }
-    }
-
-    return undefined;
 }
 
 // chatGPT 10/1/24
@@ -552,117 +522,25 @@ function unpackMatrixCellStrToObj(str) {
         return pairs;
     }
 
-    // Main logic, starts parsing as an object
-    return parseObject(str);
-}
+    if (str.includes(':')) {
+        // Like 'Text Static:{style:{backgroundColor:#660000,color:#ffffff}}'
+        const firstColonIndex = str.indexOf(':');
+        const name = str.substring(0, firstColonIndex);
+        const remainder = str.substring(firstColonIndex + 2, str.length - 1);
 
-/*function unpackCell(strCell) {
-    function getCellArgValue(arr, argToFind) {
-        // argToFind like 'span', 'rspan', etc.
-        const arrIndex = findIndexInArray(arr, argToFind, false);
-        if (arrIndex > -1) {
-            const str = getStrBetween(
-                arr[arrIndex],
-                '_'.concat(argToFind).concat('('), ')'
-            );
-            // console.log('getCellArgValue', argToFind, 'str:',str);
+        console.log('parseObject has colon',str, name, remainder);
 
-            return str;
+        const returnObj = parseObject(remainder);
+        returnObj.name = name;
+        return returnObj;
+    } else {
+        console.log('parseObject no colon',str);
+        return {
+            'name': str,
+            'type': 'text'
         }
-
-        return undefined;
     }
-
-    function unpackCellArgObj(objStr) {
-        // Will be like {setName:CS1},{condName:ImgID_200,backgroundColor:#368215,color:#ffffff},{condName:Default,border:1px solid #555555}
-        // Returns an array of objects
-        return replaceCommasInBrackets(objStr, ESC_CHARS.comma)
-            .split(',')
-            .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
-    }
-
-    const matrixCell = {
-        'alphaFormat': undefined,
-        'cw': undefined,
-        'display': undefined,
-        'name': undefined,
-        'styleCondSet': undefined,
-        'styleConds': undefined,
-        'rspan': undefined,
-        'showUnits': undefined,
-        'span': undefined,
-        'style': undefined,
-        'telemetryPath': undefined,
-        'useCondOutAsLabel': undefined,
-        'type': 'text',
-        'url': undefined
-    }
-
-    // Look for `,_` as a pattern to use for split
-    const a = strCell.split(',_');
-    // The cell's 'value' will always be the first part of the array
-    matrixCell.cellValue = a.shift();
-    // Restore underbar character that was removed by split
-    const arr = a.map(val => {
-        return '_'.concat(val)
-    });
-
-    if (matrixCell.cellValue.startsWith('/')) {
-        matrixCell.telemetryPath = matrixCell.cellValue
-        // matrixCell.alphaFormat = getCellArgValue(arr, 'alphaFormat');
-        // if (arr.includes('_showUnits')) {
-        //     matrixCell.showUnits = true;
-        // }
-        matrixCell.type = 'alpha';
-    }
-
-    const cw = getCellArgValue(arr, 'cw');
-    if (cw) {
-        const cwProps = unpackCellArgObj(cw)[0];
-        matrixCell.name = matrixCell.cellValue;
-        matrixCell.type = 'cw'
-        matrixCell.useCondOutAsLabel = cwProps.useCondOutput;
-        matrixCell.url = cwProps.url;
-        console.log('matrixCell', matrixCell);
-    }
-
-    // TODO: ADD FUNCTIONALITY FOR HYPERLINKS
-    //     matrixCell.type = 'link';
-
-    const span = getCellArgValue(arr, 'span');
-    if (span) {
-        matrixCell.span = Number(span)
-    }
-
-    const rspan = getCellArgValue(arr, 'rspan');
-    if (rspan) {
-        matrixCell.rspan = Number(rspan)
-    }
-
-    const styleConds = getCellArgValue(arr, 'conditions');
-    if (styleConds) {
-        // Expects the first element in the array to be {setName:<string>}
-        const conditionsArr = unpackCellArgObj(styleConds);
-        matrixCell.styleCondSet = conditionsArr[0].setName;
-        conditionsArr.shift();
-        matrixCell.styleConds = conditionsArr;
-        console.log('styleConds', matrixCell);
-    }
-
-    const style = getCellArgValue(arr, 'style');
-    if (style) {
-        matrixCell.style = stylesFromObj(
-            convertStringToJSON(style),
-            STYLES_DEFAULTS);
-    }
-
-    const display = getCellArgValue(arr, 'display');
-    if (display) {
-        matrixCell.display = convertStringToJSON(display);
-    }
-
-    return matrixCell;
-}*/
+}
 
 // CONDITIONAL STYLING OF MATRIX LAYOUT ITEMS
 function getCondSetAndStyles(argsObj) {
@@ -677,27 +555,37 @@ function getCondSetAndStyles(argsObj) {
      */
     const o = {};
 
-    const openMCTCondSet = CONDITION_SETS[argsObj.styleCondSet];
-    if (openMCTCondSet) {
-        o.conditionSetIdentifier = openMCTCondSet.identifier.key;
+    const conditionStylesObj = argsObj.conditionStyles;
+    if (conditionStylesObj) {
+        const openMCTCondSet = CONDITION_SETS[conditionStylesObj.set];
+        if (openMCTCondSet) {
+            o.conditionSetIdentifier = openMCTCondSet.identifier.key;
 
-        // Iterate through the named conditions and styles in argsObj.styleConds and formulate
-        // valid styles []
-        const stylesArr = [];
-        const conditionCollection = openMCTCondSet.configuration.conditionCollection;
-        for (let i = 0; i < argsObj.styleConds.length; i++) {
-            const styleCondName = argsObj.styleConds[i].name;
-            // Look for a matching condition in conditionCollection [].configuration.name;
-            // Get the resulting [].configuration.id
-            const openMCTCond = searchArrayOfObjects(conditionCollection, 'configuration.name', styleCondName);
-            if (openMCTCond) {
-                // console.log('openMCTCond',openMCTCond);
-                stylesArr.push(createOpenMCTStyleObj(argsObj.styleConds[i], openMCTCond.id));
-            }
+            // Iterate through the named conditions and styles in argsObj.styleConds and formulate
+            // valid styles []
+            const stylesArr = [];
+            const conditionCollection = openMCTCondSet.configuration.conditionCollection;
+            conditionStylesObj.conditions.forEach(conditionStyle => {
+                const styleCondName = conditionStyle.name;
+                // Look for a matching condition in conditionCollection [].configuration.name;
+                // Get the resulting [].configuration.id
+                const openMCTCond = searchArrayOfObjects(conditionCollection, 'configuration.name', styleCondName);
+                if (openMCTCond) {
+                    // console.log('openMCTCond',openMCTCond);
+                    stylesArr.push(createOpenMCTStyleObj(conditionStyle, openMCTCond.id));
+                }
+            });
+
+            o.styles = stylesArr;
+            return o;
+        } else {
+            console.error('No Condition Set:',conditionStylesObj.set);
+            outputMsg('ERROR: "'
+                .concat(argsObj.name)
+                .concat('" uses Condition Set "')
+                .concat(conditionStylesObj.set)
+                .concat('" which does not exist.'))
         }
-
-        o.styles = stylesArr;
-        return o;
     }
 
     return undefined;

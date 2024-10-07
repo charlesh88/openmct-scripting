@@ -83,15 +83,13 @@ const ConditionWidget = function (argsObj) {
     } */
 
     // console.log('argsObj',argsObj);
-    const label = argsObj.name;
 
-    Obj.call(this, 'CW ' + label, 'conditionWidget', false);
+    Obj.call(this, argsObj.name, 'conditionWidget', false);
 
-    this.label = label;
+    this.label = argsObj.name;
     this.conditionalLabel = '';
-    this.url = argsObj.url.replace(ESC_CHARS.colon,':');
-    this.configuration.useConditionSetOutputAsLabel = (argsObj.useCondOutAsLabel)?
-        argsObj.useCondOutAsLabel : false;
+    this.url = argsObj.url? argsObj.url.replace(ESC_CHARS.colon,':') : undefined;
+    this.configuration.useConditionSetOutputAsLabel = argsObj.useConditionSetOutputAsLabel;
     this.addStaticStyleForObj(argsObj);
     this.addCondStylesForObj(argsObj);
 }

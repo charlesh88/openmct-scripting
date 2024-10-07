@@ -147,10 +147,10 @@ const DisplayLayout = function (args) {
         subObj.y = args.y;
         subObj.type = 'telemetry-view';
         subObj.identifier = createOpenMCTIdentifier(args.ident, 'taxonomy');
-        subObj.displayMode = args.display && args.display.mode? args.display.mode : 'value';
-        subObj.value = args.display && args.display.value? args.display.value : 'value';
-        subObj.format = args.display && args.display.format? args.display.format : undefined;
-        subObj.showUnits = args.display && args.display.showUnits === 'TRUE';
+        subObj.displayMode = args.displayMode? args.displayMode : 'value';
+        subObj.value = args.value? args.value : 'value';
+        subObj.format = args.format? args.format : undefined;
+        subObj.showUnits = args.showUnits? args.showUnits : true;
         this.configuration.objectStyles[subObj.id] = {
             'staticStyle': createOpenMCTStyleObj(args.style),
             'styles': []
