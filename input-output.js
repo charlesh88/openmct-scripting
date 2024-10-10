@@ -38,6 +38,8 @@ function uploadFiles(files, fileType) {
             processPrlFiles(filenames, values);
         } else if (fileType.includes('csv')) {
             processInputCsvs(filenames, values);
+        } else if (fileType.includes('oip')) {
+            processOipFiles(filenames, values);
         }
     });
 }

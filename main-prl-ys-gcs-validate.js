@@ -12,6 +12,10 @@ document.getElementById('inputPrl').addEventListener("change", function (ev) {
     uploadFiles(ev.currentTarget.files, 'prl');
 }, false);
 
+document.getElementById('inputOip').addEventListener("change", function (ev) {
+    uploadFiles(ev.currentTarget.files, 'oip');
+}, false);
+
 function getConfigFromForm() {
     // Get form values
     const config = {};
@@ -37,16 +41,15 @@ function testStrForGCSRef(str) {
     return str.includes('.py');
 }
 
-function extractFileNameFromStr(str) {
+function extractFileNameFromStr(str, sig = '.py') {
     /*
     Execute ROVER > COMM > CONFIGURE DOWNLINK RATE (RoverCommConfigureDownlinkRate.py)
     Execute RoverCommConfigureDownlinkRate.py to change the downlink rate
      */
     str = str.trim();
-    const gcsSig = '.py';
-    const endOffset = gcsSig.length;
+    const endOffset = sig.length;
 
-    const endIndex = str.indexOf(gcsSig) + gcsSig.length;
+    const endIndex = str.indexOf(sig) + sig.length;
     let done = false;
     let startIndex = endIndex - endOffset;
     while (startIndex-- > 0 && !done) {
@@ -54,6 +57,7 @@ function extractFileNameFromStr(str) {
         if (
             curChar === ' ' ||
             curChar === '(' ||
+            curChar === '/' ||
             curChar === ';'
         ) {
             done = true;
@@ -64,8 +68,7 @@ function extractFileNameFromStr(str) {
 }
 
 function extractGCSFromPrl(fileName, fileContent) {
-    /*
-LIKE THIS:
+    /* LIKE THIS:
     <prl:ManualInstruction executionMode="human" instructionIdentifier="0f54fecc-9b29-4696-baf5-36fe1b17c09a">
       <prl:Description>
         <prl:Text>Execute ROVER > COMM > CONFIGURE DOWNLINK RATE (RoverCommConfigureDownlinkRate.py)</prl:Text>
@@ -74,13 +77,11 @@ LIKE THIS:
     </prl:ManualInstruction>
 */
 
-    function traverseXML(node, arrGCSNames = []) {
+    function traverseXML(node, arrgcsNames = []) {
         const nodeName = node.nodeName; // prl:Step, etc.
         let gcsManIns = [];
-        // const arrGCSNames = [];
 
         if (nodeName === 'prl:ManualInstruction') {
-            let pathArr = []
             curNumber = node.getElementsByTagName("prl:Number")[0].textContent;
 
             const manInsText = getNodePrlText(node);
@@ -88,10 +89,10 @@ LIKE THIS:
                 // Not all ManualInstructions have description content
                 if (testStrForGCSRef(manInsText)) {
                     // Execute ROVER > COMM > CONFIGURE DOWNLINK RATE (RoverCommConfigureDownlinkRate.py)
-                    const GCSName = extractFileNameFromStr(manInsText);
-                    // console.log('.py found in ', manInsText, GCSName);
-                    arrGCSNames.push({
-                        name: GCSName,
+                    const gcsName = extractFileNameFromStr(manInsText);
+                    // console.log('.py found in ', manInsText, gcsName);
+                    arrgcsNames.push({
+                        name: gcsName,
                         step: curNumber,
                         manIns: manInsText
                     });
@@ -104,18 +105,80 @@ LIKE THIS:
             const childNode = node.childNodes[i];
             // Only traverse element nodes
             if (childNode.nodeType === 1) {
-                traverseXML(childNode, arrGCSNames);
+                traverseXML(childNode, arrgcsNames);
             }
         }
 
-        return arrGCSNames;
+        return arrgcsNames;
     }
 
     const xmlDoc = new DOMParser().parseFromString(fileContent, 'text/xml');
     const arrGCSRefs = traverseXML(xmlDoc.documentElement, []);
 
     return arrGCSRefs;
+}
 
+function extractWidgetsFromOip(filename, fileContent) {
+    /* LIKE THIS:
+    <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="2.0.0">
+            <actions hook="false" hook_all="false">
+              <action type="EXECUTE_CMD">
+                <command>konsole -e "python3 viper_gcs/GCS/RoverNavCaptureHazCams.py"</command>
+                <command_directory>$(user.home)</command_directory>
+                <wait_time>10</wait_time>
+                <description />
+              </action>
+            </actions>
+          ....
+            <text>HAZCAMS CAPTURE</text>
+          ....
+          </widget>
+     */
+
+    function traverseXML(node, arrButtons = []) {
+        const nodeName = node.nodeName; // prl:Step, etc.
+        let gcsManIns = [];
+
+        if (nodeName === 'widget') {
+            const nodeType = node.getAttribute('typeId');
+            if (nodeType && nodeType.includes('ActionButton')) {
+                if (node.getElementsByTagName('action').length > 0) {
+                    // console.log('node >', node, node.getElementsByTagName('action'));
+                    const nodeCommand = node
+                        .getElementsByTagName('actions')[0]
+                        .getElementsByTagName('action')[0]
+                        .getElementsByTagName('command')[0];
+
+                    const nodeText = node
+                        .getElementsByTagName('text')[0];
+
+                    if (nodeCommand && nodeText) {
+                        const gcsName = extractFileNameFromStr(nodeCommand.textContent);
+                        if (gcsName) {
+                            arrButtons.push({
+                                gcs: gcsName,
+                                buttonlabel: nodeText.textContent
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        // Recursively traverse child nodes
+        for (let i = 0; i < node.childNodes.length; i++) {
+            const childNode = node.childNodes[i];
+            // Only traverse element nodes
+            if (childNode.nodeType === 1) {
+                traverseXML(childNode, arrButtons);
+            }
+        }
+
+        return arrButtons;
+    }
+
+    const xmlDoc = new DOMParser().parseFromString(fileContent, 'text/xml');
+    return traverseXML(xmlDoc.documentElement, []);
 }
 
 /*********************************** MULTIPLE FILE HANDLING */
@@ -139,6 +202,25 @@ processPrlFiles = function (filenames, values) {
 
     console.log('arrManIns', arrManIns);
 }
+
+processOipFiles = function (filenames, values) {
+    const arrOipButtons = [];
+    for (let i = 0; i < filenames.length; i++) {
+        const fileName = filenames[i];
+        const fileContent = values[i];
+        const arrOipButtonsInFile = extractWidgetsFromOip(fileName, fileContent);
+        if (arrOipButtonsInFile && arrOipButtonsInFile.length > 0) {
+            arrOipButtons.push({
+                file: fileName,
+                cnt: arrOipButtonsInFile.length,
+                buttons: arrOipButtonsInFile
+            });
+        }
+    }
+
+    console.log('arrOipButtons', arrOipButtons);
+}
+
 
 
 /*processPrlFiles = function (filenames, values) {
