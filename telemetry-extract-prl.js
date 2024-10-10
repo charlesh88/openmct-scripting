@@ -27,13 +27,6 @@ extractFromPrlTraverse = function (str, filename) {
                     prl:Identifier <TELEM path>
     */
 
-    function getText(node) {
-        return node
-            .getElementsByTagName("prl:Description")[0]
-            .getElementsByTagName("prl:Text")[0]
-            .textContent;
-    }
-
     function getDataNomenclature(node) {
         return node
             .getElementsByTagName("prl:DataNomenclature")[0]
