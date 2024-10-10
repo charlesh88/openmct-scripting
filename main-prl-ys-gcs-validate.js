@@ -118,7 +118,7 @@ function extractGCSFromPrl(fileName, fileContent) {
     return arrGCSRefs;
 }
 
-function extractWidgetsFromOip(filename, fileContent) {
+function extractButtonsAndGCSFromOip(filename, fileContent) {
     /* LIKE THIS:
     <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="2.0.0">
             <actions hook="false" hook_all="false">
@@ -134,31 +134,34 @@ function extractWidgetsFromOip(filename, fileContent) {
           ....
           </widget>
      */
+    const arrButtons = [];
+    const arrGCS = [];
 
-    function traverseXML(node, arrButtons = []) {
+    function traverseXML(node) {
         const nodeName = node.nodeName; // prl:Step, etc.
-        let gcsManIns = [];
 
         if (nodeName === 'widget') {
             const nodeType = node.getAttribute('typeId');
             if (nodeType && nodeType.includes('ActionButton')) {
-                if (node.getElementsByTagName('action').length > 0) {
-                    // console.log('node >', node, node.getElementsByTagName('action'));
-                    const nodeCommand = node
+                if (node.getElementsByTagName('action')[0]) {
+                    const nodeAction = node
                         .getElementsByTagName('actions')[0]
-                        .getElementsByTagName('action')[0]
-                        .getElementsByTagName('command')[0];
+                        .getElementsByTagName('action')[0];
+                    if (nodeAction && nodeAction.getAttribute('type')) {
+                        if (nodeAction.getAttribute('type').includes('EXECUTE_CMD')) {
+                            console.log(node);
+                            const nodeCommand = nodeAction.getElementsByTagName('command')[0];
+                            const gcsName = extractFileNameFromStr(nodeCommand.textContent);
+                            const nodeText = node.getElementsByTagName('text')[0];
 
-                    const nodeText = node
-                        .getElementsByTagName('text')[0];
-
-                    if (nodeCommand && nodeText) {
-                        const gcsName = extractFileNameFromStr(nodeCommand.textContent);
-                        if (gcsName) {
                             arrButtons.push({
                                 gcs: gcsName,
                                 buttonlabel: nodeText.textContent
                             });
+
+                            if (!arrGCS.includes(gcsName)) {
+                                arrGCS.push(gcsName);
+                            }
                         }
                     }
                 }
@@ -170,11 +173,14 @@ function extractWidgetsFromOip(filename, fileContent) {
             const childNode = node.childNodes[i];
             // Only traverse element nodes
             if (childNode.nodeType === 1) {
-                traverseXML(childNode, arrButtons);
+                traverseXML(childNode);
             }
         }
 
-        return arrButtons;
+        return {
+            buttons: arrButtons,
+            gcs: arrGCS
+        };
     }
 
     const xmlDoc = new DOMParser().parseFromString(fileContent, 'text/xml');
@@ -208,19 +214,20 @@ processOipFiles = function (filenames, values) {
     for (let i = 0; i < filenames.length; i++) {
         const fileName = filenames[i];
         const fileContent = values[i];
-        const arrOipButtonsInFile = extractWidgetsFromOip(fileName, fileContent);
-        if (arrOipButtonsInFile && arrOipButtonsInFile.length > 0) {
+        const arrOipButtonsInFile = extractButtonsAndGCSFromOip(fileName, fileContent);
+        if (arrOipButtonsInFile) {
             arrOipButtons.push({
                 file: fileName,
-                cnt: arrOipButtonsInFile.length,
-                buttons: arrOipButtonsInFile
+                buttonCnt: arrOipButtonsInFile.buttons.length,
+                buttons: arrOipButtonsInFile.buttons,
+                gcsCount: arrOipButtonsInFile.gcs.length,
+                gcs: arrOipButtonsInFile.gcs
             });
         }
     }
 
     console.log('arrOipButtons', arrOipButtons);
 }
-
 
 
 /*processPrlFiles = function (filenames, values) {
