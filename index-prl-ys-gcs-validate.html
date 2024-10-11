@@ -19,31 +19,29 @@
             <div id="component-mdb" class="contents"></div>
             <div class="page-section c-config-holder">
                 <div class="c-config">
-                    <h2>Settings</h2>
-                    <div class="c-config__label">Output Base Name</div>
-                    <div class="c-config__value"><input type="text" id="output-base-name" value="Telemetry Extract"/>
-                    </div>
-                </div>
-                <div class="c-config">
                     <h2>Input Files</h2>
                     <div class="c-config__label">Procedure Files (.prl)</div>
                     <div class="c-config__value">
-                        <input id="inputPrl" type="file" class="upload-file-btn" multiple/>
+                        <input id="inputPrl" type="file" accept=".prl" class="upload-file-btn" multiple/>
                     </div>
-                    <div class="c-config__label">YS File (.prl)</div>
+                    <div class="c-config__label">Yamcs Studio File (.opi)</div>
                     <div class="c-config__value">
-                        <input id="inputOip" type="file" class="upload-file-btn"/>
+                        <input id="inputOpi" type="file" accept=".opi" class="upload-file-btn"/>
+                    </div>
+                    <div class="c-config__label">GCS Filename List (.txt)</div>
+                    <div class="c-config__value">
+                        <input id="inputGCSFileList" type="file" accept=".txt" class="upload-file-btn"/>
                     </div>
                 </div>
             </div>
 
             <div class="page-section">
-                <button id="btnDownloadTelem" onclick="downloadTelemCsv();" disabled>
-                    DOWNLOAD TELEMETRY CSV
+                <button id="btnComparePrlToOpi" onclick="comparePrlToOpi();">
+                    COMPARE
                 </button>
-                <button id="btnValidateTelem" class="--minor" onclick="validateTelem();" disabled>
+                <!--<button id="btnValidateTelem" class="&#45;&#45;minor" onclick="validateTelem();" disabled>
                     VALIDATE TELEMETRY
-                </button>
+                </button>-->
                 <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
             </div>
 

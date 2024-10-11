@@ -5,15 +5,16 @@ const STEP_LABEL_STYLE = {
     color: '#cccccc'
 }
 
-storeOutputBaseName();
-loadLocalSettings();
-
 document.getElementById('inputPrl').addEventListener("change", function (ev) {
     uploadFiles(ev.currentTarget.files, 'prl');
 }, false);
 
-document.getElementById('inputOip').addEventListener("change", function (ev) {
-    uploadFiles(ev.currentTarget.files, 'oip');
+document.getElementById('inputGCSFileList').addEventListener("change", function (ev) {
+    uploadFiles(ev.currentTarget.files, 'gcsfilelist');
+}, false);
+
+document.getElementById('inputOpi').addEventListener("change", function (ev) {
+    uploadFiles(ev.currentTarget.files, 'opi');
 }, false);
 
 function getConfigFromForm() {
@@ -31,12 +32,12 @@ function getConfigFromForm() {
     return config;
 }
 
-/*********************************** CONSTANTS */
+/**************************************************************** CONSTANTS */
 const GCS_SIGNATURES = [
     '.py'
 ];
 
-/*********************************** FUNCTIONS */
+/**************************************************************** FUNCTIONS */
 function testStrForGCSRef(str) {
     return str.includes('.py');
 }
@@ -118,7 +119,7 @@ function extractGCSFromPrl(fileName, fileContent) {
     return arrGCSRefs;
 }
 
-function extractButtonsAndGCSFromOip(filename, fileContent) {
+function extractButtonsAndGCSFromOpi(filename, fileContent) {
     /* LIKE THIS:
     <widget typeId="org.csstudio.opibuilder.widgets.ActionButton" version="2.0.0">
             <actions hook="false" hook_all="false">
@@ -149,7 +150,6 @@ function extractButtonsAndGCSFromOip(filename, fileContent) {
                         .getElementsByTagName('action')[0];
                     if (nodeAction && nodeAction.getAttribute('type')) {
                         if (nodeAction.getAttribute('type').includes('EXECUTE_CMD')) {
-                            console.log(node);
                             const nodeCommand = nodeAction.getElementsByTagName('command')[0];
                             const gcsName = extractFileNameFromStr(nodeCommand.textContent);
                             const nodeText = node.getElementsByTagName('text')[0];
@@ -187,258 +187,51 @@ function extractButtonsAndGCSFromOip(filename, fileContent) {
     return traverseXML(xmlDoc.documentElement, []);
 }
 
-/*********************************** MULTIPLE FILE HANDLING */
-processPrlFiles = function (filenames, values) {
-    const arrManIns = [];
-    for (let i = 0; i < filenames.length; i++) {
-        const fileName = filenames[i];
-        const fileContent = values[i];
-        // console.log(fileName);
-        if (testStrForGCSRef(fileContent)) {
-            const gcsRefs = extractGCSFromPrl(fileName, fileContent);
-            if (gcsRefs && gcsRefs.length > 0) {
-                arrManIns.push({
-                    file: fileName,
-                    refcnt: gcsRefs.length,
-                    refs: gcsRefs
-                });
-            }
-        }
-    }
-
-    console.log('arrManIns', arrManIns);
-}
-
-processOipFiles = function (filenames, values) {
-    const arrOipButtons = [];
-    for (let i = 0; i < filenames.length; i++) {
-        const fileName = filenames[i];
-        const fileContent = values[i];
-        const arrOipButtonsInFile = extractButtonsAndGCSFromOip(fileName, fileContent);
-        if (arrOipButtonsInFile) {
-            arrOipButtons.push({
-                file: fileName,
-                buttonCnt: arrOipButtonsInFile.buttons.length,
-                buttons: arrOipButtonsInFile.buttons,
-                gcsCount: arrOipButtonsInFile.gcs.length,
-                gcs: arrOipButtonsInFile.gcs
+function comparePrlToOpi() {
+    // Iterate through GCS refs in procedures and find them or note in a YS .opi file
+    /*    function lookForPropValInObjArray(array, prop, val) {
+            array.forEach(item => {
+                if (item[prop].includes(val)) {
+                    console.log('lookForPropValInObjArray', item, prop, val);
+                    return true;
+                }
             });
-        }
-    }
 
-    console.log('arrOipButtons', arrOipButtons);
-}
+            return false;
+        }*/
 
 
-/*processPrlFiles = function (filenames, values) {
-    let arrAllProcsAndTelem = [];
-    const outputMsgArr = [[
-        'Procedure File',
-        'Non-unique Telem'
+    arrPrlVsOpi = [[
+        'Proc',
+        'Step',
+        'GCS',
+        'YS Button'
     ]];
-    let responseObj = {};
+    if (ARR_YS_BUTTONS.length > 0) {
+        console.log('ARR_YS_BUTTONS', ARR_YS_BUTTONS);
+        const arrOpiGCS = ARR_YS_BUTTONS[0].gcs; // Assume there's 1 .opi file being processed eval'd for now
 
-
-    for (let i = 0; i < filenames.length; i++) {
-        const arrStepsAndTelem = extractFromPrlTraverse(values[i], filenames[i]);
-
-        outputMsgArr.push([
-            filenames[i],
-            arrStepsAndTelem.length
-        ]);
-
-        let consolidatedTelemByStep = [];
-        let longestLabelCharCnt = 0;
-
-        if (arrStepsAndTelem && arrStepsAndTelem.length > 0) {
-            for (let j = 0; j < arrStepsAndTelem.length; j++) {
-                const curStep = arrStepsAndTelem[j];
-                // console.log('curStep',curStep);
-                const curStepNumber = curStep.number.toString();
-                if (!Object.keys(consolidatedTelemByStep).includes(curStepNumber)) {
-                    consolidatedTelemByStep[curStepNumber] = {
-                        'paths': [],
-                        'pathsShort': []
-                    };
-                }
-                if (curStep.pathShort.length > longestLabelCharCnt) {
-                    longestLabelCharCnt = curStep.pathShort.length;
-                }
-                consolidatedTelemByStep[curStepNumber].paths.push(curStep.path);
-                consolidatedTelemByStep[curStepNumber].pathsShort.push(curStep.pathShort);
-                consolidatedTelemByStep[curStepNumber].crewMembers = curStep.crewMembers;
-                consolidatedTelemByStep[curStepNumber].refType = curStep.refType;
-            }
-
-            arrAllProcsAndTelem[filenames[i]] = {
-                'steps': consolidatedTelemByStep,
-                'longestLabelCharCnt': longestLabelCharCnt
-            };
+        if (ARR_PRL_GCS_REFS.length > 0) {
+            ARR_PRL_GCS_REFS.forEach(prlFile => {
+                prlFile.refs.forEach(ref => {
+                    const gcsName = ref.name;
+                    if (arrOpiGCS.includes(gcsName)) {
+                        // console.log('YS button found for ', gcsName);
+                    } else {
+                        arrPrlVsOpi.push([
+                            prlFile.file,
+                            ref.step,
+                            gcsName,
+                            'BUTTON NOT FOUND'
+                        ])
+                        // console.log('## YS missing button for ', gcsName,ref);
+                    }
+                });
+            });
         }
+        outputMsg(htmlGridFromArray(arrPrlVsOpi));
+        console.log('arrPrlVsOpi', arrPrlVsOpi);
     }
-
-    outputMsg(htmlGridFromArray(outputMsgArr));
-
-    const procKeys = Object.keys(arrAllProcsAndTelem);
-
-    if (procKeys && procKeys.length > 0) {
-        initDomainObjects();
-        config = getConfigFromForm();
-        let root = objJson.openmct = new Container();
-
-        // Create the root folder
-        let folderRoot = new Obj(config.outputBaseName, 'folder', true);
-        root.addJson(folderRoot);
-        objJson.rootId = folderRoot.identifier.key;
-
-        // Create a Display Layouts folder
-        let folderDL = new Obj('Display Layouts', 'folder', true);
-        root.addJson(folderDL);
-        folderRoot.addToComposition(folderDL.identifier.key);
-        folderDL.setLocation(folderRoot);
-
-        // Create a Stacked Plots folder
-        let folderSP = new Obj('Stacked Plots', 'folder', true);
-        root.addJson(folderSP);
-        folderRoot.addToComposition(folderSP.identifier.key);
-        folderSP.setLocation(folderRoot);
-
-        // Create a Tabs view for Display Layouts
-        let tabsDL = new TabsView('Procedure Displays', false);
-        root.addJson(tabsDL);
-        folderRoot.addToComposition(tabsDL.identifier.key);
-        tabsDL.setLocation(folderRoot);
-
-        // Create a Tabs view for Stacked Plots
-        let tabsSP = new TabsView('Procedure Stacked Plots', false);
-        root.addJson(tabsSP);
-        folderRoot.addToComposition(tabsSP.identifier.key);
-        tabsSP.setLocation(folderRoot);
-
-        for (let i = 0; i < procKeys.length; i++) {
-            // Make a Display Layout for the current proc
-            const procName = procKeys[i];
-            const procNameShort = getProcShortName(procName);
-            const curProcObj = arrAllProcsAndTelem[procName];
-            const curProcObjSteps = curProcObj.steps; // Array of objects, keyed by step number
-            const stepKeys = Object.keys(curProcObjSteps);
-            let uniqueTelemPaths = [];
-
-            //Create a Display Layout for alphas and add it to the root folder
-            let procDisplayLayout = new DisplayLayout({
-                'name': procNameShort,
-                'layoutGrid': [parseInt(config.layoutGrid[0]), parseInt(config.layoutGrid[1])],
-                'itemMargin': config.itemMargin
-            });
-
-            initAlphasItemPlacementTracker();
-
-            // Per-step context starts here. Note that a telemetry path can be present more than once in a proc.
-            for (let s = 0; s < stepKeys.length; s++) {
-                // Iterate through each step object
-                const curStepObj = curProcObjSteps[stepKeys[s]];
-                // console.log('curStepObj',curStepObj);
-
-                const curIndex = s;
-                const labelWidth = labelWidthFromChars(
-                    parseInt(config.layoutGrid[0]),
-                    curProcObj.longestLabelCharCnt
-                );
-
-                // Make a header that combines the step number and crewMembers
-                let dlItem = procDisplayLayout.addLabel(
-                    {
-                        style: {
-                            backgroundColor: STEP_LABEL_STYLE.backgroundColor,
-                            color: STEP_LABEL_STYLE.color
-                        },
-                        index: curIndex,
-                        itemW: labelWidth + config.itemMargin + config.dlAlphas.itemW,
-                        itemH: config.dlAlphas.itemH,
-                        ident: stepKeys[s],
-                        layoutStrategy: config.dlAlphas.layoutStrategy,
-                        layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-                        placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                        text: stepKeys[s].concat(' ').concat(curStepObj.crewMembers)
-                    }
-                );
-
-                alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
-                alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
-
-                // Iterate through the pathsShort array and make label and alpha pairs for each
-                for (let p = 0; p < curStepObj.paths.length; p++) {
-                    const curStepPath = curStepObj.paths[p].replaceAll('/', '~');
-
-                    dlItem = procDisplayLayout.addTextAndAlphaViewPair({
-                        alphaFormat: config.dlAlphas.alphaFormat,
-                        alphaShowsUnit: true,
-                        index: curIndex,
-                        itemW: config.dlAlphas.itemW,
-                        itemH: config.dlAlphas.itemH,
-                        ident: curStepPath,
-                        labelW: labelWidth,
-                        layoutStrategy: config.dlAlphas.layoutStrategy,
-                        layoutStrategyNum: config.dlAlphas.layoutStrategyNum,
-                        placeIndex: alphasItemPlacementTracker.placeIndex,
-                        shiftIndex: alphasItemPlacementTracker.shiftIndex,
-                        text: curStepObj.pathsShort[p]
-                    });
-
-                    procDisplayLayout.addToComposition(curStepPath, getNamespace(curStepPath));
-                    if (!uniqueTelemPaths.includes(curStepPath)) {
-                        uniqueTelemPaths.push(curStepPath);
-                    }
-                    // procStackedPlot.addToComposition(prlObject.dataSource, getNamespace(prlObject.dataSource));
-                    alphasItemPlacementTracker.placeIndex = dlItem.placeIndex;
-                    alphasItemPlacementTracker.shiftIndex = dlItem.shiftIndex;
-                }
-            } // Closes steps context
-
-            // Add the proc's Display Layout
-            root.addJson(procDisplayLayout);
-            tabsDL.addToComposition(procDisplayLayout.identifier.key);
-            folderDL.addToComposition(procDisplayLayout.identifier.key);
-            procDisplayLayout.setLocation(folderDL);
-
-            //Create a Stacked Plot for telemetry
-            let procStackedPlot = new StackedPlot(procNameShort);
-            uniqueTelemPaths.map(p => {
-                procStackedPlot.addToComposition(p, getNamespace(p));
-            });
-
-            // Add the proc's Stacked Plot
-            root.addJson(procStackedPlot);
-            tabsSP.addToComposition(procStackedPlot.identifier.key);
-            folderSP.addToComposition(procStackedPlot.identifier.key);
-            procStackedPlot.setLocation(folderSP);
-        } // Closes single procedure context
-    }
-
-    outputJSON();
-}*/
-
-createTableObj = function (type, str, referenceType) {
-    let tableObj = {};
-    tableObj.alphaFormat = '';
-    tableObj.alphaShowsUnit = 'TRUE';
-    tableObj.alphaUsesCond = '';
-
-    if (type.includes('label')) {
-        tableObj.name = str;
-        tableObj.type = 'label';
-        tableObj.dataSource = '';
-    }
-
-    if (type.includes('path')) {
-        tableObj.name = nameFromPath(str, '/', 2);
-        tableObj.dataSource = str.replaceAll('/', '~');
-        tableObj.type = 'telemetry';
-        tableObj.referenceType = referenceType;
-    }
-
-    return tableObj;
 }
 
 nameFromPath = function (str, delim, places) {
@@ -453,3 +246,66 @@ nameFromPath = function (str, delim, places) {
     return name.trim();
 }
 
+/**************************************************************** FILE PROCESSING */
+const ARR_YS_BUTTONS = [];
+const ARR_PRL_GCS_REFS = [];
+let ARR_GCS_FILELIST = [];
+
+processPrlFiles = function (filenames, values) {
+    outputMsg([
+        filenames.length,
+        'procedure files loaded.'
+    ].join(' '));
+
+    for (let i = 0; i < filenames.length; i++) {
+        const fileName = filenames[i];
+        const fileContent = values[i];
+        if (testStrForGCSRef(fileContent)) {
+            const gcsRefs = extractGCSFromPrl(fileName, fileContent);
+            if (gcsRefs && gcsRefs.length > 0) {
+                ARR_PRL_GCS_REFS.push({
+                    file: fileName,
+                    refcnt: gcsRefs.length,
+                    refs: gcsRefs
+                });
+            }
+        }
+    }
+    outputMsg(lineSepStr);
+}
+
+processOpiFiles = function (filenames, values) {
+    for (let i = 0; i < filenames.length; i++) {
+        const fileName = filenames[i];
+        const fileContent = values[i];
+        const arrYSButtonsInFile = extractButtonsAndGCSFromOpi(fileName, fileContent);
+        if (arrYSButtonsInFile) {
+            ARR_YS_BUTTONS.push({
+                file: fileName,
+                buttonCnt: arrYSButtonsInFile.buttons.length,
+                buttons: arrYSButtonsInFile.buttons,
+                gcsCount: arrYSButtonsInFile.gcs.length,
+                gcs: arrYSButtonsInFile.gcs
+            });
+        }
+        outputMsg([
+            'Yamcs Studio file loaded.',
+            ARR_YS_BUTTONS[0].buttons.length,
+            'buttons found.',
+            ARR_YS_BUTTONS[0].gcs.length,
+            'GCS refs found.'
+
+        ].join(' '));
+        outputMsg(lineSepStr);
+    }
+}
+
+processGCSFileList = function (filename, value) {
+    ARR_GCS_FILELIST = listToArray(value);
+    // console.log('ARR_GCS_FILELIST', ARR_GCS_FILELIST);
+    outputMsg([
+        ARR_GCS_FILELIST.length,
+        'GCS filenames loaded.'
+    ].join(' '));
+    outputMsg(lineSepStr);
+}
