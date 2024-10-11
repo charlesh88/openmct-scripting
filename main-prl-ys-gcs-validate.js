@@ -201,36 +201,40 @@ function comparePrlToOpi() {
         }*/
 
 
-    arrPrlVsOpi = [[
+    arrCompareResults = [[
         'Proc',
         'Step',
-        'GCS',
-        'YS Button'
+        'GCS Reference',
+        'YS Button',
+        'GCS File Exists'
     ]];
     if (ARR_YS_BUTTONS.length > 0) {
-        console.log('ARR_YS_BUTTONS', ARR_YS_BUTTONS);
+        // console.log('ARR_YS_BUTTONS', ARR_YS_BUTTONS);
+        outputMsg('Validating all GCS references in loaded procedure files against Yamcs Studio buttons:')
         const arrOpiGCS = ARR_YS_BUTTONS[0].gcs; // Assume there's 1 .opi file being processed eval'd for now
 
         if (ARR_PRL_GCS_REFS.length > 0) {
             ARR_PRL_GCS_REFS.forEach(prlFile => {
                 prlFile.refs.forEach(ref => {
                     const gcsName = ref.name;
-                    if (arrOpiGCS.includes(gcsName)) {
-                        // console.log('YS button found for ', gcsName);
-                    } else {
-                        arrPrlVsOpi.push([
+
+                    const ysButtonFound = arrOpiGCS.includes(gcsName);
+                    const gcsFound = ARR_GCS_FILELIST.includes(gcsName);
+
+                    // if (!ysButtonFound) {
+                        arrCompareResults.push([
                             prlFile.file,
                             ref.step,
                             gcsName,
-                            'BUTTON NOT FOUND'
+                            ysButtonFound? 'OK' : 'NOT FOUND',
+                            gcsFound? 'YES' : 'NOT FOUND'
                         ])
-                        // console.log('## YS missing button for ', gcsName,ref);
-                    }
+                    // }
                 });
             });
         }
-        outputMsg(htmlGridFromArray(arrPrlVsOpi));
-        console.log('arrPrlVsOpi', arrPrlVsOpi);
+        outputMsg(htmlTableFromArray(arrCompareResults));
+        // console.log('arrCompareResults', arrCompareResults);
     }
 }
 
