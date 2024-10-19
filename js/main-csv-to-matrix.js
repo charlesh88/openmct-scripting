@@ -7,8 +7,9 @@ DESIGN:
  */
 
 /* TODOs
-- [ ] Allow a _format() flag to include a printf statement for alphanumerics in the layout file.
-- [ ] Change _span and _rspan to use a single flag _span({col:3}) or _span({col:2,row:2})
+- [x] Allow a _format() flag to include a printf statement for alphanumerics in the layout file.
+- [x] Change _span and _rspan to use a single flag _span({col:3}) or _span({col:2,row:2})
+- [ ] Make an options:{} element optional!
  */
 
 /************************************************* VARS AND LISTENERS */
@@ -286,6 +287,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                     console.log('matrixCellObj', matrixCellObj);
 
                     if (!matrixCellObj.type) {
+                        // TODO: don't think this is working...
                         if (matrixCellObj.name.startsWith('/')) {
                             matrixCellObj.type = 'alpha';
                         } else {
@@ -324,13 +326,16 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                                 x: curX,
                                 y: curY,
                                 conditionStyles: matrixCellObj.conditionStyles? matrixCellObj.conditionStyles : undefined,
-                                displayMode: matrixCellObj.options.displayMode? matrixCellObj.options.displayMode : 'value',
-                                format: matrixCellObj.options.format? matrixCellObj.options.format : undefined,
                                 ident: matrixCellObj.name.replaceAll('/','~'),
-                                showUnits: matrixCellObj.options.showUnits? matrixCellObj.options.showUnits : true,
                                 style: matrixCellObj.style? matrixCellObj.style : undefined,
-                                value: matrixCellObj.options.value? matrixCellObj.options.value : 'value'
                             };
+
+                            if (matrixCellObj.options) {
+                                argsTelem.displayMode = matrixCellObj.options.displayMode? matrixCellObj.options.displayMode : 'value';
+                                argsTelem.format = matrixCellObj.options.format? matrixCellObj.options.format : undefined;
+                                argsTelem.showUnits = matrixCellObj.options.showUnits? matrixCellObj.options.showUnits : true;
+                                argsTelem.value = matrixCellObj.options.value? matrixCellObj.options.value : 'value'
+                            }
 
                             dlItem = dlMatrix.addTelemetryView(argsTelem);
                             dlMatrix.addToComposition(argsTelem.ident, getNamespace(argsTelem.ident));
