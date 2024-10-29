@@ -356,10 +356,13 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                             const argsCW = {
                                 conditionStyles: matrixCellObj.conditionStyles? matrixCellObj.conditionStyles : undefined,
                                 name: restoreEscChars(matrixCellObj.name),
-                                style: matrixCellObj.style? matrixCellObj.style : undefined,
-                                url: matrixCellObj.options.url? matrixCellObj.options.url : undefined,
-                                useConditionSetOutputAsLabel: matrixCellObj.options.useCondOutput? matrixCellObj.options.useCondOutput : false
+                                style: matrixCellObj.style? matrixCellObj.style : undefined
                             };
+
+                            if (matrixCellObj.options) {
+                                argsCW.url = matrixCellObj.options.url? matrixCellObj.options.url : undefined;
+                                argsCW.useConditionSetOutputAsLabel = matrixCellObj.options.useCondOutput? matrixCellObj.options.useCondOutput : false;
+                            }
 
                             // Create a folder for Condition Widgets if it doesn't exist
                             if (!folderConditionWidgets) {

@@ -20,7 +20,7 @@ const COND_STYLES_DEFAULTS = {
 };
 
 /***************************************** UNPACKING CSV CONDITION DEFINITIONS */
-function stylesFromObj(objIn, set = COND_STYLES_DEFAULTS) {
+function stylesFromObj(objIn, set = COND_STYLES_DEFAULTS) {1
     const keys = Object.keys(set);
     const objOut = copyObj(set);
     for (let i = 0; i < keys.length; i++) {
@@ -76,13 +76,15 @@ function createOpenMCTCondObj(args) {
     } else {
         for (let i = 0; i < args.criteriaArr.length; i++) {
             const criteriaObj = args.criteriaArr[i];
-            const condSummaryStr = criteriaObj.telemetry
+            let condSummaryStr = criteriaObj.telemetry
                 .concat(' ')
                 .concat(criteriaObj.metadata)
                 .concat(' ')
                 .concat(criteriaObj.operation)
-                .concat(' ')
-                .concat(criteriaObj.input.toString());
+
+            if (criteriaObj.input) {
+                condSummaryStr.concat(' ').concat(criteriaObj.input.toString());
+            }
 
             condSummaryArr.push(condSummaryStr);
 
