@@ -376,68 +376,53 @@
                 <tbody>
                 <tr>
                     <td>Span multiple columns</td>
-                    <td>_span(#)</td>
+                    <td>span:{ col:<em>#</em>,row:<em>#&nbsp;</em>}</td>
                     <td>YES</td>
                     <td>YES</td>
-                    <td>SYSTEMS,<strong>_span(3)</strong></td>
-                    <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of columns,
-                        starting at the element&apos;s current column.
+                    <td><strong>FOO:{span:{col:3,row:2} }&nbsp;</strong></td>
+                    <td>A text element with &quot;FOO&quot; will span across 3 columns and 2 rows,
+                        starting at and inclusive of the element&apos;s current column and row.
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>Type</td>
+                    <td>type:<em>&nbsp;type</em></td>
+                    <td>YES</td>
+                    <td>YES&nbsp;&nbsp;</td>
+                    <td>FOO:{type:condition-widget}<br>
+                    <br>
+                    <br></td>
+                    <td>`type` can be 'alpha' | 'condition-widget'| 'link' (not yet supported)
                     </td>
                 </tr>
                 <tr>
-                    <td>Span multiple rows</td>
-                    <td>_rspan(#)</td>
+                  <td>Options</td>
+                    <td>options:{<em>&nbsp;property</em>:<em>value, property,value&nbsp;</em>}</td>
                     <td>YES</td>
                     <td>YES</td>
-                    <td>SYSTEMS,<strong>_rspan(2)</strong></td>
-                    <td>A text element with &quot;SYSTEMS&quot; will span across the designated number of rows, starting
-                        at the element&apos;s current row.
+                    <td>FOO:{type:condition-widget,options:{url:https://www.nasa.gov,useCondOutput:true}}
                     </td>
+                    <td>A string of comma separated &quot;property: value&quot; pairs.</td>
+                </tr>
+               
+                <tr>
+                  <td>Style</td>
+                    <td>style:{<em>&nbsp;property</em>:<em>value, property,value&nbsp;</em>}</td>
+                    <td>YES</td>
+                    <td>YES</td>
+                    <td>FOO:{type:condition-widget,options:{url:https://www.nasa.gov},style:{backgroundColor:#666666,color:#ffffff}}<br>                      </td>
+                    <td>A string of comma separated &quot;property: value&quot; pairs.</td>
                 </tr>
                 <tr>
-                    <td>Render as Condition Widget</td>
-                    <td>_cw</td>
+                  <td>Conditionals&nbsp;</td>
+                    <td>conditionStyles:{ set:<em>set name</em>, conditions:[{ name: <em>name</em>, <em>style property</em>:<em>value&nbsp;</em>}]}</td>
                     <td>YES</td>
-                    <td></td>
-                    <td>/SpacecraftSystem/Subsystem/aggregate.parameterName,<strong>_cw</strong></td>
-                    <td>Renders a Condition Widget for this telemetry parameter. If this parameter is set to use
-                        Conditions in the telemetry CSV input file, then a Condition Set will be created using those
-                        parameters.
-                    </td>
+                    <td>YES</td>
+                    <td>FOO:{type:condition-widget,conditionStyles:{set:CS CCU,conditions:[{name:c0,backgroundColor:#368215,color:#ffffff},{name:c1,color:#368215,border:1px solid #368215},{name:c2,backgroundColor:#660000,color:#ffffff},{name:Default,border:1px solid #555555}]}}<br></td>
+                    <td>A string of comma separated &quot;property: value&quot; pairs.</td>
                 </tr>
-                <tr>
-                    <td>Render as Hyperlink button</td>
-                    <td>_link</td>
-                    <td></td>
-                    <td>YES</td>
-                    <td>BUTTON LABEL,<strong>_link</strong></td>
-                    <td>A text element rendered as a Hyperlink button. Clicking the button will open the designated URL
-                        in a new browser tab. This element requires a _url() property, see below. Hyperlinks cannot be
-                        styled.
-                    </td>
-                </tr>
-                <tr>
-                    <td>URL property</td>
-                    <td>_url(url)</td>
-                    <td></td>
-                    <td>YES</td>
-                    <td>BUTTON LABEL,<strong>_cw,_url(<a href="https://someurl.com">https://someurl.com</a>)</strong>
-                    </td>
-                    <td>Both Condition Widgets and Hyperlink buttons can be provided a _url() parameter; this is
-                        required for Hyperlinks and optional for Condition Widgets. Note that Open MCT only accepts
-                        valid nasa.gov URLs.
-                    </td>
-                </tr>
-                <tr>
-                    <td>Style</td>
-                    <td>_style({JSON string})</td>
-                    <td>YES</td>
-                    <td>YES</td>
-                    <td>BUTTON LABEL,<strong>_style({backgroundColor:#660000,color:#ffffff,border:1px solid
-                        #ff0000})</strong></td>
-                    <td>A string of comma separated &quot;property: value&quot; elements as noted above.</td>
-                </tr>
-                </tbody>
+              </tbody>
             </table>
             <!--<h3>Generated Open MCT Examples</h3>-->
             <h3>Source</h3>
