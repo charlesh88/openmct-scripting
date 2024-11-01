@@ -17,6 +17,7 @@ const INPUT_TYPE = "csv";
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
 let CONDITION_SETS = [];
+let TELEMETRY = [];
 let CONFIG_MATRIX;
 
 storeOutputBaseName();
@@ -114,6 +115,9 @@ function createConditionSets(csv) {
                     curSetTelemetry.push(telem);
                     cs.addToComposition(telem, "taxonomy");
                 }
+                if (!TELEMETRY.includes(telem)) {
+                    TELEMETRY.push(telem);
+                }
             }
         }
     }
@@ -164,6 +168,7 @@ function createConditionSets(csv) {
     }
 
     console.log('CONDITION_SETS', CONDITION_SETS);
+    console.log('TELEMETRY', TELEMETRY);
     console.log('OBJ_JSON', OBJ_JSON);
     config = CONFIG_MATRIX;
 
@@ -320,13 +325,15 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                     switch (matrixCellObj.type) {
                         case 'alpha':
                             // Create as an alphanumeric
+                            const telem = matrixCellObj.name;
+
                             const argsTelem = {
                                 itemH: itemH,
                                 itemW: itemW,
                                 x: curX,
                                 y: curY,
                                 conditionStyles: matrixCellObj.conditionStyles? matrixCellObj.conditionStyles : undefined,
-                                ident: matrixCellObj.name.replaceAll('/','~'),
+                                ident: telem.replaceAll('/','~'),
                                 style: matrixCellObj.style? matrixCellObj.style : undefined,
                             };
 
@@ -349,6 +356,11 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                                 dlItem.identifier.key,
                                 'Alphanumeric'
                             ]);
+
+                            if (!TELEMETRY.includes(telem)) {
+                                TELEMETRY.push(telem);
+                            }
+
                             break;
                         case 'condition-widget':
                             // Create as a Condition Widget
@@ -455,11 +467,16 @@ function createOpenMCTMatrixLayouts(filenames, values) {
             curY += rowH + itemMargin;
         }
 
+        // Make a LAD Table of all collected telemetry
+
+
+
         outputMsg(htmlGridFromArray(outputMsgArr));
     }
 
     outputJSON();
     outputMsg('Matrix layouts generated');
+    console.log('TELEMETRY', TELEMETRY);
     config = CONFIG_MATRIX;
 }
 
