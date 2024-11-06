@@ -63,7 +63,6 @@ function uploadConditionFile(files) {
 
 function createConditionSets(csv) {
     let curSetName = '';
-    let curSetTelemetry = [];
     let cs;
 
     // condObjs is an array of short-handed conditions, in one or more condition sets
@@ -97,8 +96,9 @@ function createConditionSets(csv) {
         }
 
         if (!CONDITION_SETS[curSetName]) {
+            // console.log("New CS for ",curSetName);
             CONDITION_SETS[curSetName] = new ConditionSet(condObject);
-            curSetTelemetry = []; // Reset if we're making a new CS this round.
+            CONDITION_SETS[curSetName].telemetry = [];
         }
 
         cs = CONDITION_SETS[curSetName];
@@ -110,9 +110,9 @@ function createConditionSets(csv) {
             // Telemetry has been defined in the .csv file for the current Condition Set
             const arrSetTelem = (condObject.setTelemetry.split(','));
             for (const telem of arrSetTelem) {
-                if (!curSetTelemetry.includes(telem)) {
+                if (!cs.telemetry.includes(telem)) {
                     // If setTelemetry hasn't been added to the set's composition, do it.
-                    curSetTelemetry.push(telem);
+                    cs.telemetry.push(telem);
                     cs.addToComposition(telem, "taxonomy");
                 }
                 if (!TELEMETRY.includes(telem)) {
