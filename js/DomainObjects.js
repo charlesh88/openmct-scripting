@@ -88,7 +88,7 @@ const ConditionWidget = function (argsObj) {
 
     this.label = argsObj.name;
     this.conditionalLabel = '';
-    this.url = argsObj.url? argsObj.url.replace(ESC_CHARS.colon,':') : undefined;
+    this.url = argsObj.url? argsObj.url.replace(ESC_CHARS.colon,':') : undefined;x
     this.configuration.useConditionSetOutputAsLabel = argsObj.useConditionSetOutputAsLabel;
     this.addStaticStyleForObj(argsObj);
     this.addCondStylesForObj(argsObj);
@@ -178,6 +178,10 @@ const FlexibleLayout = function (name) {
     }
 }
 
+const LADTable = function (name) {
+    Obj.call(this, name, 'LadTable', true);
+}
+
 const HyperLink = function (name, argsObj) {
     Obj.call(this, name, 'hyperlink', false);
     this.displayFormat = argsObj.format;
@@ -255,7 +259,7 @@ function findInComposition(domainObjToSearch, objToFind) {
 }
 
 function addDomainObject(domainObject, container) {
-    console.log('addDomainObject', domainObject, container);
+    // console.log('addDomainObject', domainObject, container);
     ROOT.addJson(domainObject);
     container.addToComposition(domainObject.identifier.key);
     domainObject.setLocation(container);

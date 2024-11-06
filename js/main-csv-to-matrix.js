@@ -167,8 +167,8 @@ function createConditionSets(csv) {
         curCs.setLocation(folderConditionSets);
     }
 
-    console.log('CONDITION_SETS', CONDITION_SETS);
-    console.log('TELEMETRY', TELEMETRY);
+    // console.log('CONDITION_SETS', CONDITION_SETS);
+    // console.log('TELEMETRY', TELEMETRY);
     console.log('OBJ_JSON', OBJ_JSON);
     config = CONFIG_MATRIX;
 
@@ -225,6 +225,12 @@ function createOpenMCTMatrixLayouts(filenames, values) {
         addDomainObject(tabsView, FOLDER_ROOT);
     }
 
+    const outputMsgArr = [[
+        'Layout',
+        'Object',
+        'Type'
+    ]];
+
     // ITERATE THROUGH LAYOUT FILES
     for (let i = 0; i < filenames.length; i++) {
         const rowArr = csvToArray(values[i]);
@@ -270,11 +276,6 @@ function createOpenMCTMatrixLayouts(filenames, values) {
             .concat(' item margin: ')
             .concat(itemMargin)
         );
-
-        const outputMsgArr = [[
-            'Object',
-            'Type'
-        ]];
 
         // Iterate through matrix rows
         for (let r = 1; r < rowArr.length; r++) {
@@ -353,6 +354,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                             }
 
                             outputMsgArr.push([
+                                layoutName,
                                 dlItem.identifier.key,
                                 'Alphanumeric'
                             ]);
@@ -397,6 +399,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
 
                             dlMatrix.addToComposition(cw.identifier.key);
                             outputMsgArr.push([
+                                layoutName,
                                 cw.label,
                                 'Condition Widget'
                             ]);
@@ -436,6 +439,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
 
                             dlMatrix.addToComposition(linkBtn.identifier.key);
                             outputMsgArr.push([
+                                layoutName,
                                 linkBtn.label,
                                 'Link'
                             ]);
@@ -455,6 +459,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                             dlMatrix.addCondStylesForLayoutObj(dlItem.id, matrixCellObj);
 
                             outputMsgArr.push([
+                                layoutName,
                                 dlItem.text,
                                 'Text'
                             ]);
@@ -466,17 +471,22 @@ function createOpenMCTMatrixLayouts(filenames, values) {
 
             curY += rowH + itemMargin;
         }
-
-        // Make a LAD Table of all collected telemetry
-
-
-
-        outputMsg(htmlGridFromArray(outputMsgArr));
     }
+
+    // Make a LAD Table of all collected telemetry
+    const ladTable = new LADTable('LT Telemetry');
+    TELEMETRY.forEach(telem => {
+        const telemPath = telem.replaceAll('/','~');
+        ladTable.addToComposition(telemPath, getNamespace(telemPath))
+    })
+
+    addDomainObject(ladTable,FOLDER_ROOT);
+
+    outputMsg(htmlGridFromArray(outputMsgArr));
+    console.log('OBJ_JSON', OBJ_JSON);
 
     outputJSON();
     outputMsg('Matrix layouts generated');
-    console.log('TELEMETRY', TELEMETRY);
     config = CONFIG_MATRIX;
 }
 
@@ -510,7 +520,7 @@ function unpackMatrixCellStrToObj(str) {
                 let arrKeyVal = splitStrOnFirstSep(pair, sep);
                 const key = arrKeyVal[0].trim();
                 const value = arrKeyVal[1].trim();
-                obj[key] = parseValue(value);
+                obj[key] = parseValue(value.trim());
             } else {
                 obj[pair] = '';
             }
@@ -553,13 +563,11 @@ function unpackMatrixCellStrToObj(str) {
         const name = str.substring(0, firstColonIndex);
         const remainder = str.substring(firstColonIndex + 2, str.length - 1);
 
-        console.log('parseObject has colon',str, name, remainder);
 
         const returnObj = parseObject(remainder);
         returnObj.name = name;
         return returnObj;
     } else {
-        console.log('parseObject no colon',str);
         return {
             'name': str,
             'type': 'text'
