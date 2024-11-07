@@ -88,7 +88,7 @@ const ConditionWidget = function (argsObj) {
 
     this.label = argsObj.name;
     this.conditionalLabel = '';
-    this.url = argsObj.url? argsObj.url.replace(ESC_CHARS.colon,':') : undefined;x
+    this.url = argsObj.url? argsObj.url.replace(ESC_CHARS.colon,':') : undefined;
     this.configuration.useConditionSetOutputAsLabel = argsObj.useConditionSetOutputAsLabel;
     this.addStaticStyleForObj(argsObj);
     this.addCondStylesForObj(argsObj);
