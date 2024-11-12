@@ -78,26 +78,69 @@
                 </li>
             </ul>
             <h3>Condition CSV Input File</h3>
-            <p>Defines Condition Sets to be used in the matrix Display Layout. When the condition cells (condDefault,
-                cond1, etc.) are populated for a row, a Condition Set will be created that incorporates and evaluates
-                the telemetry parameter in column &quot;dataSource&quot;.</p>
+            <p>Defines Condition Sets to be used in the matrix Display Layout.</p>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-telem.png"
                     alt="Picture of CSV file" title="Matrix Layout telemetry CSV file"></p>
-<h4 id="OpenMCTScriptingTool-ConditionOperation">Style and Condition Arguments</h4>
-            <p>Style and condition arguments are defined in a JSON-like string format, in this form: <code>{
-                property:value,property:value,etc. }</code> Note that both property names and values don&apos;t use
-                quotes around them.</p>
-            <table>
+<h4 id="OpenMCTScriptingTool-ConditionOperation">Columns</h4>
+          <table>
                 <thead>
                 <tr>
-                    <th class="em">Argument Property</th>
+                    <th class="em">Column</th>
                     <th>Description</th>
                     <th>Example</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
+                    <td class="em">setName</td>
+                    <td>Name of a Condition Set. The name only needs to be defined once; following rows of conditions will be added to the last defined Condition Set.&nbsp;&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="em">setTelemetry</td>
+                    <td>A full path to one or more telemetry parameters, separated by commas.&nbsp;
+                    </td>
+                    <td>/Spacesystem/subsystem/parameter1,/Spacesystem/subsystem/parameter2</td>
+                </tr>
+                <tr>
+                    <td class="em">condName</td>
+                    <td>Name of this Condition. Names must be unique in a given Condition Set, but can be duplicated across multiple sets.&nbsp;
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="em">criteria</td>
+                    <td>One or more criteria definitions, separated by commas.&nbsp; See "Condition Criteria Arguments" below.</td>
+                    <td>{telemetry:any,operation:enumValueIs,input:[0],metadata:value}</td>
+                </tr>
+                <tr>
                     <td class="em">output</td>
+                    <td>A string, TRUE or FALSE that will be output by this condition when it is matched.</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="em">isDefault</td>
+                    <td>TRUE,&nbsp; FALSE or blank. Defuults to FALSE if left blank.
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+                </tbody>
+            </table>
+<h4 id="OpenMCTScriptingTool-ConditionOperation">Condition Criteria Arguments</h4>
+            <p>Conditions allow any number of criteria to be defined per condition.&nbsp; Arguments are defined in a JSON-like string format, in this form: <code>{
+              property:value,property:value,etc. }</code> Note that both property names and values don&apos;t use
+              quotes around them.</p>
+<table>
+          <thead>
+                <tr>
+                    <th class="em">Argument Property</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+        </thead>
+                <tbody>
+                <tr>
+                    <td class="em">telemetry</td>
                     <td>A string output by a matching condition in a Condition Set.</td>
                     <td>{output:ERROR}<br>{output:Nominal}</td>
                 </tr>
@@ -117,8 +160,8 @@
                     <td>{input:[-10,10]}<br>{input:[foo]}</td>
                 </tr>
                 <tr>
-                    <td class="em">backgroundColor</td>
-                    <td>A hex color value for the background of a stylable element, specified as a full hex value.</td>
+                    <td class="em">metadata</td>
+                    <td>'value' when evaluating any telemetry values, 'dataReceived' when operation is ifDefined, isUndefined, etc.&nbsp;See "Condition Operation and Inputs" below for details.</td>
                     <td>{backgroundColor:#660000}</td>
                 </tr>
                 <tr>
@@ -134,57 +177,8 @@
                     <td>{border:1px solid #ff0000}</td>
                 </tr>
                 </tbody>
-            </table>
-            <h4 id="condition-examples">Style and Condition Examples</h4>
-            <table>
-                <thead>
-                <tr>
-                    <th><strong>Type</strong></th>
-                    <th><strong>Description</strong></th>
-                    <th><strong>Style / Condition String</strong></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>All</td>
-                    <td>Give an alphanumeric, text object or Condition Widget a dark red background, red border and
-                        white text.
-                    </td>
-                    <td>{backgroundColor:#660000,border:1px solid #ff0000,color:#ffffff}</td>
-                </tr>
-                <tr>
-                    <td>All</td>
-                    <td>If the telemetry is present on the server, output the string &quot;Defined&quot; with a medium
-                        gray background and white foreground.
-                    </td>
-                    <td>{output:Defined,backgroundColor:#666666,color:#ffffff,operation:isDefined}</td>
-                </tr>
-                <tr>
-                    <td>Numeric</td>
-                    <td>If the current float telemetry value is between than -0.1 and 0.2, output the string &quot;Nominal&quot;
-                        with an green background and white foreground.
-                    </td>
-                    <td>{output:Nominal,backgroundColor:#368215,color:#ffffff,operation:between,input:[-0.1,0.2]}</td>
-                </tr>
-                <tr>
-                    <td>Numeric</td>
-                    <td>If the current float telemetry value is greater than 0.2, output the string &quot;High&quot;
-                        with an orange background, yellow border and white foreground.
-                    </td>
-                    <td>{output:High,backgroundColor:#ff6600,color:#ffffff,border:1px solid
-                        #ffcc00,operation:greaterThan,input:[0.2]}
-                    </td>
-                </tr>
-                <tr>
-                    <td>Enum</td>
-                    <td>If the current enum parameter is &quot;enabled&quot;, output the string &quot;Enabled&quot; with
-                        a green background and white foreground.
-                    </td>
-                    <td>{output:Enabled,backgroundColor:#368215,color:#ffffff,operation:enumValueIs,input:[1]}</td>
-                </tr>
-                </tbody>
-            </table>
-            <h4>Condition Operations and Inputs</h4>
+          </table>
+<h4>Condition Operations and Inputs</h4>
             <table>
                 <thead>
                 <tr>
@@ -205,26 +199,27 @@
                         have a value.
                     </td>
                     <td>isDefined, isUndefined</td>
-                    <td>No comparison value</td>
                     <td>N/A</td>
+                    <td>{telemetry:any,operation:isUndefined}</td>
                     <td></td>
                 </tr>
                 <tr>
                     <td>All</td>
                     <td>Data older than</td>
-                    <td></td>
+                    <td>Allows a user-defined "staleness" interval to be applied to a parameter.</td>
                     <td>isStale</td>
                     <td>Number of milliseconds</td>
-                    <td>1500</td>
+                    <td><p>{telemetry:any,operation:isStale,input:[1500]}</p>
+                    </td>
                     <td></td>
                 </tr>
                 <tr>
                     <td>Float</td>
                     <td>Equality</td>
-                    <td>Compares a current telemetry value to the Comparison value with equality.</td>
+                    <td>Compares a current telemetry value to the input with equality.</td>
                     <td>equalTo</td>
                     <td>Single number</td>
-                    <td>100</td>
+                    <td><p>{telemetry:any,operation:equalTo,input:[1]}</p></td>
                     <td>Note that Float and Integer telemetry types and comparisons are not compatible, i.e. a telem
                         value of 0.000 will not match a comparison value of 0. Use Greater/less than comparisons in
                         these cases.
@@ -236,7 +231,7 @@
                     <td></td>
                     <td>greaterThan, lessThan, greaterThanOrEq, lessThanOrEq</td>
                     <td>Single number</td>
-                    <td>100</td>
+                    <td><p>{telemetry:any,operation:greaterThan,input:[0]}</p></td>
                     <td></td>
                 </tr>
                 <tr>
@@ -245,7 +240,7 @@
                     <td></td>
                     <td>between, notBetween</td>
                     <td>Two numbers separated by a comma</td>
-                    <td>-100,100</td>
+                    <td>{telemetry:any,operation:between,input:[-100,100]}</td>
                     <td>Values match <em>between</em> the defined range ends, not inclusive of them. For example, a
                         current value of -100 will not match a between condition of [-100,100].
                     </td>
@@ -256,7 +251,7 @@
                     <td></td>
                     <td>enumValueIs, enumValueIsNot</td>
                     <td>Raw numeric of the enumeration, not the enumeration string</td>
-                    <td>1</td>
+                    <td>{telemetry:any,operation:enumValueIs,input:[2]}&nbsp;</td>
                     <td></td>
                 </tr>
                 <tr>
@@ -265,7 +260,7 @@
                     <td></td>
                     <td>textContains, textDoesNotContain</td>
                     <td>Text</td>
-                    <td>ooba</td>
+                    <td>{telemetry:any,operation:textContains,input:[oob]}</td>
                     <td></td>
                 </tr>
                 <tr>
@@ -274,7 +269,7 @@
                     <td></td>
                     <td>textStartsWith, textEndsWith,</td>
                     <td>Text</td>
-                    <td>Foo</td>
+                    <td>{telemetry:any,operation:textStartsWith,input:[Foo]}</td>
                     <td></td>
                 </tr>
                 <tr>
@@ -283,11 +278,56 @@
                     <td></td>
                     <td>textIsExactly</td>
                     <td>Text</td>
-                    <td>Foobar</td>
+                    <td>{telemetry:any,operation:textIsExactly,input:[Foobar]}</td>
                     <td></td>
                 </tr>
                 </tbody>
             </table>
+
+            <h4 id="condition-examples">Style and Condition Examples</h4>
+            <table>
+              <thead>
+                <tr>
+                  <th><strong>Type</strong></th>
+                  <th><strong>Description</strong></th>
+                  <th><strong>Style / Condition String</strong></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>All</td>
+                  <td>Give an alphanumeric, text object or Condition Widget a dark red background, red border and
+                    white text. </td>
+                  <td>{backgroundColor:#660000,border:1px solid #ff0000,color:#ffffff}</td>
+                </tr>
+                <tr>
+                  <td>All</td>
+                  <td>If the telemetry is present on the server, output the string &quot;Defined&quot; with a medium
+                    gray background and white foreground. </td>
+                  <td>{output:Defined,backgroundColor:#666666,color:#ffffff,operation:isDefined}</td>
+                </tr>
+                <tr>
+                  <td>Numeric</td>
+                  <td>If the current float telemetry value is between than -0.1 and 0.2, output the string &quot;Nominal&quot;
+                    with an green background and white foreground. </td>
+                  <td>{output:Nominal,backgroundColor:#368215,color:#ffffff,operation:between,input:[-0.1,0.2]}</td>
+                </tr>
+                <tr>
+                  <td>Numeric</td>
+                  <td>If the current float telemetry value is greater than 0.2, output the string &quot;High&quot;
+                    with an orange background, yellow border and white foreground. </td>
+                  <td>{output:High,backgroundColor:#ff6600,color:#ffffff,border:1px solid
+                    #ffcc00,operation:greaterThan,input:[0.2]} </td>
+                </tr>
+                <tr>
+                  <td>Enum</td>
+                  <td>If the current enum parameter is &quot;enabled&quot;, output the string &quot;Enabled&quot; with
+                    a green background and white foreground. </td>
+                  <td>{output:Enabled,backgroundColor:#368215,color:#ffffff,operation:enumValueIs,input:[1]}</td>
+                </tr>
+              </tbody>
+            </table>
+
             <h4>Escaping Text</h4>
             <p>The tool uses certain special characters (commas, tildes and backslashes) to separate arguments and
                 define telemetry paths - these characters can&apos;t be used in text labels without being escaped. To
