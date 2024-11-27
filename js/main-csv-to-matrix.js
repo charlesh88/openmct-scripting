@@ -16,12 +16,18 @@ DESIGN:
 const INPUT_TYPE = "csv";
 const inputMatrixCsv = document.getElementById("inputMatrixCsv");
 const OUTPUT_BASE_NAME_KEY = '_MATRIX_LAYOUT_BASE_NAME';
+let STYLE_PRESETS;
 let CONDITION_SETS = [];
 let TELEMETRY = [];
 let CONFIG_MATRIX;
 
 storeOutputBaseName();
 loadLocalSettings();
+loadStoredStylePresets();
+inputStylesCsv.addEventListener("change", function (ev) {
+    uploadStylesCsv(ev.currentTarget.files);
+}, false);
+
 inputConditionCsv.addEventListener("change", function (ev) {
     uploadConditionFile(ev.currentTarget.files);
 }, false);
@@ -290,7 +296,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                 const colW = parseInt(arrColWidths[c]);
                 if (matrixCellStr.length > 0) {
                     const matrixCellObj = unpackMatrixCellStrToObj(matrixCellStr);
-                    console.log('matrixCellObj', matrixCellObj);
+                    // console.log('matrixCellObj', matrixCellObj);
 
                     if (!matrixCellObj.type) {
                         // TODO: don't think this is working...
@@ -604,7 +610,6 @@ function getCondSetAndStyles(argsObj) {
                 // Get the resulting [].configuration.id
                 const openMCTCond = searchArrayOfObjects(conditionCollection, 'configuration.name', styleCondName);
                 if (openMCTCond) {
-                    // console.log('openMCTCond',openMCTCond);
                     stylesArr.push(createOpenMCTStyleObj(conditionStyle, openMCTCond.id));
                 }
             });
@@ -622,4 +627,82 @@ function getCondSetAndStyles(argsObj) {
     }
 
     return undefined;
+}
+
+// STORED STYLES
+function uploadStylesCsv(files) {
+    let readers = [];
+    let filenames = [];
+
+    // Abort if there were no files selected
+    if (!files.length) return;
+
+    // Store promises in array
+    for (let i = 0; i < files.length; i++) {
+        filenames.push(files[i].name);
+        readers.push(readFileAsText(files[i]));
+    }
+
+    // Trigger Promises
+    Promise.all(readers).then((values) => {
+        storeStylePresets(values[0]);
+    });
+}
+
+function storeStylePresets(csv) {
+    /* Data will be in cols and rows format like
+    * name, backgroundColor, color, etc.
+    */
+    const styleObjs = csvToObjArray(csv);
+    storeLocal(LOCALSTORE_BASE_NAME.concat('_STYLE_PRESETS'),JSON.stringify(styleObjs));
+    loadStoredStylePresets();
+}
+
+function loadStoredStylePresets() {
+    const styles = loadLocal(LOCALSTORE_BASE_NAME.concat('_STYLE_PRESETS'));
+
+    const statusElem = document.getElementById('storedStylesStatus');
+    if (styles) {
+        STYLE_PRESETS = JSON.parse(styles);
+        statusElem.classList.add('--loaded');
+        previewStoredStylePresets();
+        return true;
+    }
+    return false;
+}
+
+function previewStoredStylePresets() {
+    if (!STYLE_PRESETS) {
+        return false;
+    }
+    const outputMsgArr = [[
+        'Name',
+        'backgroundColor',
+        'color',
+        'border'
+    ]];
+
+    Object.keys(STYLE_PRESETS).forEach(key => {
+        const s = STYLE_PRESETS[key];
+        let styleStr = '';
+        let stylePreview = "<div style='$STYLE'>$NAME</div>";
+        stylePreview = stylePreview.replace('$NAME',s.name);
+        stylePreview = stylePreview.replace('$STYLE',
+            'background-color:'.concat(s.backgroundColor).concat(';')
+                .concat('color:').concat(s.color).concat(';')
+                .concat('border:').concat(s.border)
+        );
+        // console.log('=>',s);
+        const rowArr = [
+            stylePreview,
+            s.backgroundColor,
+            s.color,
+            s.border
+        ];
+
+        outputMsgArr.push(rowArr);
+    })
+
+    outputMsg(htmlGridFromArray(outputMsgArr));
+
 }
