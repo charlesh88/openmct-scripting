@@ -239,7 +239,14 @@ function createOpenMCTMatrixLayouts(filenames, values) {
 
     // ITERATE THROUGH LAYOUT FILES
     for (let i = 0; i < filenames.length; i++) {
-        const rowArr = csvToArray(values[i]);
+        let fileStr = values[i];
+
+        // PRE-PROCESSING - STYLE PRESETS
+        if (fileStr.includes('stylePreset')) {
+            fileStr = applyStylePresets(fileStr);
+        }
+
+        const rowArr = csvToArray(fileStr);
         const layoutName = filenames[i].toString().replaceAll('.csv', '');
 
         let curY = 0;
@@ -704,5 +711,47 @@ function previewStoredStylePresets() {
     })
 
     outputMsg(htmlGridFromArray(outputMsgArr));
+}
 
+function applyStylePresets(str) {
+    console.log('applyStylePresets str in >',str);
+
+    const stylePropsKeys = [
+        'backgroundColor',
+        'color',
+        'border'
+    ]
+    if (!STYLE_PRESETS) {
+        outputMsg("ERROR: The layout CSV file uses stylePreset(s), but no presets have been loaded.");
+        return str;
+    }
+    const presetKeys = Object.keys(STYLE_PRESETS);
+    // console.log(STYLE_PRESETS);
+
+    for (let i = 0; i < STYLE_PRESETS.length; i++) {
+        const presetObj = STYLE_PRESETS[i];
+        const searchStr = 'stylePreset:'.concat(presetObj.name);
+        console.log(searchStr);
+        let stylePropsStr = '';
+        const aPvs = [];
+        stylePropsKeys.forEach(stylePropKey => {
+            if (presetObj[stylePropKey]) {
+                const aPv = [
+                    stylePropKey,
+                    presetObj[stylePropKey]
+                ];
+                aPvs.push(aPv.join(':'));
+            }
+        })
+        stylePropsStr = aPvs.join(',');
+        str = str.replaceAll(searchStr,stylePropsStr);
+    }
+
+    if (str.includes('stylePreset')) {
+        // The layout file included a stylePreset name that wasn't included in STYLE_PRESETS
+        outputMsg("ERROR: The layout CSV file uses a stylePreset that wasn't defined in the presets file.");
+    }
+
+    console.log('applyStylePresets str out >',str);
+    return str;
 }

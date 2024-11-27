@@ -229,6 +229,7 @@ function createOpenMCTStyleObj(args = undefined, condId = undefined) {
         obj.conditionId = condId;
     }
     obj.style = copyObj(objStyleDefaults);
+
     if (args) {
         // console.log('createOpenMCTStyleObj args',args);
         for (const key in objStyleDefaults) {
