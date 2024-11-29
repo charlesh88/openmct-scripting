@@ -385,8 +385,13 @@ form {
 }
 
 .c-msg p {
-  margin: 2px;
-  padding: 0;
+  margin: 1px;
+  padding: 2px 4px;
+
+  &.--error {
+    border-radius: 2px;
+    background: rgba(red, 0.3);
+  }
 }
 
 .c-msg__table {

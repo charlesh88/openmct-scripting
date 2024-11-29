@@ -21,6 +21,7 @@ let CONDITION_SETS = [];
 let TELEMETRY = [];
 let CONFIG_MATRIX;
 
+outputMsgReset();
 storeOutputBaseName();
 loadLocalSettings();
 loadStoredStylePresets();
@@ -602,6 +603,7 @@ function getCondSetAndStyles(argsObj) {
     const o = {};
 
     const conditionStylesObj = argsObj.conditionStyles;
+
     if (conditionStylesObj) {
         const openMCTCondSet = CONDITION_SETS[conditionStylesObj.set];
         if (openMCTCondSet) {
@@ -611,6 +613,7 @@ function getCondSetAndStyles(argsObj) {
             // valid styles []
             const stylesArr = [];
             const conditionCollection = openMCTCondSet.configuration.conditionCollection;
+
             conditionStylesObj.conditions.forEach(conditionStyle => {
                 const styleCondName = conditionStyle.name;
                 // Look for a matching condition in conditionCollection [].configuration.name;
@@ -618,6 +621,13 @@ function getCondSetAndStyles(argsObj) {
                 const openMCTCond = searchArrayOfObjects(conditionCollection, 'configuration.name', styleCondName);
                 if (openMCTCond) {
                     stylesArr.push(createOpenMCTStyleObj(conditionStyle, openMCTCond.id));
+                } else {
+                    outputErrorMsg([
+                        argsObj.name,
+                        'uses Condition "',
+                        styleCondName,
+                        '" which was not found'
+                    ].join(' '));
                 }
             });
 
@@ -625,11 +635,12 @@ function getCondSetAndStyles(argsObj) {
             return o;
         } else {
             console.error('No Condition Set:',conditionStylesObj.set);
-            outputMsg('ERROR: "'
-                .concat(argsObj.name)
-                .concat('" uses Condition Set "')
-                .concat(conditionStylesObj.set)
-                .concat('" which does not exist.'))
+            outputErrorMsg([
+                argsObj.name,
+                'uses Condition Set "',
+                conditionStylesObj.set,
+                '" which was not found'
+            ].join(' '))
         }
     }
 
@@ -672,6 +683,7 @@ function loadStoredStylePresets() {
     if (styles) {
         STYLE_PRESETS = JSON.parse(styles);
         statusElem.classList.add('--loaded');
+        outputMsgReset();
         previewStoredStylePresets();
         return true;
     }
@@ -710,7 +722,9 @@ function previewStoredStylePresets() {
         outputMsgArr.push(rowArr);
     })
 
+    outputMsg('Style presets:')
     outputMsg(htmlGridFromArray(outputMsgArr));
+    outputMsg('---')
 }
 
 function applyStylePresets(str) {
@@ -725,22 +739,17 @@ function applyStylePresets(str) {
         outputMsg("ERROR: The layout CSV file uses stylePreset(s), but no presets have been loaded.");
         return str;
     }
-    const presetKeys = Object.keys(STYLE_PRESETS);
     // console.log(STYLE_PRESETS);
 
     for (let i = 0; i < STYLE_PRESETS.length; i++) {
         const presetObj = STYLE_PRESETS[i];
         const searchStr = 'stylePreset:'.concat(presetObj.name);
-        console.log(searchStr);
         let stylePropsStr = '';
         const aPvs = [];
         stylePropsKeys.forEach(stylePropKey => {
+            // color, border, etc.
             if (presetObj[stylePropKey]) {
-                const aPv = [
-                    stylePropKey,
-                    presetObj[stylePropKey]
-                ];
-                aPvs.push(aPv.join(':'));
+                aPvs.push([stylePropKey,presetObj[stylePropKey]].join(':'));
             }
         })
         stylePropsStr = aPvs.join(',');

@@ -135,8 +135,21 @@ function outputMsg(msg) {
     outputMsgAdd('<p>'.concat(msg).concat('</p>'));
 }
 
+function outputErrorMsg(msg) {
+    outputMsgAdd([
+        '<p class="--error">',
+        'ERROR: ',
+        msg,
+        '</p>'
+    ].join(''))
+}
+
 function outputMsgAdd(str) {
     outputMsgText.innerHTML += str;
+}
+
+function outputMsgReset() {
+    outputMsgText.innerHTML = '';
 }
 
 function outputTable(rowArray = [], startTable = false, endTable = false) {
