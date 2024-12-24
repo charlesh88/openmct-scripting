@@ -74,6 +74,7 @@ function createConditionSets(csv) {
 
     // condObjs is an array of short-handed conditions, in one or more condition sets
     const condObjs = csvToObjArray(csv);
+    console.log('createConditionSets', condObjs)
 
     outputMsg('Condition file imported, '
         .concat(condObjs.length.toString())
@@ -83,7 +84,24 @@ function createConditionSets(csv) {
     CONFIG_MATRIX = getConfigFromForm();
 
     for (const condObject of condObjs) {
+        if (condObject.setName) {
+            // setName only needs to be defined once in the csv for each Condition Set to be created
+            curSetName = condObject.setName;
+        } else if (!curSetName.length > 0) {
+            // There's no curSetName and setName has not been defined, abort
+            outputErrorMsg('No setName has been defined; see console for more.')
+            console.error('No setName has been defined', condObject);
+            return false;
+        }
+
         let defCondDefined = false;
+        if (!condObject.criteria.length > 0) {
+            outputErrorMsg("Condition Set "
+                .concat(curSetName)
+                .concat(" has a condition with no criteria."));
+            return false;
+        }
+
         if (!condObject.isDefault) {
             condObject.criteriaArr = replaceCommasInBrackets(
                 condObject.criteria, ESC_CHARS.comma)
@@ -91,15 +109,6 @@ function createConditionSets(csv) {
                 .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
         } else {
             defCondDefined = true;
-        }
-
-        if (condObject.setName) {
-            // setName only needs to be defined once in the csv for each Condition Set to be created
-            curSetName = condObject.setName;
-        } else if (!curSetName.length > 0) {
-            // There's no curSetName and setName has not been defined, abort
-            console.error('No setName has been defined', condObject);
-            return false;
         }
 
         if (!CONDITION_SETS[curSetName]) {
@@ -113,17 +122,25 @@ function createConditionSets(csv) {
             createOpenMCTCondObj(condObject)
         );
 
-        if (condObject.setTelemetry) {
-            // Telemetry has been defined in the .csv file for the current Condition Set
-            const arrSetTelem = (condObject.setTelemetry.split(','));
-            for (const telem of arrSetTelem) {
-                if (!cs.telemetry.includes(telem)) {
-                    // If setTelemetry hasn't been added to the set's composition, do it.
-                    cs.telemetry.push(telem);
-                    cs.addToComposition(telem, "taxonomy");
-                }
-                if (!TELEMETRY.includes(telem)) {
-                    TELEMETRY.push(telem);
+        if (condObject.setName) {
+            // If setName is being defined, setTelemetry is required.
+            if (!condObject.setTelemetry) {
+                outputErrorMsg("Condition Set "
+                    .concat(curSetName)
+                    .concat(" requires setTelemetry, but none is defined."));
+                return false;
+            } else {
+                // Telemetry has been defined in the .csv file for the current Condition Set
+                const arrSetTelem = (condObject.setTelemetry.split(','));
+                for (const telem of arrSetTelem) {
+                    if (!cs.telemetry.includes(telem)) {
+                        // If setTelemetry hasn't been added to the set's composition, do it.
+                        cs.telemetry.push(telem);
+                        cs.addToComposition(telem, "taxonomy");
+                    }
+                    if (!TELEMETRY.includes(telem)) {
+                        TELEMETRY.push(telem);
+                    }
                 }
             }
         }
@@ -347,16 +364,16 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                                 itemW: itemW,
                                 x: curX,
                                 y: curY,
-                                conditionStyles: matrixCellObj.conditionStyles? matrixCellObj.conditionStyles : undefined,
-                                ident: telem.replaceAll('/','~'),
-                                style: matrixCellObj.style? matrixCellObj.style : undefined,
+                                conditionStyles: matrixCellObj.conditionStyles ? matrixCellObj.conditionStyles : undefined,
+                                ident: telem.replaceAll('/', '~'),
+                                style: matrixCellObj.style ? matrixCellObj.style : undefined,
                             };
 
                             if (matrixCellObj.options) {
-                                argsTelem.displayMode = matrixCellObj.options.displayMode? matrixCellObj.options.displayMode : 'value';
-                                argsTelem.format = matrixCellObj.options.format? matrixCellObj.options.format : undefined;
-                                argsTelem.showUnits = matrixCellObj.options.showUnits? matrixCellObj.options.showUnits : true;
-                                argsTelem.value = matrixCellObj.options.value? matrixCellObj.options.value : 'value'
+                                argsTelem.displayMode = matrixCellObj.options.displayMode ? matrixCellObj.options.displayMode : 'value';
+                                argsTelem.format = matrixCellObj.options.format ? matrixCellObj.options.format : undefined;
+                                argsTelem.showUnits = matrixCellObj.options.showUnits ? matrixCellObj.options.showUnits : true;
+                                argsTelem.value = matrixCellObj.options.value ? matrixCellObj.options.value : 'value'
                             }
 
                             dlItem = dlMatrix.addTelemetryView(argsTelem);
@@ -382,14 +399,14 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                             // Create as a Condition Widget
 
                             const argsCW = {
-                                conditionStyles: matrixCellObj.conditionStyles? matrixCellObj.conditionStyles : undefined,
+                                conditionStyles: matrixCellObj.conditionStyles ? matrixCellObj.conditionStyles : undefined,
                                 name: restoreEscChars(matrixCellObj.name),
-                                style: matrixCellObj.style? matrixCellObj.style : undefined
+                                style: matrixCellObj.style ? matrixCellObj.style : undefined
                             };
 
                             if (matrixCellObj.options) {
-                                argsCW.url = matrixCellObj.options.url? matrixCellObj.options.url : undefined;
-                                argsCW.useConditionSetOutputAsLabel = matrixCellObj.options.useCondOutput? matrixCellObj.options.useCondOutput : false;
+                                argsCW.url = matrixCellObj.options.url ? matrixCellObj.options.url : undefined;
+                                argsCW.useConditionSetOutputAsLabel = matrixCellObj.options.useCondOutput ? matrixCellObj.options.useCondOutput : false;
                             }
 
                             // Create a folder for Condition Widgets if it doesn't exist
@@ -490,11 +507,11 @@ function createOpenMCTMatrixLayouts(filenames, values) {
     // Make a LAD Table of all collected telemetry
     const ladTable = new LADTable('LT Telemetry');
     TELEMETRY.forEach(telem => {
-        const telemPath = telem.replaceAll('/','~');
+        const telemPath = telem.replaceAll('/', '~');
         ladTable.addToComposition(telemPath, getNamespace(telemPath))
     })
 
-    addDomainObject(ladTable,FOLDER_ROOT);
+    addDomainObject(ladTable, FOLDER_ROOT);
 
     outputMsg(htmlGridFromArray(outputMsgArr));
     console.log('OBJ_JSON', OBJ_JSON);
@@ -634,7 +651,7 @@ function getCondSetAndStyles(argsObj) {
             o.styles = stylesArr;
             return o;
         } else {
-            console.error('No Condition Set:',conditionStylesObj.set);
+            console.error('No Condition Set:', conditionStylesObj.set);
             outputErrorMsg([
                 argsObj.name,
                 'uses Condition Set "',
@@ -672,7 +689,7 @@ function storeStylePresets(csv) {
     * name, backgroundColor, color, etc.
     */
     const styleObjs = csvToObjArray(csv);
-    storeLocal(LOCALSTORE_BASE_NAME.concat('_STYLE_PRESETS'),JSON.stringify(styleObjs));
+    storeLocal(LOCALSTORE_BASE_NAME.concat('_STYLE_PRESETS'), JSON.stringify(styleObjs));
     loadStoredStylePresets();
 }
 
@@ -705,7 +722,7 @@ function previewStoredStylePresets() {
         const s = STYLE_PRESETS[key];
         let styleStr = '';
         let stylePreview = "<div style='$STYLE'>$NAME</div>";
-        stylePreview = stylePreview.replace('$NAME',s.name);
+        stylePreview = stylePreview.replace('$NAME', s.name);
         stylePreview = stylePreview.replace('$STYLE',
             'background-color:'.concat(s.backgroundColor).concat(';')
                 .concat('color:').concat(s.color).concat(';')
@@ -728,7 +745,7 @@ function previewStoredStylePresets() {
 }
 
 function applyStylePresets(str) {
-    console.log('applyStylePresets str in >',str);
+    console.log('applyStylePresets str in >', str);
 
     const stylePropsKeys = [
         'backgroundColor',
@@ -749,11 +766,11 @@ function applyStylePresets(str) {
         stylePropsKeys.forEach(stylePropKey => {
             // color, border, etc.
             if (presetObj[stylePropKey]) {
-                aPvs.push([stylePropKey,presetObj[stylePropKey]].join(':'));
+                aPvs.push([stylePropKey, presetObj[stylePropKey]].join(':'));
             }
         })
         stylePropsStr = aPvs.join(',');
-        str = str.replaceAll(searchStr,stylePropsStr);
+        str = str.replaceAll(searchStr, stylePropsStr);
     }
 
     if (str.includes('stylePreset')) {
@@ -761,6 +778,6 @@ function applyStylePresets(str) {
         outputMsg("ERROR: The layout CSV file uses a stylePreset that wasn't defined in the presets file.");
     }
 
-    console.log('applyStylePresets str out >',str);
+    console.log('applyStylePresets str out >', str);
     return str;
 }

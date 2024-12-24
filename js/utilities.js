@@ -141,6 +141,13 @@ function getStrBetweenRegex(str, regex) {
 
 function replaceCommasInBrackets(inStr, replaceChar) {
     // Regular expression to match text inside curly brackets
+    if (!inStr || !inStr.length > 0) {
+        return false;
+    }
+    // if (!/[{}]/.test(inStr)) {
+    //     outputErrorMsg(inStr.concat(" doesn't include any brackets"))
+    //     return false;
+    // }
     const regex = /\{([^{}]*)\}/g;
 
     // Replace the commas within the curly brackets
