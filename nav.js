@@ -12,6 +12,10 @@ const navArray = [
         "pathname": "index-prl-to-display.html"
     },
     {
+        "name": "Proc/YS/GCS Validate",
+        "pathname": "index-prl-ys-gcs-validate.html"
+    },
+    {
         "name": "Stacked Views",
         "pathname": "index-csv-to-stacked-plot.html"
     },

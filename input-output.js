@@ -34,11 +34,27 @@ function uploadFiles(files, fileType) {
         // with the text of every selected file
         // ["File1 Content", "File2 Content" ... "FileN Content"]
 
-        if (fileType.includes('prl')) {
+        switch (fileType) {
+            case 'prl':
+                processPrlFiles(filenames, values);
+                break;
+            case 'gcsfilelist':
+                processGCSFileList(filenames[0], values[0]);
+                break;
+            case 'opi':
+                processOpiFiles(filenames, values);
+                break;
+            default:
+                processInputCsvs(filenames, values);
+        }
+
+/*        if (fileType.includes('prl')) {
             processPrlFiles(filenames, values);
         } else if (fileType.includes('csv')) {
             processInputCsvs(filenames, values);
-        }
+        } else if (fileType.includes('opi')) {
+            processOpiFiles(filenames, values);
+        }*/
     });
 }
 
@@ -63,7 +79,7 @@ function uploadMatrixFile(files, fileType) {
 
 function csvToArray(str, delimiter = ',') {
     // Break the csv into rows
-    const arrLines = str.split(/\r?\n/).filter((row) => row.length > 0);
+    const arrLines = listToArray(str); //str.split(/\r?\n/).filter((row) => row.length > 0);
 
     const arrLinesCleaned = arrLines.map(function (row) {
         let valuesStr = row
@@ -95,6 +111,10 @@ function csvToArray(str, delimiter = ',') {
     })
     // console.log('arrLinesCleaned',arrLinesCleaned);
     return arrLinesCleaned;
+}
+
+function listToArray(str) {
+    return str.split(/\r?\n/).filter((row) => row.length > 0);
 }
 
 function csvToObjArray(str) {

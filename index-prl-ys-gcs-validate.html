@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Validate PRL/YS/GCS Files</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body translate="no">
+<div class="c-app">
+    <div class="c-nav" id="nav"></div>
+    <div class="head">
+        <h1>Validate PRL/YS/GCS Files <span id="app-version" class="app-version"></span></h1>
+        <div class="desc">Description to come.</div>
+    </div>
+    <div class="page">
+        <div class="page-main --main">
+            <div id="component-mdb" class="contents"></div>
+            <div class="page-section c-config-holder">
+                <div class="c-config">
+                    <h2>Input Files</h2>
+                    <div class="c-config__label">Procedure Files (.prl)</div>
+                    <div class="c-config__value">
+                        <input id="inputPrl" type="file" accept=".prl" class="upload-file-btn" multiple/>
+                    </div>
+                    <div class="c-config__label">Yamcs Studio File (.opi)</div>
+                    <div class="c-config__value">
+                        <input id="inputOpi" type="file" accept=".opi" class="upload-file-btn"/>
+                    </div>
+                    <div class="c-config__label">GCS Filename List (.txt)</div>
+                    <div class="c-config__value">
+                        <input id="inputGCSFileList" type="file" accept=".txt" class="upload-file-btn"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-section">
+                <button id="btnComparePrlToOpi" onclick="comparePrlToOpi();">
+                    VALIDATE PROC GCS REFS
+                </button>
+                <!--<button id="btnValidateTelem" class="&#45;&#45;minor" onclick="validateTelem();" disabled>
+                    VALIDATE TELEMETRY
+                </button>-->
+                <button class="--minor" onclick="window.location.assign(window.location.href)">RESTART</button>
+            </div>
+
+            <div class="page-section c-output">
+                <h2>Messages</h2>
+                <div class="c-msg" id="outputMsg">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="common.js"></script>
+<script src="common-prl.js"></script>
+<script src="input-output.js"></script>
+<script src="main-prl-ys-gcs-validate.js"></script>
+<script src="utilities.js"></script>
+<script src="ui-elements.js"></script>
+<script src="telemetry-extract.js"></script>
+<script src="gcs-extract-prl.js"></script>
+<script src="nav.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
+
