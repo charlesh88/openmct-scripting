@@ -259,11 +259,6 @@ function createOpenMCTMatrixLayouts(filenames, values) {
     for (let i = 0; i < filenames.length; i++) {
         let fileStr = values[i];
 
-        // PRE-PROCESSING - STYLE PRESETS
-        if (fileStr.includes('stylePreset')) {
-            fileStr = applyStylePresets(fileStr);
-        }
-
         const rowArr = csvToArray(fileStr);
         const layoutName = filenames[i].toString().replaceAll('.csv', '');
 
@@ -317,7 +312,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
             // Iterate through row cells
             for (let c = 1; c < row.length; c++) {
                 // Process each cell in the matrix
-                const matrixCellStr = row[c].trim();
+                const matrixCellStr = applyStylePresets(row[c].trim());
                 const colW = parseInt(arrColWidths[c]);
                 if (matrixCellStr.length > 0) {
                     const matrixCellObj = unpackMatrixCellStrToObj(matrixCellStr);
@@ -745,39 +740,42 @@ function previewStoredStylePresets() {
 }
 
 function applyStylePresets(str) {
-    console.log('applyStylePresets str in >', str);
-
-    const stylePropsKeys = [
-        'backgroundColor',
-        'color',
-        'border'
-    ]
-    if (!STYLE_PRESETS) {
-        outputMsg("ERROR: The layout CSV file uses stylePreset(s), but no presets have been loaded.");
-        return str;
-    }
-    // console.log(STYLE_PRESETS);
-
-    for (let i = 0; i < STYLE_PRESETS.length; i++) {
-        const presetObj = STYLE_PRESETS[i];
-        const searchStr = 'stylePreset:'.concat(presetObj.name);
-        let stylePropsStr = '';
-        const aPvs = [];
-        stylePropsKeys.forEach(stylePropKey => {
-            // color, border, etc.
-            if (presetObj[stylePropKey]) {
-                aPvs.push([stylePropKey, presetObj[stylePropKey]].join(':'));
-            }
-        })
-        stylePropsStr = aPvs.join(',');
-        str = str.replaceAll(searchStr, stylePropsStr);
-    }
-
     if (str.includes('stylePreset')) {
-        // The layout file included a stylePreset name that wasn't included in STYLE_PRESETS
-        outputMsg("ERROR: The layout CSV file uses a stylePreset that wasn't defined in the presets file.");
+        // console.log('applyStylePresets str in >', str);
+        const stylePropsKeys = [
+            'backgroundColor',
+            'color',
+            'border'
+        ]
+        if (!STYLE_PRESETS) {
+            outputMsg("ERROR: The layout CSV file uses stylePreset(s), but no presets have been loaded.");
+            return str;
+        }
+        // console.log(STYLE_PRESETS);
+
+        for (let i = 0; i < STYLE_PRESETS.length; i++) {
+            const presetObj = STYLE_PRESETS[i]; // {color:#666666,border:1px solid #ffcc00}
+            const searchStr = 'stylePreset:'.concat(presetObj.name);
+            let stylePropsStr = '';
+            const aPvs = [];
+            stylePropsKeys.forEach(stylePropKey => {
+                // color, border, etc.
+                if (presetObj[stylePropKey]) {
+                    aPvs.push([stylePropKey, presetObj[stylePropKey]].join(':'));
+                }
+            })
+            stylePropsStr = aPvs.join(',');
+            str = str.replaceAll(searchStr, stylePropsStr);
+        }
+
+        // All stylePresets should have been replaced. Any left over mean there was a preset specced that doesn't exist.
+        if (str.includes('stylePreset')) {
+            // The layout file included a stylePreset name that wasn't included in STYLE_PRESETS
+            outputMsg("ERROR: The layout CSV file uses a stylePreset that wasn't defined in the presets file.");
+        }
+
+        // console.log('applyStylePresets str out >', str);
     }
 
-    console.log('applyStylePresets str out >', str);
     return str;
 }
