@@ -258,10 +258,12 @@ function createOpenMCTMatrixLayouts(filenames, values) {
     // ITERATE THROUGH LAYOUT FILES
     for (let i = 0; i < filenames.length; i++) {
         let fileStr = values[i];
+        let useGrid = true;
 
         const rowArr = csvToArray(fileStr);
         const layoutName = filenames[i].toString().replaceAll('.csv', '');
 
+        let curX, itemW, itemH, spanC, spanR;
         let curY = 0;
         let dlItem = {};
         const arrColWidths = rowArr[0];
@@ -307,7 +309,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
         for (let r = 1; r < rowArr.length; r++) {
             const row = rowArr[r];
             const rowH = parseInt(row[0]);
-            let curX = 0;
+            curX = 0;
 
             // Iterate through row cells
             for (let c = 1; c < row.length; c++) {
@@ -327,24 +329,31 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                         }
                     }
 
+                    if (matrixCellObj.pos) {
+                        // This object is using absolute positioning, not rows and columns
+                        curX = matrixCellObj.pos.x;
+                        curY = matrixCellObj.pos.y;
+                        itemW = matrixCellObj.pos.w;
+                        itemH = matrixCellObj.pos.h;
+                    } else {
+                        itemW = colW;
+                        itemH = rowH;
 
-                    let itemW = colW;
-                    let itemH = rowH;
-
-                    if (matrixCellObj.span) {
-                        const spanC = matrixCellObj.span.col;
-                        const spanR = matrixCellObj.span.row;
-                        if (spanC) {
-                            // Add widths from columns to be spanned to itemW
-                            for (let i = c + 1; i < (c + parseInt(spanC)); i++) {
-                                itemW += parseInt(arrColWidths[i]) + itemMargin;
+                        if (matrixCellObj.span) {
+                            spanC = matrixCellObj.span.col;
+                            spanR = matrixCellObj.span.row;
+                            if (spanC) {
+                                // Add widths from columns to be spanned to itemW
+                                for (let i = c + 1; i < (c + parseInt(spanC)); i++) {
+                                    itemW += parseInt(arrColWidths[i]) + itemMargin;
+                                }
                             }
-                        }
 
-                        if (spanR) {
-                            // Add heights from rows to be spanned to itemH
-                            for (let i = c + 1; i < (c + parseInt(spanR)); i++) {
-                                itemH += parseInt(arrColHeights[i]) + itemMargin;
+                            if (spanR) {
+                                // Add heights from rows to be spanned to itemH
+                                for (let i = c + 1; i < (c + parseInt(spanR)); i++) {
+                                    itemH += parseInt(arrColHeights[i]) + itemMargin;
+                                }
                             }
                         }
                     }
