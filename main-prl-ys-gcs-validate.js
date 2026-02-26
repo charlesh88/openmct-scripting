@@ -188,7 +188,7 @@ function extractButtonsAndGCSFromOpi(filename, fileContent) {
 }
 
 function comparePrlToOpi() {
-    // Iterate through GCS refs in procedures and find them or note in a YS .opi file
+    // Iterate through GCS refs in procedures and find them or not in a YS .opi file
     /*    function lookForPropValInObjArray(array, prop, val) {
             array.forEach(item => {
                 if (item[prop].includes(val)) {
@@ -233,8 +233,80 @@ function comparePrlToOpi() {
                 });
             });
         }
+        console.log('arrCompareResults', arrCompareResults);
         outputMsg(htmlTableFromArray(arrCompareResults));
-        // console.log('arrCompareResults', arrCompareResults);
+    }
+}
+
+function procStepsByGCS() {
+    // 1. Get all GCS refs from the .opi file
+    const opiGCSRefs = ARR_YS_BUTTONS.length > 0 ? ARR_YS_BUTTONS[0].gcs : [];
+
+    // 2. Get all GCS refs from the .prl files
+    const prlGCSRefs = [];
+    ARR_PRL_GCS_REFS.forEach(prlFile => {
+        prlFile.refs.forEach(ref => {
+            if (!prlGCSRefs.includes(ref.name)) {
+                prlGCSRefs.push(ref.name);
+            }
+        });
+    });
+
+    // 3. Create a lookup table of GCS refs to procedure steps where the GCS ref is the key and the value is an array of procedure steps
+    const allGCS = new Set([...opiGCSRefs, ...prlGCSRefs]);
+    const lookup = {};
+    allGCS.forEach(gcs => lookup[gcs] = []);
+    ARR_PRL_GCS_REFS.forEach(prlFile => {
+        prlFile.refs.forEach(ref => {
+            const gcs = ref.name;
+            lookup[gcs].push({
+                file: prlFile.file,
+                step: ref.step,
+                manIns: ref.manIns
+            });
+        });
+    });
+
+    console.log('procStepsByGCS', lookup)
+    const matrix = matrixProcsByGCS(lookup);
+    downloadCSV(matrix, 'proc_steps_by_gcs.csv');
+    return lookup;
+}
+
+function matrixProcsByGCS(lookup) {
+    const gcsToButton = {};
+    if (ARR_YS_BUTTONS.length > 0) {
+        ARR_YS_BUTTONS[0].buttons.forEach(btn => gcsToButton[btn.gcs] = btn.buttonlabel);
+    }
+    const allProcs = new Set();
+    Object.values(lookup).forEach(steps => {
+        steps.forEach(step => allProcs.add(step.file));
+    });
+    const procList = Array.from(allProcs).sort();
+    const matrix = [['GCS', 'Button Label', ...procList]];
+    Object.keys(lookup).sort().forEach(gcs => {
+        const row = [gcs, gcsToButton[gcs] || ''];
+        procList.forEach(proc => {
+            const stepsForProc = lookup[gcs].filter(step => step.file === proc).map(step => step.step).sort((a, b) => parseFloat(a) - parseFloat(b));
+            row.push(stepsForProc.join(', '));
+        });
+        matrix.push(row);
+    });
+    return matrix;
+}
+
+function downloadCSV(data, filename) {
+    const csvContent = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
 
@@ -276,6 +348,7 @@ processPrlFiles = function (filenames, values) {
         }
     }
     outputMsg(lineSepStr);
+    // console.log('ARR_PRL_GCS_REFS', ARR_PRL_GCS_REFS);
 }
 
 processOpiFiles = function (filenames, values) {
@@ -300,6 +373,7 @@ processOpiFiles = function (filenames, values) {
             'GCS refs found.'
 
         ].join(' '));
+        console.log('processOpiFiles', ARR_YS_BUTTONS)
         outputMsg(lineSepStr);
     }
 }
