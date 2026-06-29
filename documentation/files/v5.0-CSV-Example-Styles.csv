@@ -1,0 +1,15 @@
+name,backgroundColor,color,border
+alphaStatic,,#ffffff,1px solid #434343
+textStatic,,#cccccc,
+hdr,#4c4c4c,#cccccc,
+hdrSubtle,,#999999,
+isDefault,#464646,#999999,
+isStale,cyan,#333333,
+isError,,#ff6666,1px solid #990000
+isPass,#368215,#ffffff,
+isFail,#990000,#ffffff,
+isFalse,,,1px solid #555555
+isDisabled,,#dea600,1px solid #dea600
+isActive,#368215,#ffffff,
+isEnabled,#008afa,#ffffff,
+isGreaterThan0,,#dea600,1px solid #dea600

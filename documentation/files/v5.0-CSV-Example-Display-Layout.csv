@@ -1,0 +1,18 @@
+"5,5,1",30,20
+5,"AppF:{span:{col:2},stylePreset:hdr}",
+5,adaptFiltMode:{stylePreset:hdrSubtle},"/Spacecraft/AppF/adaptFiltMode:{type:alpha,stylePreset:alphaStatic}"
+5,asmDetectionCounter:{stylePreset:hdrSubtle},"/Spacecraft/AppF/asmDetectionCounter:{type:alpha,stylePreset:alphaStatic}"
+5,bitSyncLock:{stylePreset:hdrSubtle},"/Spacecraft/AppF/bitSyncLock:{type:alpha,conditionStyles:{set:CS AppF bitSyncLock,conditions:[{name:condLock,stylePreset:isEnabled},{name:Default,color:#ffffff,border:1px solid #434343}]}}"
+5,carrierLock:{stylePreset:hdrSubtle},"/Spacecraft/AppF/carrierLock:{type:alpha,conditionStyles:{set:CS AppF carrierLock,conditions:[{name:condLock,stylePreset:isEnabled},{name:Default,color:#ffffff,border:1px solid #434343}]}}"
+5,txStatus:{stylePreset:hdrSubtle},"/Spacecraft/AppF/txStatus:{type:alpha,conditionStyles:{set:CS AppF txStatus,conditions:[{name:condOn,stylePreset:isEnabled},{name:Default,color:#ffffff,border:1px solid #434343}]}}"
+5,uplinkStatus:{stylePreset:hdrSubtle},"/Spacecraft/AppF/uplinkStatus:{type:alpha,conditionStyles:{set:CS AppF uplinkStatus,conditions:[{name:condLock,stylePreset:isEnabled},{name:Default,color:#ffffff,border:1px solid #434343}]}}"
+5,"AppD:{span:{col:2},stylePreset:hdr}",
+5,currentSite:{stylePreset:hdrSubtle},"/Spacecraft/AppD/currentSite:{type:alpha,stylePreset:alphaStatic}"
+5,enabledFlag:{stylePreset:hdrSubtle},"/Spacecraft/AppD/enabledFlag:{type:alpha,conditionStyles:{set:CS AppD enabledFlag,conditions:[{name:condEnabledFlag,stylePreset:isEnabled},{name:Default,color:#ffffff,border:1px solid #434343}]}}"
+5,errorCount:{stylePreset:hdrSubtle},"/Spacecraft/AppD/errorCount:{type:alpha,conditionStyles:{set:CS AppD errorCount,conditions:[{name:condErrorCount,stylePreset:isGreaterThan0},{name:Default,color:#ffffff,border:1px solid #434343}]}}"
+5,houseKeepingCount:{stylePreset:hdrSubtle},"/Spacecraft/AppD/houseKeepingCount:{type:alpha,stylePreset:alphaStatic}"
+5,"RTS:{span:{col:2},stylePreset:hdr}",
+5,numRtsActive:{stylePreset:hdrSubtle},"/Spacecraft/AppC/numRtsActive:{type:alpha,stylePreset:alphaStatic}"
+5,rtsActiveCtr:{stylePreset:hdrSubtle},"/Spacecraft/AppC/rtsActiveCtr:{type:alpha,stylePreset:alphaStatic}"
+5,rtsActiveErrCtr:{stylePreset:hdrSubtle},"/Spacecraft/AppC/rtsActiveErrCtr:{type:alpha,stylePreset:alphaStatic}"
+5,rtsNumber:{stylePreset:hdrSubtle},"/Spacecraft/AppC/rtsNumber:{type:alpha,stylePreset:alphaStatic}"
