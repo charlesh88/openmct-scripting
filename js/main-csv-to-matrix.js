@@ -320,6 +320,15 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                     const matrixCellObj = unpackMatrixCellStrToObj(matrixCellStr);
                     // console.log('matrixCellObj', matrixCellObj);
 
+                    // Promote top-level style props (e.g. from stylePreset expansion) into matrixCellObj.style
+                    if (!matrixCellObj.style) {
+                        const promoted = {};
+                        ['backgroundColor', 'color', 'border'].forEach(k => {
+                            if (matrixCellObj[k]) promoted[k] = matrixCellObj[k];
+                        });
+                        if (Object.keys(promoted).length) matrixCellObj.style = promoted;
+                    }
+
                     if (!matrixCellObj.type) {
                         // TODO: don't think this is working...
                         if (matrixCellObj.name.startsWith('/')) {
@@ -762,8 +771,9 @@ function applyStylePresets(str) {
         }
         // console.log(STYLE_PRESETS);
 
-        for (let i = 0; i < STYLE_PRESETS.length; i++) {
-            const presetObj = STYLE_PRESETS[i]; // {color:#666666,border:1px solid #ffcc00}
+        const sortedPresets = [...STYLE_PRESETS].sort((a, b) => b.name.length - a.name.length);
+        for (let i = 0; i < sortedPresets.length; i++) {
+            const presetObj = sortedPresets[i]; // {color:#666666,border:1px solid #ffcc00}
             const searchStr = 'stylePreset:'.concat(presetObj.name);
             let stylePropsStr = '';
             const aPvs = [];

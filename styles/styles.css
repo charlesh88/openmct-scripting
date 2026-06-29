@@ -459,7 +459,6 @@ form {
   background: rgba(255, 255, 255, 0.1);
 }
 .--help .screenshot {
-  width: 100%;
   max-width: 1000px;
 }
 

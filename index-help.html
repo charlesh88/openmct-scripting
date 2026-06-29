@@ -16,11 +16,10 @@
     </div>
     <div class="page --scrolls">
         <div class="page-main --help">
-            <p>Last updated: 10 Jun 2024</p>
+            <p>Last updated: 29 June 2026</p>
             <h2 id="contents">Contents</h2>
             <ul>
                 <li><a href="#MatrixLayout">Matrix Layout</a></li>
-                <li><a href="#CondtionalGraphics">Conditional Graphics</a></li>
                 <li><a href="#ProcedureDisplays">Procedure Displays</a></li>
                 <li><a href="#StackedViews">Stacked Views</a></li>
                 <li><a href="#ExtractTelemetry">Extract Telemetry</a></li>
@@ -46,23 +45,26 @@
                 <li>Code repo: <a href="https://github.com/charlesh88/openmct-scripting">https://github.com/charlesh88/openmct-scripting</a>
                 </li>
             </ul>
+
             <h2 class="feature-hdr" id="MatrixLayout">Matrix Layout <span class="--beta">Beta</span></h2>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-imported-result.png"
                     alt="Picture of tool interface" title="Matrix Layout imported result"></p>
             <h3>What It Does</h3>
             <ul>
-                <li>Uses two input CSV files, one that defines conditionals and the other for layout; one or more
+                <li>Uses input CSV files, one that defines conditionals and others for Display Layouts; one or more
                     Display Layouts are created as a result.
                     <ul>
                         <li>Multiple Condition Sets can be created in a single file with unlimited Conditions;
                             Conditions can include unlimited criteria.
                         </li>
                         <li>The matrix layout file(s) define a grid with variable column widths and row heights and can
-                            display alphanumerics, Condition Widgets and text objects.
+                            display alphanumerics, Condition Widgets and text objects. All conditionals used in the layout files must be present in the Conditionals CSV file.
                         </li>
+                        <li>Named style &quot;presets&quot; can be defined and imported in a style presets CSV file. Style presets can be referred to and used in a Display Layout file, or styles can be defined and applied directly.</li>
                         <li>Elements can be statically and/or conditionally styled.</li>
                     </ul>
                 </li>
+                <li>A LAD Table for each Display Layout file that contains the telemetry parameters used in that layout.</li>
                 <li>Folders that contain the above elements.</li>
             </ul>
             <h3>Interface</h3>
@@ -70,16 +72,53 @@
                     alt="Picture of tool interface" title="Matrix Layout interface"></p>
             <ul>
                 <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
-                <li><strong>Condition CSV Input</strong>: a CSV file that defines Condition Sets and their conditions.
-                    Not required if the Layout file isn&apos;t using conditionals.
-                </li>
-                <li><strong>Layout CSV</strong>: a CSV file that defines an Open MCT Display Layout in a rows and
-                    columns grid format.
-                </li>
+                <li><strong>Styles</strong>: optional CSV files that defines named styles (border, foreground color, background color) that can be referenced from conditional declarations and Display Layout elements.</li>
+                <li><strong>Conditionals</strong>: a CSV file that defines Condition Sets and their conditions. Not required if the Layout file isn&apos;t using conditionals.</li>
+                <li><strong>Display Layouts</strong>: a CSV file that defines an Open MCT Display Layout in a rows and columns grid format.</li>
             </ul>
-            <h3>Condition CSV Input File</h3>
-            <p>Defines Condition Sets to be used in the matrix Display Layout.</p>
-            <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-telem.png"
+
+            <h3>Styles CSV Input File</h3>
+            <p>Defines named styles to be used in the matrix Display Layout. <a href="documentation/files/v5.0-CSV-Example-Styles.csv">Download example CSV file.</a></p>
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-styles.png"
+                    alt="Picture of CSV file" title="Matrix Layout styles CSV file"></p>
+
+            <h4 id="OpenMCTScriptingTool-Styles">Columns</h4>
+            <p>All columns are optional, but a value in at least one column is required.</p>
+            <table>
+                <thead>
+                <tr>
+                    <th class="em">Column</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="em">name</td>
+                    <td>Unique name of this preset. Space or slash characters not allowed.</td>
+                    <td>alphaStatic, isEnabled, isError</td>
+                </tr>
+                <tr>
+                    <td class="em">backgroundColor</td>
+                    <td>A full and valid hex color specification for the background of an element.</td>
+                    <td>#ffffff, #ffcc00, #006600</td>
+                </tr>
+                <tr>
+                    <td class="em">color</td>
+                    <td>A full and valid hex color specification for the text color of an element.</td>
+                    <td>#ffffff, #ffcc00, #006600</td>
+                </tr>
+                <tr>
+                    <td class="em">border</td>
+                    <td>A valid CSS border expression with border-width, border-style and color properties.</td>
+                    <td>1px solid #990000, 1px solid transparent, 3px dashed #006600</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <h3>Conditionals CSV Input File</h3>
+            <p>Defines Condition Sets to be used in the matrix Display Layout. <a href="documentation/files/v5.0-CSV-Example-Conditionals.csv">Download example CSV file.</a></p>
+            <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-conditionals.png"
                     alt="Picture of CSV file" title="Matrix Layout telemetry CSV file"></p>
 <h4 id="OpenMCTScriptingTool-ConditionOperation">Columns</h4>
           <table>
@@ -110,23 +149,35 @@
                 </tr>
                 <tr>
                     <td class="em">criteria</td>
-                    <td>One or more criteria definitions, separated by commas.&nbsp; See "Condition Criteria Arguments" below.</td>
+                    <td>One or more criteria definitions, in a JSON-like `{property: value}` format.&nbsp; See "Condition Criteria Arguments" below.</td>
                     <td>{telemetry:any,operation:enumValueIs,input:[0],metadata:value}</td>
                 </tr>
                 <tr>
                     <td class="em">output</td>
-                    <td>A string, TRUE or FALSE that will be output by this condition when it is matched.</td>
-                    <td>&nbsp;</td>
+                    <td>A string, or boolean TRUE or FALSE that will be output by this condition when it is matched.</td>
+                    <td>ENAB, Enabled, TRUE</td>
+                </tr>
+                <tr>
+                    <td class="em">trigger</td>
+                    <td>How telemetry values are evaluated in this condition. Values:
+                        <ul>
+                            <li>any: If any telemetry value meets this condition's criteria, then the condition matches.</li>
+                            <li>all: All telemetry values must meet this condition's criteria for the condition to match.</li>
+                            <li>not: This condition only matches when no telemetry values can meet this condition's criteria.</li>
+                            <li>xor: Only one telemetry value can meet this condition's criteria for the condition to match.</li>
+                        </ul>
+                    </td>
+                    <td> </td>
                 </tr>
                 <tr>
                     <td class="em">isDefault</td>
-                    <td>TRUE,&nbsp; FALSE or blank. Defuults to FALSE if left blank.
+                    <td>Boolean TRUE,&nbsp;FALSE or blank. Defaults to FALSE if left blank.
                     </td>
                     <td>&nbsp;</td>
                 </tr>
                 </tbody>
             </table>
-<h4 id="OpenMCTScriptingTool-ConditionOperation">Condition Criteria Arguments</h4>
+<h4 id="OpenMCTScriptingTool-ConditionCriteria">Condition Criteria Arguments</h4>
             <p>Conditions allow any number of criteria to be defined per condition.&nbsp; Arguments are defined in a JSON-like string format, in this form: <code>{
               property:value,property:value,etc. }</code> Note that both property names and values don&apos;t use
               quotes around them.</p>
@@ -141,8 +192,8 @@
                 <tbody>
                 <tr>
                     <td class="em">telemetry</td>
-                    <td>A string output by a matching condition in a Condition Set.</td>
-                    <td>{output:ERROR}<br>{output:Nominal}</td>
+                    <td>any, all or a full path to a specific telemetry point</td>
+                    <td>{telemetry:all}<br />{telemetry: /Spacecraft/subsystem/paramter1}</td>
                 </tr>
                 <tr>
                     <td class="em">operation</td>
@@ -163,18 +214,6 @@
                     <td class="em">metadata</td>
                     <td>'value' when evaluating any telemetry values, 'dataReceived' when operation is ifDefined, isUndefined, etc.&nbsp;See "Condition Operation and Inputs" below for details.</td>
                     <td>{backgroundColor:#660000}</td>
-                </tr>
-                <tr>
-                    <td class="em">color</td>
-                    <td>A hex color value for the text color of a stylable element, specified as a full hex value.</td>
-                    <td>{color:#cccccc}</td>
-                </tr>
-                <tr>
-                    <td class="em">border</td>
-                    <td>A valid CSS property definition for a border of a stylable element. The color part must be
-                        specified as a full hex value.
-                    </td>
-                    <td>{border:1px solid #ff0000}</td>
                 </tr>
                 </tbody>
           </table>
@@ -284,87 +323,8 @@
                 </tbody>
             </table>
 
-            <h4 id="condition-examples">Style and Condition Examples</h4>
-            <table>
-              <thead>
-                <tr>
-                  <th><strong>Type</strong></th>
-                  <th><strong>Description</strong></th>
-                  <th><strong>Style / Condition String</strong></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>All</td>
-                  <td>Give an alphanumeric, text object or Condition Widget a dark red background, red border and
-                    white text. </td>
-                  <td>{backgroundColor:#660000,border:1px solid #ff0000,color:#ffffff}</td>
-                </tr>
-                <tr>
-                  <td>All</td>
-                  <td>If the telemetry is present on the server, output the string &quot;Defined&quot; with a medium
-                    gray background and white foreground. </td>
-                  <td>{output:Defined,backgroundColor:#666666,color:#ffffff,operation:isDefined}</td>
-                </tr>
-                <tr>
-                  <td>Numeric</td>
-                  <td>If the current float telemetry value is between than -0.1 and 0.2, output the string &quot;Nominal&quot;
-                    with an green background and white foreground. </td>
-                  <td>{output:Nominal,backgroundColor:#368215,color:#ffffff,operation:between,input:[-0.1,0.2]}</td>
-                </tr>
-                <tr>
-                  <td>Numeric</td>
-                  <td>If the current float telemetry value is greater than 0.2, output the string &quot;High&quot;
-                    with an orange background, yellow border and white foreground. </td>
-                  <td>{output:High,backgroundColor:#ff6600,color:#ffffff,border:1px solid
-                    #ffcc00,operation:greaterThan,input:[0.2]} </td>
-                </tr>
-                <tr>
-                  <td>Enum</td>
-                  <td>If the current enum parameter is &quot;enabled&quot;, output the string &quot;Enabled&quot; with
-                    a green background and white foreground. </td>
-                  <td>{output:Enabled,backgroundColor:#368215,color:#ffffff,operation:enumValueIs,input:[1]}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <h4>Escaping Text</h4>
-            <p>The tool uses certain special characters (commas, tildes and backslashes) to separate arguments and
-                define telemetry paths - these characters can&apos;t be used in text labels without being escaped. To
-                use these characters for text, they must be escaped with a forward slash &quot;\&quot; as shown
-                below.</p>
-            <table>
-                <thead>
-                <tr>
-                    <th><strong>Character</strong></th>
-                    <th><strong>Format</strong></th>
-                    <th><strong>Example</strong></th>
-                    <th><strong>Resulting Display</strong></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>Comma</td>
-                    <td>\,</td>
-                    <td>STATE (A\, F == Arm\, Fire)</td>
-                    <td>STATE (A, F == Arm, Fire)</td>
-                </tr>
-                <tr>
-                    <td>Tilde</td>
-                    <td>\~</td>
-                    <td>TEMP \~10 - 20 deg</td>
-                    <td>TEMP ~10 - 20 deg</td>
-                </tr>
-                <tr>
-                    <td>Backslash</td>
-                    <td>\/</td>
-                    <td>Use \/Spacesystem\/Subsystem</td>
-                    <td>Use /Spacesystem/Subsystem</td>
-                </tr>
-                </tbody>
-            </table>
-            <h3>Matrix Layout &quot;Layout&quot; CSV Input File</h3>
-            <p>The matrix layout defines a grid with variable column widths and row heights.</p>
+            <h3>Display Layouts CSV Input File</h3>
+            <p>The Display Layouts CSV file defines a grid with variable column widths and row heights. <a href="documentation/files/v5.0-CSV-Example-Display-Layout.csv">Download example CSV file.</a></p>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-layout.png"
                     alt="Picture of CSV file" title="Matrix Layout telemetry CSV file"></p>
             <ul>
@@ -397,7 +357,7 @@
                     matrix layout.
                 </li>
             </ul>
-            <p>The resulting matrix layout output based on the CSV input above:</p>
+            <!--<p>The resulting matrix layout output based on the CSV input above:</p>-->
             <h4 id="using-optional-flags-in-the-layout-csv-file">Using Optional Flags in the Layout CSV File</h4>
             <p>Both text and telemetry parameters accept certain &quot;flag&quot; arguments that allow additional
                 capabilities and rendering options. More than one flag can be used at a time, separated with commas.
@@ -455,6 +415,15 @@
                     <td>FOO:{type:condition-widget,options:{url:https://www.nasa.gov},style:{backgroundColor:#666666,color:#ffffff}}<br>                      </td>
                     <td>A string of comma separated &quot;property: value&quot; pairs.</td>
                 </tr>
+
+                <tr>
+                    <td>Style Preset</td>
+                    <td>stylePreset:preset name</td>
+                    <td>YES</td>
+                    <td>YES</td>
+                    <td>FOO:{stylePreset:alphaStatic}<br>FOO:{stylePreset:hdr}</td>
+                    <td>'stylePreset' with the name of a defined preset style.</td>
+                </tr>
                 <tr>
                   <td>Conditionals&nbsp;</td>
                     <td>conditionStyles:{ set:<em>set name</em>, conditions:[{ name: <em>name</em>, <em>style property</em>:<em>value&nbsp;</em>}]}</td>
@@ -465,155 +434,7 @@
                 </tr>
               </tbody>
             </table>
-            <!--<h3>Generated Open MCT Examples</h3>-->
-            <h3>Source</h3>
-            <ul>
-                <li>Telemetry CSV: <a href="documentation/files/matrix-layout-input-telemetry-example-v4.0.csv">Matrix
-                    Layout inputs Telemetry CSV example</a></li>
-                <li>Matrix Layout CSV: <a href="documentation/files/matrix-layout-input-layout-example-v4.0.csv">Matrix
-                    Layout inputs Layout CSV example</a></li>
-            </ul>
-            <h2 class="feature-hdr" id="CondtionalGraphics">Conditional Graphics</h2>
-            <p>Generates one or more &quot;image view&quot; objects within a Display Layout. Image views can be
-                conditionally styled to show a given image source when a condition in a Condition Set is matched. This
-                example uses a sun angle telemetry parameter to display one of 23 different images of the &quot;sun&quot;
-                graphic, overlaid on a base drawing of the rover, itself its own image view object.</p>
-            <p><img class="screenshot"
-                    src="documentation/images/openmct-scripting-conditional-graphics-imported-result.png"
-                    alt="Picture of rendered Display Layout" title="Conditional Graphics Example"></p>
-            <h3>What It Does</h3>
-            <ul>
-                <li>Generates one or more &quot;image view&quot; objects within a single Display Layout.
-                    <ul>
-                        <li>Source images must all be the same size for all image views in the layout.</li>
-                        <li>Image views color and border styling can be defined.</li>
-                    </ul>
-                </li>
-                <li>Optionally generates one Condition Set.
-                    <ul>
-                        <li>The number of conditions in the set is not limited.</li>
-                        <li>Each condition evaluates only one criteria.</li>
-                    </ul>
-                </li>
-                <li>Data sources can be dictionary parameters or a Sine Wave Generator.
-                    <ul>
-                        <li>If a generator is specified, the tool will create one or more generators as a result.</li>
-                    </ul>
-                </li>
-            </ul>
-            <h3>Interface</h3>
-            <p><img class="screenshot" src="documentation/images/openmct-scripting-interface-condition-graphics.png"
-                    alt="Picture of Conditional Graphics web interface" title="Conditional Graphics Interface"></p>
-            <ul>
-                <li><strong>Output Base Name</strong>: defines the base of names used to define output JSON files.</li>
-                <li><strong>Display Layout Grid</strong>: the X and Y grid dimensions to be used by generated Display
-                    Layouts.
-                    <ul>
-                        <li>Settings here are per pixel and define the scale of item widths and heights specified
-                            elsewhere. For example, using a grid of 2,2 would create a 2 x 2 grid in the layout. Items
-                            set to 200 width and 14 high would then be 400 pixels wide by 28 pixels high.
-                        </li>
-                        <li>Using smaller numbers here mean that items can be more tightly packed. Using a grid of 1,1
-                            would make the grid equivalent to pixels.
-                        </li>
-                    </ul>
-                </li>
-                <li><strong>Image size in px:</strong> the pixel size (not grid units) desired for the resulting image
-                    view. All generated image views will be the same size in the Display Layout.
-                </li>
-            </ul>
-            <h3>Input CSV file</h3>
-            <p>Example input using telemetry paths as a data source:</p>
-            <p><img class="screenshot" src="documentation/images/openmct-scripting-csv-condition-graphics.png"
-                    alt="Picture of Conditional Graphics web interface" title="Conditional Graphics Interface"></p>
-            <table>
-                <thead>
-                <tr>
-                    <th class="em">Column</th>
-                    <th>Description</th>
-                    <th>Example</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td class="em">imageViewName</td>
-                    <td>The name of the image view object that will be created within the layout.
-                        <ul>
-                            <li>Names must be unique in the sheet. Entering a different name creates a separate image
-                                with its own set of conditional styling, if set.
-                            </li>
-                            <li>To apply a set of conditions to a single image view, use the same name in each row.</li>
-                            <li>Image views are always the same dimensions, set in &quot;Image size in px&quot; in the
-                                web app interface.
-                            </li>
-                        </ul>
-                    </td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td class="em">dataSource</td>
-                    <td>A valid path to a telemetry source, a definition for a Sine Wave Generator or a name reference
-                        to a generator specced in a previous row. See notes below on Sine Wave Generators.
-                    </td>
-                    <td>/Spacesystem/Subsystem/parameter_name.aggregate_name<br>{&quot;Scripted SWG&quot;: {&quot;metadata&quot;:
-                        &quot;sin&quot;, &quot;period&quot;: 20, &quot;amplitude&quot;: 180, &quot;offset&quot;: 180,
-                        &quot;dataRateInHz&quot;: 5,&quot;randomness&quot;: 0}}
-                    </td>
-                </tr>
-                <tr>
-                    <td class="em">isDefault</td>
-                    <td>Optional boolean if the condition for this row should be a default. If no default is specified,
-                        the Condition Set will create an unnamed default condition.
-                    </td>
-                    <td>TRUE</td>
-                </tr>
-                <tr>
-                    <td class="em">operation</td>
-                    <td>The condition operation to be performed for this row. See <a
-                            href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions in the Telemetry CSV</a>
-                        above.
-                    </td>
-                    <td>TRUE</td>
-                </tr>
-                <tr>
-                    <td class="em">input</td>
-                    <td>Nothing, string, single number, or two numbers to be used as the condition operation evaluators.
-                        See <a href="#OpenMCTScriptingTool-ConditionOperation">Defining Conditions in the Telemetry
-                            CSV</a> above.
-                    </td>
-                    <td>0,15</td>
-                </tr>
-                <tr>
-                    <td class="em">name</td>
-                    <td>The name of the condition that will be created for this row.</td>
-                    <td>TRUE</td>
-                </tr>
-                <tr>
-                    <td class="em">output</td>
-                    <td>The output string of the condition that will be created for this row.</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td class="em">bgColor, fgColor, border</td>
-                    <td>Style values for background color, text color and border style respectively.</td>
-                    <td>#555555<br>1px solid #ff0000</td>
-                </tr>
-                <tr>
-                    <td class="em">imageUrl</td>
-                    <td>A full path to an image source file.</td>
-                    <td>https://www.example.server/images/imagefilename.jpg</td>
-                </tr>
-                </tbody>
-            </table>
-            <h3>Source</h3>
-            <ul>
-                <li>Example using dictionary telemetry parameters: <a
-                        href="documentation/files/conditional-graphics-example-sun-angle.csv">Sun Angle dictionary input
-                    example.csv</a></li>
-                <li>Example that uses a generated Open MCT Sine Wave Generator: <a
-                        href="documentation/files/conditional-graphics-example-sun-angle-swg.csv">Sun Angle 3 SWG
-                    input.csv</a></li>
-            </ul>
+
             <h2 class="feature-hdr" id="ProcedureDisplays">Procedure Displays</h2>
             <h3>What It Does</h3>
             <ul>
