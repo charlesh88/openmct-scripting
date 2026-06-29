@@ -1,5 +1,15 @@
 # Release Notes
 
+## v5.0 BETA - June 29, 2026
+- Significant changes to the Matrix Layout capability and format:
+  - Conditional and Display Layout input files are now more in parity with their related Open MCT functionalities.
+    - Conditionals now support unlimited conditions; each condition supports unlimited criteria.
+    - Styling per matched condition is now defined in the Display Layout input file, not on condition definitions.
+  - Can now create multiple Display Layouts at a time. 
+  - Conditional and Display Layout CSV file properties now use JSON as the definition format.
+  - Added ability to use style "presets" which encapsulate style definitions. Presets can be referred to and used within Display Layout files.
+- Removed Conditional Graphics functionality.
+
 ## v4.1.1 - June 24, 2024
 
 - Significant enhancements for the Matrix Layout capability:
