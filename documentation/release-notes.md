@@ -1,5 +1,10 @@
 # Release Notes
 
+## v5.1 BETA - July 9, 2026
+- Fixed faulty logic evaluating the `showUnits` option property for alpha elements.
+- Fixed bug preventing `span: { row: # }` from working.
+- Added better example of setting multiple `options: {}` properties.
+
 ## v5.0 BETA - June 29, 2026
 - Significant changes to the Matrix Layout capability and format:
   - Conditional and Display Layout input files are now more in parity with their related Open MCT functionalities.

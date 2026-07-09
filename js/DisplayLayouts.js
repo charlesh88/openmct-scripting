@@ -150,7 +150,7 @@ const DisplayLayout = function (args) {
         subObj.displayMode = args.displayMode? args.displayMode : 'value';
         subObj.value = args.value? args.value : 'value';
         subObj.format = args.format? args.format : undefined;
-        subObj.showUnits = args.showUnits? args.showUnits : true;
+        subObj.showUnits = args.showUnits !== undefined ? args.showUnits : true;
         this.configuration.objectStyles[subObj.id] = {
             'staticStyle': createOpenMCTStyleObj(args.style),
             'styles': []

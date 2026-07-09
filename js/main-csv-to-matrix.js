@@ -360,7 +360,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
 
                             if (spanR) {
                                 // Add heights from rows to be spanned to itemH
-                                for (let i = c + 1; i < (c + parseInt(spanR)); i++) {
+                                for (let i = r + 1; i < (r + parseInt(spanR)); i++) {
                                     itemH += parseInt(arrColHeights[i]) + itemMargin;
                                 }
                             }
@@ -385,7 +385,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                             if (matrixCellObj.options) {
                                 argsTelem.displayMode = matrixCellObj.options.displayMode ? matrixCellObj.options.displayMode : 'value';
                                 argsTelem.format = matrixCellObj.options.format ? matrixCellObj.options.format : undefined;
-                                argsTelem.showUnits = matrixCellObj.options.showUnits ? matrixCellObj.options.showUnits : true;
+                                argsTelem.showUnits = matrixCellObj.options.showUnits !== undefined ? matrixCellObj.options.showUnits : true;
                                 argsTelem.value = matrixCellObj.options.value ? matrixCellObj.options.value : 'value'
                             }
 
