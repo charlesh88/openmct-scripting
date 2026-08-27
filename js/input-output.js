@@ -42,6 +42,41 @@ function uploadFiles(files, fileType) {
     });
 }
 
+function splitCsvRow(row, delimiter) {
+    // Splits a row on `delimiter`, treating anything inside {}/[] as protected (so a JSON
+    // payload's internal commas never split the row, regardless of CSV quoting), and
+    // treating a leading/trailing " pair at depth 0 as a classic CSV-quoted field.
+    const fields = [];
+    let current = '';
+    let depth = 0;
+    let inCsvQuotes = false;
+
+    for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+
+        if (char === '"' && depth === 0) {
+            inCsvQuotes = !inCsvQuotes;
+            current += char;
+            continue;
+        }
+
+        if (!inCsvQuotes) {
+            if (char === '{' || char === '[') depth++;
+            if (char === '}' || char === ']') depth--;
+        }
+
+        if (char === delimiter && depth === 0 && !inCsvQuotes) {
+            fields.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    fields.push(current);
+
+    return fields;
+}
+
 function csvToArray(str, delimiter = ',') {
     // Break the csv into rows
     const arrLines = str.split(/\r?\n/).filter((row) => row.length > 0);
@@ -51,12 +86,7 @@ function csvToArray(str, delimiter = ',') {
             .replaceAll('\\,', ESC_CHARS.escComma)// Encode all escaped commas so they don't drive array splits
             .replaceAll('""',ESC_CHARS.doublequotes); // Escape double-double quotes
 
-        valuesStr = valuesStr.replace(/"[^"]+"/g, function (v) {
-            // Isolate strings within double-quote blocks and encode all vanilla commas in there
-            return v.replaceAll(',', ESC_CHARS.comma);
-        })
-
-        const valuesArr = valuesStr.split(delimiter);
+        const valuesArr = splitCsvRow(valuesStr, delimiter);
 
         if (valuesArr.length > 0) {
             const valuesArrFormatted = valuesArr.map(function (value) {
@@ -65,9 +95,13 @@ function csvToArray(str, delimiter = ',') {
                     .replaceAll('https:','https'.concat(ESC_CHARS.colon))
                     .replaceAll('\\~', ESC_CHARS.tilde) // Escape escaped tildes. These get restored later.
                     .replaceAll('\\/', ESC_CHARS.backslash) // Escape escaped slashes. These get restored later.
-                    .replaceAll('\"', '') // Kill all remaining double-quotes.
-                    .replaceAll(ESC_CHARS.comma, ',') // Restore escaped "vanilla" commas.
                     .replaceAll(ESC_CHARS.doublequotes, '\"') // Restore escaped double-double quotes.
+
+                // Strip a genuinely matching pair of CSV-wrapping quotes; leave any other
+                // (e.g. JSON) quotes untouched.
+                if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
+                    value = value.slice(1, -1);
+                }
 
                 value = normalizeCsvStr(value);
                 return value;

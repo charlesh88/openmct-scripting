@@ -20,6 +20,8 @@ let STYLE_PRESETS;
 let CONDITION_SETS = [];
 let TELEMETRY = [];
 let CONFIG_MATRIX;
+let CELL_FORMAT_MODE = 'json';
+let CELL_JSON_ERRORS = [];
 
 outputMsgReset();
 storeOutputBaseName();
@@ -224,6 +226,7 @@ function createOpenMCTMatrixLayouts(filenames, values) {
     let folderHyperlinks;
     let folderDisplayLayouts;
     let tabsView;
+    CELL_JSON_ERRORS = [];
 
     if (!ROOT) {
         initDomainObjects();
@@ -232,6 +235,8 @@ function createOpenMCTMatrixLayouts(filenames, values) {
     if (!CONFIG_MATRIX) {
         CONFIG_MATRIX = getConfigFromForm();
     }
+
+    CELL_FORMAT_MODE = document.getElementById('cell-format-mode').value;
 
     if (!FOLDER_ROOT) {
         // Create the ROOT folder if not already created by Condition Sets
@@ -317,7 +322,14 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                 const matrixCellStr = applyStylePresets(row[c].trim());
                 const colW = parseInt(arrColWidths[c]);
                 if (matrixCellStr.length > 0) {
-                    const matrixCellObj = unpackMatrixCellStrToObj(matrixCellStr);
+                    let matrixCellObj;
+                    try {
+                        matrixCellObj = unpackMatrixCellStrToObj(matrixCellStr);
+                    } catch (e) {
+                        recordCellLintError(layoutName, r + 1, c + 1, matrixCellStr, e);
+                        curX += colW + itemMargin;
+                        continue;
+                    }
                     // console.log('matrixCellObj', matrixCellObj);
 
                     // Promote top-level style props (e.g. from stylePreset expansion) into matrixCellObj.style
@@ -530,8 +542,34 @@ function createOpenMCTMatrixLayouts(filenames, values) {
     console.log('OBJ_JSON', OBJ_JSON);
 
     outputJSON();
-    outputMsg('Matrix layouts generated');
+
+    if (CELL_JSON_ERRORS.length > 0) {
+        outputErrorMsg(CELL_JSON_ERRORS.length
+            .toString()
+            .concat(' cell(s) had invalid JSON and were skipped — see errors above, fix your CSV, and re-run.')
+        );
+    } else {
+        outputMsg('Matrix layouts generated');
+    }
     config = CONFIG_MATRIX;
+}
+
+function recordCellLintError(layoutName, csvLine, csvColumn, cellStr, err) {
+    // csvLine/csvColumn are 1-based, matching what a human counts in the raw .csv file.
+    const escapedCell = cellStr.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+
+    CELL_JSON_ERRORS.push({
+        layoutName: layoutName,
+        csvLine: csvLine,
+        csvColumn: csvColumn,
+        cellStr: cellStr,
+        message: err.message
+    });
+
+    outputErrorMsg(layoutName.concat('.csv, row ').concat(csvLine).concat(', column ').concat(csvColumn)
+        .concat(': ').concat(err.message)
+        .concat('<br><code>').concat(escapedCell).concat('</code>')
+    );
 }
 
 // chatGPT 10/1/24
@@ -601,22 +639,52 @@ function unpackMatrixCellStrToObj(str) {
         return pairs;
     }
 
-    if (str.includes(':')) {
-        // Like 'Text Static:{style:{backgroundColor:#660000,color:#ffffff}}'
-        const firstColonIndex = str.indexOf(':');
-        const name = str.substring(0, firstColonIndex);
-        const remainder = str.substring(firstColonIndex + 2, str.length - 1);
+    if (CELL_FORMAT_MODE === 'legacy') {
+        if (str.includes(':')) {
+            // Like 'Text Static:{style:{backgroundColor:#660000,color:#ffffff}}'
+            const firstColonIndex = str.indexOf(':');
+            const name = str.substring(0, firstColonIndex);
+            const remainder = str.substring(firstColonIndex + 2, str.length - 1);
 
+            const returnObj = parseObject(remainder);
+            returnObj.name = name;
+            return returnObj;
+        } else {
+            return {
+                'name': str,
+                'type': 'text'
+            }
+        }
+    }
 
-        const returnObj = parseObject(remainder);
-        returnObj.name = name;
-        return returnObj;
-    } else {
+    // JSON mode: a configured cell is a single JSON object with its own "name" property,
+    // e.g. {"name":"Text Static","style":{"backgroundColor":"#660000","color":"#ffffff"}}
+    const trimmed = str.trim();
+
+    if (!trimmed.includes('{')) {
+        // No object payload - a plain text label.
         return {
-            'name': str,
+            'name': trimmed,
             'type': 'text'
         }
     }
+
+    if (!trimmed.startsWith('{')) {
+        throw new Error('Cell has a JSON payload but isn\'t a single JSON object (the whole cell must start with "{" and include a "name" property)');
+    }
+
+    let returnObj;
+    try {
+        returnObj = JSON.parse(trimmed);
+    } catch (e) {
+        throw new Error(e.message);
+    }
+
+    if (!returnObj.name) {
+        throw new Error('JSON cell is missing a "name" property');
+    }
+
+    return returnObj;
 }
 
 // CONDITIONAL STYLING OF MATRIX LAYOUT ITEMS
@@ -774,16 +842,25 @@ function applyStylePresets(str) {
         const sortedPresets = [...STYLE_PRESETS].sort((a, b) => b.name.length - a.name.length);
         for (let i = 0; i < sortedPresets.length; i++) {
             const presetObj = sortedPresets[i]; // {color:#666666,border:1px solid #ffcc00}
-            const searchStr = 'stylePreset:'.concat(presetObj.name);
-            let stylePropsStr = '';
             const aPvs = [];
-            stylePropsKeys.forEach(stylePropKey => {
-                // color, border, etc.
-                if (presetObj[stylePropKey]) {
-                    aPvs.push([stylePropKey, presetObj[stylePropKey]].join(':'));
-                }
-            })
-            stylePropsStr = aPvs.join(',');
+            let searchStr;
+            if (CELL_FORMAT_MODE === 'legacy') {
+                searchStr = 'stylePreset:'.concat(presetObj.name);
+                stylePropsKeys.forEach(stylePropKey => {
+                    // color, border, etc.
+                    if (presetObj[stylePropKey]) {
+                        aPvs.push([stylePropKey, presetObj[stylePropKey]].join(':'));
+                    }
+                })
+            } else {
+                searchStr = '"stylePreset":"'.concat(presetObj.name).concat('"');
+                stylePropsKeys.forEach(stylePropKey => {
+                    if (presetObj[stylePropKey]) {
+                        aPvs.push('"'.concat(stylePropKey).concat('":"').concat(presetObj[stylePropKey]).concat('"'));
+                    }
+                })
+            }
+            const stylePropsStr = aPvs.join(',');
             str = str.replaceAll(searchStr, stylePropsStr);
         }
 
