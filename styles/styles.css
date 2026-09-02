@@ -19,6 +19,12 @@ body {
   font-size: 0.8em;
   margin: 0;
 }
+body.help {
+  line-height: 160%;
+}
+body.help p {
+  margin: 5px 0;
+}
 
 a {
   color: #ff8000;
@@ -421,13 +427,12 @@ form {
 
 /**************************************************************** HELP */
 .--help code {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
   display: inline;
   font-size: 1.25em;
-  padding: 5px 10px;
+  padding: 1px 2px;
   width: min-content;
-  white-space: nowrap;
 }
 .--help h1, .--help h2, .--help h3, .--help h4 {
   background: none !important;
@@ -449,14 +454,26 @@ form {
 }
 .--help table {
   border-collapse: collapse;
+  width: 100%;
+  max-width: 1200px;
+  table-layout: fixed;
 }
 .--help table td, .--help table th {
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 2px 4px;
   text-align: left;
+  overflow-wrap: anywhere;
+  vertical-align: top;
 }
 .--help table th {
   background: rgba(255, 255, 255, 0.1);
+}
+.--help table code {
+  width: auto;
+  padding: 2px 5px;
+  font-size: 1em;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .--help .screenshot {
   max-width: 1000px;

@@ -59,7 +59,7 @@ function createOpenMCTCondObj(args) {
         'any': 'or'
     }
     const condObj = {};
-    condObj.isDefault = args.isDefault;
+    condObj.isDefault = parseCsvBool(args.isDefault);
     condObj.id = createUUID();
     let condSummaryArr = [];
 
@@ -67,7 +67,7 @@ function createOpenMCTCondObj(args) {
     condObj.configuration = {
         'name': args.name,
         'output': args.output,
-        'trigger': args.isDefault ? 'all' : args.trigger,
+        'trigger': condObj.isDefault ? 'all' : args.trigger,
         'criteria': []
     };
 

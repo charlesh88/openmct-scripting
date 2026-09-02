@@ -16,7 +16,7 @@
     </div>
     <div class="page --scrolls">
         <div class="page-main --help">
-            <p>Last updated: 29 June 2026</p>
+            <p>Last updated: 27 August 2026</p>
             <h2 id="contents">Contents</h2>
             <ul>
                 <li><a href="#MatrixLayout">Matrix Layout</a></li>
@@ -119,7 +119,9 @@
             </table>
 
             <h3>Conditionals CSV Input File</h3>
-            <p>Defines Condition Sets to be used in the matrix Display Layout. <a href="documentation/files/v5.0-CSV-Example-Conditionals.csv">Download example CSV file.</a></p>
+            <p>Defines Condition Sets to be used in the matrix Display Layout. Download an example:
+                <a href="documentation/files/v5.1-CSV-Example-Conditionals.csv">v5.1</a> &nbsp;|&nbsp;
+                <a href="documentation/files/v5.0-CSV-Example-Conditionals.csv">v5.0</a>.</p>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-conditionals.png"
                     alt="Picture of CSV file" title="Matrix Layout telemetry CSV file"></p>
 <h4 id="OpenMCTScriptingTool-ConditionOperation">Columns</h4>
@@ -134,14 +136,21 @@
                 <tbody>
                 <tr>
                     <td class="em">setName</td>
-                    <td>Name of a Condition Set. The name only needs to be defined once; following rows of conditions will be added to the last defined Condition Set.&nbsp;&nbsp;</td>
+                    <td>Name of a Condition Set. The name only needs to be defined once; following rows of conditions will be added to the last defined Condition Set. <code>setTelemetry</code> is read only from the row where <code>setName</code> is given.&nbsp;&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
                 <tr>
                     <td class="em">setTelemetry</td>
-                    <td>A full path to one or more telemetry parameters, separated by commas.&nbsp;
+                    <td><strong>Optional.</strong> A full path to one or more telemetry parameters, separated by commas.
+                        Every listed parameter is added to the Condition Set&apos;s composition, and a criterion using
+                        <code>telemetry:any</code> evaluates across all of them. If omitted, the Condition Set is created
+                        with an empty composition &mdash; add telemetry to it in Open MCT, or on a later
+                        <code>setTelemetry</code> row for the same set.
+                        <br><strong>In the .csv:</strong> because the value itself is comma-separated, wrap the whole
+                        <code>setTelemetry</code> cell in double quotes so the commas are not read as column breaks. Do
+                        not put spaces after the commas &mdash; the paths are not trimmed.
                     </td>
-                    <td>/Spacesystem/subsystem/parameter1,/Spacesystem/subsystem/parameter2</td>
+                    <td><code>"/Spacesystem/subsystem/parameter1,/Spacesystem/subsystem/parameter2"</code></td>
                 </tr>
                 <tr>
                     <td class="em">condName</td>
@@ -179,6 +188,47 @@
                 </tr>
                 </tbody>
             </table>
+            <h4>Multiple Parameters in a Condition Set</h4>
+            <p>A Condition Set can watch more than one telemetry parameter. List every path in the
+                <code>setTelemetry</code> cell, comma-separated, with the whole cell in double quotes and no spaces
+                after the commas. Additional conditions are added on following rows that leave <code>setName</code> and
+                <code>setTelemetry</code> blank. A criterion&apos;s <code>telemetry</code> value of
+                <code>any</code> or <code>all</code> is combined with the condition&apos;s <code>trigger</code>
+                (<code>any</code>, <code>all</code>, <code>not</code>, <code>xor</code>) to evaluate across the listed
+                parameters; a criterion can also name one specific parameter by its full path.</p>
+            <table>
+                <thead>
+                <tr>
+                    <th class="em">setName</th>
+                    <th class="em">setTelemetry</th>
+                    <th class="em">condName</th>
+                    <th class="em">criteria</th>
+                    <th class="em">output</th>
+                    <th class="em">trigger</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>CS AppF anyLock</td>
+                    <td><code>"/Spacecraft/AppF/carrierLock,/Spacecraft/AppF/bitSyncLock"</code></td>
+                    <td>condAnyLock</td>
+                    <td><code>{telemetry:any,operation:enumValueIs,input:[1],metadata:value}</code></td>
+                    <td>LOCKED</td>
+                    <td>any</td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>condBothLock</td>
+                    <td><code>{telemetry:all,operation:enumValueIs,input:[1],metadata:value}</code></td>
+                    <td>BOTH LOCKED</td>
+                    <td>all</td>
+                </tr>
+                </tbody>
+            </table>
+            <p>Both parameters are added to the Condition Set&apos;s composition; the tool appends a
+                <code>Default</code> condition automatically. See the
+                <a href="documentation/files/v5.1-CSV-Example-Conditionals.csv">v5.1 example CSV</a>.</p>
 <h4 id="OpenMCTScriptingTool-ConditionCriteria">Condition Criteria Arguments</h4>
             <p>Conditions allow any number of criteria to be defined per condition.&nbsp; Arguments are defined in a JSON-like string format, in this form: <code>{
               property:value,property:value,etc. }</code> Note that both property names and values don&apos;t use
@@ -326,7 +376,10 @@
             </table>
 
             <h3>Display Layouts CSV Input File</h3>
-            <p>The Display Layouts CSV file defines a grid with variable column widths and row heights. <a href="documentation/files/v5.0-CSV-Example-Display-Layout.csv">Download example CSV file.</a></p>
+            <p>The Display Layouts CSV file defines a grid with variable column widths and row heights. Download an example:
+                <a href="documentation/files/v5.1-CSV-Example-Display-Layout.csv">JSON format (v5.1)</a> &nbsp;|&nbsp;
+                <a href="documentation/files/v5.0-CSV-Example-Display-Layout.csv">Legacy format (v5.0)</a>.
+                Both produce the same layout; see <a href="#CellFormat">Cell Format: JSON and Legacy</a> below.</p>
             <p><img class="screenshot" src="documentation/images/openmct-scripting-matrix-layout-csv-layout.png"
                     alt="Picture of CSV file" title="Matrix Layout telemetry CSV file"></p>
             <ul>
@@ -346,8 +399,14 @@
                 </li>
                 <li>Cells can contain text, or a path to a telemetry parameter.
                     <ul>
-                        <li>Text cells can contain optional &quot;flags&quot;; see below for more.</li>
-                        <li>Cells that start with &quot;/&quot; or &quot;~&quot; will be treated as parameter paths.
+                        <li>A plain cell is just its text. A cell whose value starts with &quot;/&quot; or &quot;~&quot;
+                            is treated as a telemetry parameter path (an alphanumeric).
+                        </li>
+                        <li>To add &quot;flags&quot; (styling, spanning, type, options, etc.) a cell becomes a small
+                            configuration object. In the default <strong>JSON</strong> cell format that object is strict
+                            JSON with a <code>name</code> property; see <a href="#CellFormat">Cell Format: JSON and
+                            Legacy</a> and <a href="#using-optional-flags-in-the-layout-csv-file">Using Optional
+                            Flags</a> below.
                         </li>
                         <li>You can use &quot;/&quot; or &quot;~&quot; characters as text, but only if they are escaped.
                             See &quot;Escaping Text&quot; above.
@@ -360,79 +419,128 @@
                 </li>
             </ul>
             <!--<p>The resulting matrix layout output based on the CSV input above:</p>-->
+            <h4 id="CellFormat">Cell Format: JSON and Legacy</h4>
+            <p>The <strong>Cell Format</strong> setting (on the Matrix Layout page) controls how the tool reads any layout
+                cell that carries flags. It has no effect on plain text cells or bare telemetry paths &mdash; those work
+                the same in both modes. A cell only needs a format when you add flags such as styling, spanning, a
+                <code>type</code>, or <code>options</code>.</p>
+            <ul>
+                <li><strong>JSON</strong> (the default): the whole cell is a single, strict JSON object that includes its
+                    own <code>name</code> property. Every key and every string value is wrapped in double quotes; numbers
+                    and booleans are bare. For example:
+                    <br><code>{"name":"/Spacecraft/AppF/carrierLock","type":"alpha","stylePreset":"alphaStatic"}</code>
+                    <br>Because the cell contains commas and quotes, wrap the entire cell in CSV quotes and double every
+                    quote inside it when the .csv is saved:
+                    <br><code>"{""name"":""/Spacecraft/AppF/carrierLock"",""type"":""alpha"",""stylePreset"":""alphaStatic""}"</code>
+                    <br>Spreadsheet applications do this doubling for you when you type a normal <code>&quot;</code> inside
+                    a quoted cell &mdash; it matters mainly when hand-editing a raw .csv.
+                </li>
+                <li><strong>Legacy</strong>: the older shorthand. The cell is <code>name:{flags}</code> &mdash; the name
+                    comes first, then a colon, then an unquoted <code>{ }</code> block. Keys and values are not quoted.
+                    For example:
+                    <br><code>/Spacecraft/AppF/carrierLock:{type:alpha,stylePreset:alphaStatic}</code>
+                </li>
+            </ul>
+            <p>If a cell containing a <code>{ }</code> block fails to parse in JSON mode, the tool reports the file, row
+                and column and skips that cell. Fix the cell to strict JSON, or switch the Cell Format to Legacy.</p>
+            <p><em>Note:</em> the unquoted <code>{property:value}</code> syntax described under
+                &quot;Condition Criteria Arguments&quot; above applies to the <strong>Conditionals</strong> CSV file only.
+                It is not JSON and is unaffected by this setting.</p>
+
             <h4 id="using-optional-flags-in-the-layout-csv-file">Using Optional Flags in the Layout CSV File</h4>
-            <p>Both text and telemetry parameters accept certain &quot;flag&quot; arguments that allow additional
-                capabilities and rendering options. More than one flag can be used at a time, separated with commas.
-                Flags include:</p>
+            <p>Both text and telemetry cells accept certain &quot;flag&quot; arguments that add capabilities and rendering
+                options. More than one flag can be used at a time. The <strong>JSON</strong> and <strong>Legacy</strong>
+                columns below show the same flag in each cell format; pick the one matching your Cell Format setting.
+                The JSON examples are shown without the outer CSV quoting (see
+                <a href="#CellFormat">Cell Format</a> above).</p>
             <table>
                 <thead>
                 <tr>
                     <th><strong>Capability</strong></th>
                     <th><strong>Flag</strong></th>
-                    <th><strong>Telemetry</strong></th>
+                    <th><strong>Telem</strong></th>
                     <th><strong>Text</strong></th>
-                    <th><strong>Example</strong></th>
+                    <th><strong>JSON example</strong></th>
+                    <th><strong>Legacy example</strong></th>
                     <th><strong>Notes</strong></th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
-                    <td>Span multiple columns</td>
-                    <td>span:{ col:<em>#</em>,row:<em>#&nbsp;</em>}</td>
+                    <td>Span multiple columns / rows</td>
+                    <td><code>span</code></td>
                     <td>YES</td>
                     <td>YES</td>
-                    <td><strong>FOO:{span:{col:3,row:2} }&nbsp;</strong></td>
-                    <td>A text element with &quot;FOO&quot; will span across 3 columns and 2 rows,
-                        starting at and inclusive of the element&apos;s current column and row.
+                    <td><code>{"name":"FOO","span":{"col":3,"row":2}}</code></td>
+                    <td><code>FOO:{span:{col:3,row:2}}</code></td>
+                    <td>&quot;FOO&quot; spans 3 columns and 2 rows, starting at and inclusive of the element&apos;s
+                        current column and row.
                     </td>
                 </tr>
 
                 <tr>
                     <td>Type</td>
-                    <td>type:<em>&nbsp;type</em></td>
+                    <td><code>type</code></td>
                     <td>YES</td>
-                    <td>YES&nbsp;&nbsp;</td>
-                    <td>FOO:{type:condition-widget}<br>
-                    <br>
-                    <br></td>
-                    <td>`type` can be 'alpha' | 'condition-widget'| 'link' (not yet supported)
+                    <td>YES</td>
+                    <td><code>{"name":"FOO","type":"condition-widget"}</code></td>
+                    <td><code>FOO:{type:condition-widget}</code></td>
+                    <td><code>type</code> can be <code>alpha</code> | <code>condition-widget</code> | <code>link</code>
+                        (<code>link</code> not yet supported). A bare cell starting with <code>/</code> or <code>~</code>
+                        is already treated as <code>alpha</code> without this flag.
                     </td>
                 </tr>
                 <tr>
-                  <td>Options</td>
-                    <td>options:{<em>&nbsp;property</em>:<em>value, property,value&nbsp;</em>}</td>
+                    <td>Options</td>
+                    <td><code>options:{ property:value, &hellip; }</code></td>
                     <td>YES</td>
                     <td>YES</td>
-                    <td>FOO:{type:condition-widget,options:{format:%.2f,showUnits:false}}<br/>
-                        FOO:{type:condition-widget,options:{url:https://www.nasa.gov,useCondOutput:true}}
+                    <td><code>{"name":"/SC/AppF/rate","type":"alpha","options":{"format":"%.2f","showUnits":false}}</code>
+                        <br><code>{"name":"FOO","type":"condition-widget","options":{"url":"https://www.nasa.gov","useCondOutput":true}}</code>
                     </td>
-                    <td>A string of comma separated &quot;property: value&quot; pairs.</td>
+                    <td><code>/SC/AppF/rate:{type:alpha,options:{format:%.2f,showUnits:false}}</code>
+                        <br><code>FOO:{type:condition-widget,options:{url:https://www.nasa.gov,useCondOutput:true}}</code>
+                    </td>
+                    <td>Alphanumeric options include <code>format</code>, <code>showUnits</code>, <code>displayMode</code>,
+                        <code>value</code>. Condition Widget options include <code>url</code>,
+                        <code>useCondOutput</code>.
+                    </td>
                 </tr>
 
                 <tr>
-                  <td>Style</td>
-                    <td>style:{<em>&nbsp;property</em>:<em>value, property,value&nbsp;</em>}</td>
+                    <td>Style</td>
+                    <td><code>style:{ property:value, &hellip; }</code></td>
                     <td>YES</td>
                     <td>YES</td>
-                    <td>FOO:{type:condition-widget,options:{url:https://www.nasa.gov},style:{backgroundColor:#666666,color:#ffffff}}<br>                      </td>
-                    <td>A string of comma separated &quot;property: value&quot; pairs.</td>
+                    <td><code>{"name":"FOO","style":{"backgroundColor":"#666666","color":"#ffffff"}}</code></td>
+                    <td><code>FOO:{style:{backgroundColor:#666666,color:#ffffff}}</code></td>
+                    <td>Static styling. Properties: <code>backgroundColor</code>, <code>color</code>,
+                        <code>border</code>.
+                    </td>
                 </tr>
 
                 <tr>
                     <td>Style Preset</td>
-                    <td>stylePreset:preset name</td>
+                    <td><code>stylePreset</code></td>
                     <td>YES</td>
                     <td>YES</td>
-                    <td>FOO:{stylePreset:alphaStatic}<br>FOO:{stylePreset:hdr}</td>
-                    <td>'stylePreset' with the name of a defined preset style.</td>
+                    <td><code>{"name":"FOO","stylePreset":"hdr"}</code></td>
+                    <td><code>FOO:{stylePreset:hdr}</code></td>
+                    <td>The name of a preset defined in the Styles CSV. Expanded to its
+                        <code>backgroundColor</code>/<code>color</code>/<code>border</code> before the cell is applied.
+                    </td>
                 </tr>
                 <tr>
-                  <td>Conditionals&nbsp;</td>
-                    <td>conditionStyles:{ set:<em>set name</em>, conditions:[{ name: <em>name</em>, <em>style property</em>:<em>value&nbsp;</em>}]}</td>
+                    <td>Conditional styling</td>
+                    <td><code>conditionStyles:{ set:<em>set name</em>, conditions:[ &hellip; ] }</code></td>
                     <td>YES</td>
                     <td>YES</td>
-                    <td>FOO:{type:condition-widget,conditionStyles:{set:CS CCU,conditions:[{name:c0,backgroundColor:#368215,color:#ffffff},{name:c1,color:#368215,border:1px solid #368215},{name:c2,backgroundColor:#660000,color:#ffffff},{name:Default,border:1px solid #555555}]}}<br></td>
-                    <td>A string of comma separated &quot;property: value&quot; pairs.</td>
+                    <td><code>{"name":"/SC/AppF/lock","type":"alpha","conditionStyles":{"set":"CS AppF lock","conditions":[{"name":"condLock","stylePreset":"isEnabled"},{"name":"Default","color":"#ffffff","border":"1px solid #434343"}]}}</code></td>
+                    <td><code>/SC/AppF/lock:{type:alpha,conditionStyles:{set:CS AppF lock,conditions:[{name:condLock,stylePreset:isEnabled},{name:Default,color:#ffffff,border:1px solid #434343}]}}</code></td>
+                    <td><code>set</code> is the Condition Set name from the Conditionals CSV. Each entry in
+                        <code>conditions</code> names a condition and gives it a <code>stylePreset</code> or explicit
+                        style properties. Include a <code>Default</code> condition.
+                    </td>
                 </tr>
               </tbody>
             </table>

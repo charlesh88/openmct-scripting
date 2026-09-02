@@ -96,8 +96,13 @@ function createConditionSets(csv) {
             return false;
         }
 
+        // Normalize the isDefault cell: a literal "FALSE" string is otherwise truthy.
+        condObject.isDefault = parseCsvBool(condObject.isDefault);
+
         let defCondDefined = false;
-        if (!condObject.criteria.length > 0) {
+        // A default condition legitimately carries no criteria; only non-default
+        // conditions require them.
+        if (!condObject.isDefault && (!condObject.criteria || condObject.criteria.length === 0)) {
             outputErrorMsg("Condition Set "
                 .concat(curSetName)
                 .concat(" has a condition with no criteria."));
@@ -124,25 +129,19 @@ function createConditionSets(csv) {
             createOpenMCTCondObj(condObject)
         );
 
-        if (condObject.setName) {
-            // If setName is being defined, setTelemetry is required.
-            if (!condObject.setTelemetry) {
-                outputErrorMsg("Condition Set "
-                    .concat(curSetName)
-                    .concat(" requires setTelemetry, but none is defined."));
-                return false;
-            } else {
-                // Telemetry has been defined in the .csv file for the current Condition Set
-                const arrSetTelem = (condObject.setTelemetry.split(','));
-                for (const telem of arrSetTelem) {
-                    if (!cs.telemetry.includes(telem)) {
-                        // If setTelemetry hasn't been added to the set's composition, do it.
-                        cs.telemetry.push(telem);
-                        cs.addToComposition(telem, "taxonomy");
-                    }
-                    if (!TELEMETRY.includes(telem)) {
-                        TELEMETRY.push(telem);
-                    }
+        if (condObject.setName && condObject.setTelemetry) {
+            // setTelemetry is optional. When present, add each listed parameter to the
+            // Condition Set's composition; when absent, the set is created with an empty
+            // composition (add telemetry in Open MCT, or via a later setTelemetry).
+            const arrSetTelem = (condObject.setTelemetry.split(','));
+            for (const telem of arrSetTelem) {
+                if (!cs.telemetry.includes(telem)) {
+                    // If setTelemetry hasn't been added to the set's composition, do it.
+                    cs.telemetry.push(telem);
+                    cs.addToComposition(telem, "taxonomy");
+                }
+                if (!TELEMETRY.includes(telem)) {
+                    TELEMETRY.push(telem);
                 }
             }
         }
@@ -157,7 +156,7 @@ function createConditionSets(csv) {
         const cs = CONDITION_SETS[csKeys[k]];
         const cColl = cs.configuration.conditionCollection;
         for (const c of cColl) {
-            if (c.isDefault === 'TRUE') {
+            if (parseCsvBool(c.isDefault)) {
                 csHasDefault = true;
             }
         }
@@ -339,15 +338,6 @@ function createOpenMCTMatrixLayouts(filenames, values) {
                             if (matrixCellObj[k]) promoted[k] = matrixCellObj[k];
                         });
                         if (Object.keys(promoted).length) matrixCellObj.style = promoted;
-                    }
-
-                    if (!matrixCellObj.type) {
-                        // TODO: don't think this is working...
-                        if (matrixCellObj.name.startsWith('/')) {
-                            matrixCellObj.type = 'alpha';
-                        } else {
-                            matrixCellObj.type = 'text';
-                        }
                     }
 
                     if (matrixCellObj.pos) {
@@ -648,11 +638,14 @@ function unpackMatrixCellStrToObj(str) {
 
             const returnObj = parseObject(remainder);
             returnObj.name = name;
+            if (!returnObj.type) {
+                returnObj.type = name.startsWith('/') ? 'alpha' : 'text';
+            }
             return returnObj;
         } else {
             return {
                 'name': str,
-                'type': 'text'
+                'type': str.startsWith('/') ? 'alpha' : 'text'
             }
         }
     }
@@ -662,10 +655,11 @@ function unpackMatrixCellStrToObj(str) {
     const trimmed = str.trim();
 
     if (!trimmed.includes('{')) {
-        // No object payload - a plain text label.
+        // No object payload - a plain text label, unless it looks like a
+        // telemetry path (leading "/"), in which case treat it as an alphanumeric.
         return {
             'name': trimmed,
-            'type': 'text'
+            'type': trimmed.startsWith('/') ? 'alpha' : 'text'
         }
     }
 
@@ -682,6 +676,11 @@ function unpackMatrixCellStrToObj(str) {
 
     if (!returnObj.name) {
         throw new Error('JSON cell is missing a "name" property');
+    }
+
+    if (!returnObj.type) {
+        // Infer type from the name: a leading "/" means a telemetry path.
+        returnObj.type = returnObj.name.startsWith('/') ? 'alpha' : 'text';
     }
 
     return returnObj;

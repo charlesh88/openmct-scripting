@@ -3,6 +3,14 @@ function getNamespace(source) {
     return (source.includes('~')) ? 'taxonomy' : '';
 }
 
+function parseCsvBool(val) {
+    // CSV cells arrive as strings, so an explicit "FALSE" is truthy unless we normalize it.
+    // Treats undefined/empty/"false"/"no"/"0" as false; "true"/"yes"/"1" (any case) as true.
+    if (typeof val === 'boolean') return val;
+    if (val === undefined || val === null) return false;
+    return ['true', 'yes', '1'].includes(String(val).trim().toLowerCase());
+}
+
 function convertToOpenMCTTelemPath(path) {
     // Convert / paths to Open MCT ~ format
     return path.replaceAll('/','~');

@@ -10,6 +10,9 @@ Allows large scale creation of a variety of Open MCT views, many with integrated
 
 The tool also provides a capability to extract telemetry paths from GCS scripts and PRIDE PRL files into a CSV output.
 
+# Dev Notes
+- Compile CSS changes from root directory: `sass --watch styles/styles.scss styles/styles.css`
+
 # Links
 - Release notes and change history: [Open MCT Scripting Tool Release Notes](documentation/release-notes.md)
 - Online web tool:  <https://charlesh88.github.io/openmct-scripting/>
