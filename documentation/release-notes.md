@@ -1,18 +1,43 @@
 # Release Notes
 
+## v5.2 BETA - August 2026
+
+- Matrix Layout: a bare cell whose value starts with `/` or `~` now renders as a telemetry
+  alphanumeric in JSON cell format (previously it became a text element). Type is also inferred
+  from the `name` for JSON-object cells that omit `type`.
+- Conditionals: an explicit `FALSE` in the `isDefault` column is no longer treated as a default
+  condition. Previously any non-empty `isDefault` value was truthy, so every condition was created
+  as a "Scripted default" with no criteria.
+- Conditionals: `setTelemetry` is now optional. A Condition Set defined without it is created with
+  an empty composition.
+- Conditionals: a `setTelemetry` entry of the form `@cs:CS <name>` is a reference to another
+  Condition Set. That set's identifier is added to this set's composition once every set has been
+  read, so one "rollup" Condition Set can aggregate others regardless of the order they appear in
+  the file. A criterion using `telemetry:any` then evaluates across the referenced sets.
+- Conditionals: a criterion `input` list may now contain bare, unquoted strings, including values
+  with spaces; e.g. `input:[SLE ACTIVE]`. Previously only numbers and JSON double-quoted
+  strings parsed; a bare multi-word value threw and aborted the import.
+- Conditionals: a criterion that fails to parse now reports a row-level error naming the Condition
+  Set and condition, instead of aborting the import with no message.
+- Help: documented the JSON vs Legacy cell format, multi-parameter Condition Sets, the
+  `setTelemetry` CSV quoting rule, and Condition Set references; added v5.1 JSON-format example CSVs.
+
 ## v5.1 BETA - July 9, 2026
+
 - Fixed faulty logic evaluating the `showUnits` option property for alpha elements.
 - Fixed bug preventing `span: { row: # }` from working.
 - Added better example of setting multiple `options: {}` properties.
 
 ## v5.0 BETA - June 29, 2026
+
 - Significant changes to the Matrix Layout capability and format:
-  - Conditional and Display Layout input files are now more in parity with their related Open MCT functionalities.
-    - Conditionals now support unlimited conditions; each condition supports unlimited criteria.
-    - Styling per matched condition is now defined in the Display Layout input file, not on condition definitions.
-  - Can now create multiple Display Layouts at a time. 
-  - Conditional and Display Layout CSV file properties now use JSON as the definition format.
-  - Added ability to use style "presets" which encapsulate style definitions. Presets can be referred to and used within Display Layout files.
+    - Conditional and Display Layout input files are now more in parity with their related Open MCT functionalities.
+        - Conditionals now support unlimited conditions; each condition supports unlimited criteria.
+        - Styling per matched condition is now defined in the Display Layout input file, not on condition definitions.
+    - Can now create multiple Display Layouts at a time.
+    - Conditional and Display Layout CSV file properties now use JSON as the definition format.
+    - Added ability to use style "presets" which encapsulate style definitions. Presets can be referred to and used
+      within Display Layout files.
 - Removed Conditional Graphics functionality.
 
 ## v4.1.1 - June 24, 2024

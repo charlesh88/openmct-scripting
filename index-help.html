@@ -149,6 +149,9 @@
                         <br><strong>In the .csv:</strong> because the value itself is comma-separated, wrap the whole
                         <code>setTelemetry</code> cell in double quotes so the commas are not read as column breaks. Do
                         not put spaces after the commas &mdash; the paths are not trimmed.
+                        <br><strong>Condition Set reference:</strong> an entry of the form <code>@cs:CS&nbsp;OtherSet</code>
+                        adds another Condition Set (by name) to this set's composition instead of a telemetry parameter.
+                        See "Referencing Another Condition Set" below.
                     </td>
                     <td><code>"/Spacesystem/subsystem/parameter1,/Spacesystem/subsystem/parameter2"</code></td>
                 </tr>
@@ -229,6 +232,37 @@
             <p>Both parameters are added to the Condition Set&apos;s composition; the tool appends a
                 <code>Default</code> condition automatically. See the
                 <a href="documentation/files/v5.1-CSV-Example-Conditionals.csv">v5.1 example CSV</a>.</p>
+            <h4>Referencing Another Condition Set</h4>
+            <p>A <code>setTelemetry</code> entry of the form <code>@cs:CS&nbsp;OtherSet</code> is a reference to
+                another Condition Set rather than a telemetry parameter. When the file is processed, every reference
+                is resolved after all Condition Sets have been read and the referenced set is added to the referencing
+                set&apos;s composition. This lets one Condition Set roll up the outputs of several others: give the
+                rollup set <code>@cs:</code> entries for each child set, then write its criteria with
+                <code>telemetry:any</code> to evaluate across them. The referenced set may be defined before or after
+                the set that references it, and the name must match the child&apos;s <code>setName</code> exactly. An
+                unresolved reference is reported as an error.</p>
+            <table>
+                <thead>
+                <tr>
+                    <th class="em">setName</th>
+                    <th class="em">setTelemetry</th>
+                    <th class="em">condName</th>
+                    <th class="em">criteria</th>
+                    <th class="em">output</th>
+                    <th class="em">trigger</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>CS Link Rollup</td>
+                    <td><code>"@cs:CS Link A,@cs:CS Link B,@cs:CS Link C"</code></td>
+                    <td>anyActive</td>
+                    <td><code>{telemetry:any,operation:textIsExactly,input:[ACTIVE],metadata:value}</code></td>
+                    <td>ACTIVE</td>
+                    <td>all</td>
+                </tr>
+                </tbody>
+            </table>
 <h4 id="OpenMCTScriptingTool-ConditionCriteria">Condition Criteria Arguments</h4>
             <p>Conditions allow any number of criteria to be defined per condition.&nbsp; Arguments are defined in a JSON-like string format, in this form: <code>{
               property:value,property:value,etc. }</code> Note that both property names and values don&apos;t use
@@ -257,10 +291,11 @@
                 <tr>
                     <td class="em">input</td>
                     <td>Inputs appropriate for the chosen operation. Values here must be enclosed in square brackets [
-                        ], even when the input is a string. See &quot;Condition Operation and Inputs&quot; below for
-                        details.
+                        ], even when the input is a string. A string value can be written bare (no quotes) and may
+                        contain spaces &mdash; <code>input:[SLE ACTIVE]</code>. See &quot;Condition Operation and
+                        Inputs&quot; below for details.
                     </td>
-                    <td>{input:[-10,10]}<br>{input:[foo]}</td>
+                    <td>{input:[-10,10]}<br>{input:[foo]}<br>{input:[SLE ACTIVE]}</td>
                 </tr>
                 <tr>
                     <td class="em">metadata</td>

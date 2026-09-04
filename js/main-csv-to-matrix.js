@@ -74,6 +74,12 @@ function createConditionSets(csv) {
     let curSetName = '';
     let cs;
 
+    // setTelemetry entries of the form "@cs:<Condition Set name>" are references to
+    // another Condition Set. They can't be resolved inline (the target may not be
+    // created yet), so collect them here and wire up composition in a later pass.
+    const CS_REF_PREFIX = '@cs:';
+    const pendingCondSetRefs = [];
+
     // condObjs is an array of short-handed conditions, in one or more condition sets
     const condObjs = csvToObjArray(csv);
     console.log('createConditionSets', condObjs)
@@ -110,10 +116,21 @@ function createConditionSets(csv) {
         }
 
         if (!condObject.isDefault) {
-            condObject.criteriaArr = replaceCommasInBrackets(
-                condObject.criteria, ESC_CHARS.comma)
-                .split(',')
-                .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
+            try {
+                condObject.criteriaArr = replaceCommasInBrackets(
+                    condObject.criteria, ESC_CHARS.comma)
+                    .split(',')
+                    .map(s => convertStringToJSON(s.split(ESC_CHARS.comma).join(','))); // Un-escape protected commas
+            } catch (e) {
+                outputErrorMsg("Condition Set "
+                    .concat(curSetName)
+                    .concat(', condition "')
+                    .concat(condObject.name || condObject.condName || '')
+                    .concat('": could not parse criteria — ')
+                    .concat(e.message)
+                    .concat('<br><code>').concat(condObject.criteria).concat('</code>'));
+                return false;
+            }
         } else {
             defCondDefined = true;
         }
@@ -135,6 +152,13 @@ function createConditionSets(csv) {
             // composition (add telemetry in Open MCT, or via a later setTelemetry).
             const arrSetTelem = (condObject.setTelemetry.split(','));
             for (const telem of arrSetTelem) {
+                const entry = telem.trim();
+                if (entry.startsWith(CS_REF_PREFIX)) {
+                    // Reference to another Condition Set; resolve to its GUID once
+                    // every set has been created (see pass below).
+                    pendingCondSetRefs.push({owner: curSetName, ref: entry.slice(CS_REF_PREFIX.length)});
+                    continue;
+                }
                 if (!cs.telemetry.includes(telem)) {
                     // If setTelemetry hasn't been added to the set's composition, do it.
                     cs.telemetry.push(telem);
@@ -168,6 +192,25 @@ function createConditionSets(csv) {
                 isDefault: true,
                 output: 'Default'
             }))
+        }
+    }
+
+    // Resolve deferred "@cs:<name>" references: add the referenced Condition Set's
+    // GUID to the owning set's composition. Generated objects use namespace ''.
+    for (const {owner, ref} of pendingCondSetRefs) {
+        const ownerCs = CONDITION_SETS[owner];
+        const refCs = CONDITION_SETS[ref];
+        if (!refCs) {
+            outputErrorMsg('Condition Set "'
+                .concat(owner)
+                .concat('" references "')
+                .concat(ref)
+                .concat('" which was not found'));
+            continue;
+        }
+        const refKey = refCs.identifier.key;
+        if (!ownerCs.composition.some(id => id.key === refKey)) {
+            ownerCs.addToComposition(refKey);
         }
     }
 

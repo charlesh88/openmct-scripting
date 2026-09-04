@@ -50,10 +50,31 @@ function quoteJsonProperties(jsonStr) {
         .replaceAll("'",'"');
 }
 
+function parseBracketList(value) {
+    // value is "[ ... ]" with any internal commas already un-escaped.
+    // Accepts a JSON array (["a","b"], [1, 2]) or a bare, unquoted list
+    // ([LINK OK], [COP-1 ACTIVE, BYPASS]); returns an array of numbers/strings.
+    // Bare strings keep their internal spaces.
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        const inner = value.slice(1, -1).trim();
+        if (inner === "") {
+            return [];
+        }
+        return inner.split(",").map(function (item) {
+            const trimmed = item.trim();
+            return (trimmed !== "" && !isNaN(trimmed)) ? parseFloat(trimmed) : trimmed;
+        });
+    }
+}
+
 function convertStringToJSON(inputString) {
     const ESC_COMMA = ESC_CHARS.comma;
-    // Remove whitespace and line breaks from the input string
-    inputString = inputString.replace(/\s+/g, '');
+    // Collapse line breaks and tabs only. Spaces can be significant inside a
+    // bracketed value (e.g. input: [SLE ACTIVE]); the per-token .trim() below
+    // strips formatting whitespace around the ':' and ',' delimiters.
+    inputString = inputString.replace(/[\r\n\t]+/g, '');
 
     // Esc commas within square brackets
     inputString = inputString.replace(/\[(.*?)\]/g, function (match, p1) {
@@ -91,15 +112,15 @@ function convertStringToJSON(inputString) {
         // Convert certain values to their appropriate data types
         if (value === "true" || value === "false") {
             value = value === "true";
-        } else if (!isNaN(value)) {
+        } else if (value !== "" && !isNaN(value)) {
             value = parseFloat(value);
         } else if (
             typeof value === "string" &&
             value.startsWith("[") &&
             value.endsWith("]")
         ) {
-            // Store arrays as arrays
-            value = JSON.parse(value);
+            // Store arrays as arrays (JSON or a bare comma-separated list)
+            value = parseBracketList(value);
         }
 
         // Assign the key-value pair to the object
